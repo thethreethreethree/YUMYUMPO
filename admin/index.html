@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — YUMYUMPO</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'warm-white':  '#FAFAF8',
+            'warm-beige':  '#F5EDE0',
+            'warm-orange': '#F97316',
+            'warm-amber':  '#FB923C',
+            'charcoal':    '#1C1917',
+            'stone-mid':   '#78716C',
+            'stone-light': '#D6D3D1',
+            'stone-pale':  '#F5F5F4',
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans:    ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    .sidebar { width: 260px; min-height: 100vh; }
+    .sidebar-link { display:flex; align-items:center; gap:12px; padding:10px 16px; border-radius:12px; font-size:0.875rem; font-weight:500; color:#78716C; transition:all 0.2s; cursor:pointer; }
+    .sidebar-link:hover, .sidebar-link.active { background:#FFF7ED; color:#F97316; }
+    .sidebar-link svg { width:18px; height:18px; flex-shrink:0; }
+    .stat-card { background:#fff; border-radius:20px; padding:1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .form-input { width:100%; background:#F5F5F4; border:1.5px solid #E7E5E4; border-radius:12px; padding:0.75rem 1rem; font-size:0.875rem; color:#1C1917; outline:none; transition:border-color 0.2s; }
+    .form-input:focus { border-color:#F97316; background:#fff; }
+    .form-label { display:block; font-size:0.8125rem; font-weight:600; color:#1C1917; margin-bottom:6px; }
+    .btn-primary { background:#F97316; color:#fff; font-weight:600; font-size:0.875rem; padding:0.75rem 1.5rem; border-radius:12px; transition:all 0.2s; }
+    .btn-primary:hover { background:#FB923C; transform:translateY(-1px); }
+    .btn-secondary { background:#F5F5F4; color:#1C1917; font-weight:600; font-size:0.875rem; padding:0.75rem 1.5rem; border-radius:12px; transition:all 0.2s; border:1.5px solid #E7E5E4; }
+    .btn-secondary:hover { background:#E7E5E4; }
+    .tab-btn { padding:0.5rem 1.25rem; border-radius:999px; font-size:0.875rem; font-weight:500; color:#78716C; transition:all 0.2s; }
+    .tab-btn.active { background:#1C1917; color:#fff; }
+    .restaurant-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:14px; background:#fff; border:1px solid #F5F5F4; transition:box-shadow 0.2s; }
+    .restaurant-row:hover { box-shadow:0 4px 16px rgba(0,0,0,0.08); }
+    @media (max-width:768px) {
+      .sidebar { display:none; }
+      .admin-layout { flex-direction:column; }
+    }
+  </style>
+</head>
+
+<body class="bg-stone-pale font-sans text-charcoal antialiased">
+
+  <div class="flex admin-layout min-h-screen">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar bg-warm-white border-r border-stone-light/60 fixed top-0 left-0 flex flex-col py-6 px-4">
+
+      <!-- Logo -->
+      <a href="../index.html" class="flex items-center gap-2 px-2 mb-8">
+        <div class="w-8 h-8 rounded-lg bg-warm-orange flex items-center justify-center">
+          <span class="text-white font-bold text-sm">Y</span>
+        </div>
+        <span class="font-display font-bold text-lg text-charcoal">YUMYUMPO</span>
+      </a>
+
+      <!-- Navigation -->
+      <nav class="flex-1 space-y-1">
+        <div class="sidebar-link active" onclick="showTab('dashboard')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Dashboard
+        </div>
+        <div class="sidebar-link" onclick="showTab('restaurants')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          Restaurants
+        </div>
+        <div class="sidebar-link" onclick="showTab('add')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Add Restaurant
+        </div>
+        <div class="sidebar-link" onclick="showTab('analytics')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Analytics
+        </div>
+        <div class="sidebar-link" onclick="showTab('featured')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+          Featured Listings
+        </div>
+      </nav>
+
+      <!-- Bottom -->
+      <div class="pt-6 border-t border-stone-light">
+        <a href="../index.html" class="sidebar-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          View Live Site
+        </a>
+      </div>
+    </aside>
+
+
+    <!-- ── MAIN CONTENT ── -->
+    <main class="flex-1 ml-0 md:ml-[260px] p-6 md:p-10 min-h-screen">
+
+      <!-- ───── TAB: DASHBOARD ───── -->
+      <div id="tab-dashboard">
+        <div class="mb-8">
+          <h1 class="font-display text-3xl font-bold text-charcoal">Dashboard</h1>
+          <p class="text-stone-mid mt-1">Welcome back. Here's what's happening on YUMYUMPO.</p>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+          <div class="stat-card">
+            <p class="text-xs font-semibold text-stone-mid uppercase tracking-wider mb-2">Total Restaurants</p>
+            <p class="text-3xl font-bold text-charcoal" id="stat-total">—</p>
+            <p class="text-xs text-green-500 font-medium mt-1">↑ 12 this month</p>
+          </div>
+          <div class="stat-card">
+            <p class="text-xs font-semibold text-stone-mid uppercase tracking-wider mb-2">Profile Views</p>
+            <p class="text-3xl font-bold text-charcoal">47.2k</p>
+            <p class="text-xs text-green-500 font-medium mt-1">↑ 23% vs last month</p>
+          </div>
+          <div class="stat-card">
+            <p class="text-xs font-semibold text-stone-mid uppercase tracking-wider mb-2">WhatsApp Clicks</p>
+            <p class="text-3xl font-bold text-charcoal">3,841</p>
+            <p class="text-xs text-green-500 font-medium mt-1">↑ 18% vs last month</p>
+          </div>
+          <div class="stat-card">
+            <p class="text-xs font-semibold text-stone-mid uppercase tracking-wider mb-2">AI Discoveries</p>
+            <p class="text-3xl font-bold text-charcoal">18.0k</p>
+            <p class="text-xs text-warm-orange font-medium mt-1">→ Stable</p>
+          </div>
+        </div>
+
+        <!-- Top Restaurants Table -->
+        <div class="bg-white rounded-2xl shadow-sm border border-stone-light/40 p-6 mb-8">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="font-display text-xl font-bold text-charcoal">Top Performing Restaurants</h2>
+            <button onclick="showTab('restaurants')" class="text-sm font-semibold text-warm-orange hover:underline">View all →</button>
+          </div>
+          <div class="space-y-3" id="top-restaurants-list">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <button onclick="showTab('add')" class="flex items-center gap-3 bg-warm-orange text-white font-semibold px-5 py-4 rounded-2xl hover:bg-warm-amber transition-all hover:scale-105 text-left">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <div><p class="text-sm">Add New Restaurant</p><p class="text-xs opacity-80 font-normal">List a new business</p></div>
+          </button>
+          <button onclick="showTab('featured')" class="flex items-center gap-3 bg-charcoal text-white font-semibold px-5 py-4 rounded-2xl hover:bg-stone-800 transition-all hover:scale-105 text-left">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            <div><p class="text-sm">Manage Featured</p><p class="text-xs opacity-80 font-normal">Set homepage spotlights</p></div>
+          </button>
+          <button onclick="showTab('analytics')" class="flex items-center gap-3 bg-white border border-stone-light text-charcoal font-semibold px-5 py-4 rounded-2xl hover:bg-stone-pale transition-all hover:scale-105 text-left">
+            <svg class="w-5 h-5 shrink-0 text-warm-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <div><p class="text-sm">View Analytics</p><p class="text-xs text-stone-mid font-normal">Deep dive into data</p></div>
+          </button>
+        </div>
+      </div>
+
+
+      <!-- ───── TAB: RESTAURANTS ───── -->
+      <div id="tab-restaurants" class="hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 class="font-display text-3xl font-bold text-charcoal">All Restaurants</h1>
+            <p class="text-stone-mid mt-1">Manage your restaurant listings.</p>
+          </div>
+          <button onclick="showTab('add')" class="btn-primary flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Add New
+          </button>
+        </div>
+
+        <!-- Search & Filter -->
+        <div class="flex flex-col sm:flex-row gap-3 mb-6">
+          <input type="text" placeholder="Search restaurants..." class="form-input flex-1" id="restaurant-search" oninput="filterRestaurants()" />
+          <select class="form-input sm:w-48" id="cuisine-filter" onchange="filterRestaurants()">
+            <option value="">All Cuisines</option>
+            <option>Filipino</option>
+            <option>Japanese</option>
+            <option>Seafood</option>
+            <option>Café</option>
+            <option>BBQ</option>
+          </select>
+        </div>
+
+        <!-- Restaurant List -->
+        <div class="space-y-3" id="restaurant-list">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+
+
+      <!-- ───── TAB: ADD RESTAURANT ───── -->
+      <div id="tab-add" class="hidden">
+        <div class="mb-8">
+          <h1 class="font-display text-3xl font-bold text-charcoal">Add Restaurant</h1>
+          <p class="text-stone-mid mt-1">Fill in the details to list a new restaurant on the platform.</p>
+        </div>
+
+        <form id="add-restaurant-form" onsubmit="submitRestaurant(event)" class="max-w-3xl space-y-8">
+
+          <!-- Basic Info -->
+          <div class="bg-white rounded-2xl p-6 border border-stone-light/60 space-y-5">
+            <h2 class="font-display text-xl font-bold text-charcoal">Basic Information</h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label class="form-label">Restaurant Name *</label>
+                <input type="text" name="name" class="form-input" placeholder="e.g., Maria's Kitchen" required />
+              </div>
+              <div>
+                <label class="form-label">URL Slug *</label>
+                <input type="text" name="slug" class="form-input" placeholder="e.g., marias-kitchen" required />
+                <p class="text-xs text-stone-mid mt-1">yourplatform.com/restaurant/<strong>slug</strong></p>
+              </div>
+            </div>
+
+            <div>
+              <label class="form-label">Short Tagline</label>
+              <input type="text" name="tagline" class="form-input" placeholder="e.g., Home-cooked Filipino food with heart." />
+            </div>
+
+            <div>
+              <label class="form-label">Description *</label>
+              <textarea name="description" class="form-input" rows="4" placeholder="Tell the story of this restaurant..." required></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label class="form-label">Cuisine Type *</label>
+                <select name="cuisine_type" class="form-input" required>
+                  <option value="">Select cuisine...</option>
+                  <option>Filipino</option>
+                  <option>Japanese</option>
+                  <option>Italian</option>
+                  <option>Korean</option>
+                  <option>Chinese</option>
+                  <option>Seafood</option>
+                  <option>BBQ &amp; Grill</option>
+                  <option>Café</option>
+                  <option>Vegan</option>
+                  <option>Burgers</option>
+                  <option>Mexican</option>
+                  <option>Desserts</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Location / City *</label>
+                <input type="text" name="location" class="form-input" placeholder="e.g., El Nido, Palawan" required />
+              </div>
+            </div>
+
+            <div>
+              <label class="form-label">Full Address</label>
+              <input type="text" name="address" class="form-input" placeholder="e.g., 123 Main Street, El Nido, Palawan 5313" />
+            </div>
+          </div>
+
+          <!-- Ratings -->
+          <div class="bg-white rounded-2xl p-6 border border-stone-light/60 space-y-5">
+            <h2 class="font-display text-xl font-bold text-charcoal">Google Ratings</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label class="form-label">Google Rating (1–5)</label>
+                <input type="number" name="google_rating" class="form-input" placeholder="e.g., 4.7" min="1" max="5" step="0.1" />
+              </div>
+              <div>
+                <label class="form-label">Review Count</label>
+                <input type="number" name="review_count" class="form-input" placeholder="e.g., 1238" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact & Links -->
+          <div class="bg-white rounded-2xl p-6 border border-stone-light/60 space-y-5">
+            <h2 class="font-display text-xl font-bold text-charcoal">Contact &amp; Links</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div>
+                <label class="form-label">Phone Number</label>
+                <input type="tel" name="phone" class="form-input" placeholder="+63 912 345 6789" />
+              </div>
+              <div>
+                <label class="form-label">Website URL</label>
+                <input type="url" name="website_url" class="form-input" placeholder="https://yourrestaurant.com" />
+              </div>
+              <div>
+                <label class="form-label">WhatsApp URL</label>
+                <input type="url" name="whatsapp_url" class="form-input" placeholder="https://wa.me/639..." />
+              </div>
+              <div>
+                <label class="form-label">Messenger URL</label>
+                <input type="url" name="messenger_url" class="form-input" placeholder="https://m.me/..." />
+              </div>
+              <div>
+                <label class="form-label">Instagram URL</label>
+                <input type="url" name="instagram_url" class="form-input" placeholder="https://instagram.com/..." />
+              </div>
+              <div>
+                <label class="form-label">Facebook URL</label>
+                <input type="url" name="facebook_url" class="form-input" placeholder="https://facebook.com/..." />
+              </div>
+            </div>
+          </div>
+
+          <!-- Images -->
+          <div class="bg-white rounded-2xl p-6 border border-stone-light/60 space-y-5">
+            <h2 class="font-display text-xl font-bold text-charcoal">Images</h2>
+            <p class="text-stone-mid text-sm">Paste image URLs from Supabase Storage or any CDN.</p>
+            <div>
+              <label class="form-label">Cover Image URL *</label>
+              <input type="url" name="cover_image_url" class="form-input" placeholder="https://..." required />
+            </div>
+            <div>
+              <label class="form-label">Logo Image URL</label>
+              <input type="url" name="logo_image_url" class="form-input" placeholder="https://..." />
+            </div>
+          </div>
+
+          <!-- Tags -->
+          <div class="bg-white rounded-2xl p-6 border border-stone-light/60 space-y-5">
+            <h2 class="font-display text-xl font-bold text-charcoal">Tags</h2>
+            <p class="text-stone-mid text-sm">Select all that apply to this restaurant.</p>
+            <div class="flex flex-wrap gap-2" id="tag-selector">
+              <!-- Injected by JS -->
+            </div>
+            <input type="hidden" name="tags" id="selected-tags" value="" />
+          </div>
+
+          <!-- Settings -->
+          <div class="bg-white rounded-2xl p-6 border border-stone-light/60 space-y-4">
+            <h2 class="font-display text-xl font-bold text-charcoal">Settings</h2>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" name="is_featured" class="w-4 h-4 accent-warm-orange" />
+              <span class="text-sm font-medium text-charcoal">Mark as Featured (show on homepage)</span>
+            </label>
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" name="is_active" checked class="w-4 h-4 accent-warm-orange" />
+              <span class="text-sm font-medium text-charcoal">Active (visible on platform)</span>
+            </label>
+          </div>
+
+          <!-- Submit -->
+          <div class="flex gap-3">
+            <button type="submit" class="btn-primary">Save Restaurant</button>
+            <button type="button" onclick="showTab('restaurants')" class="btn-secondary">Cancel</button>
+          </div>
+
+          <!-- Success/Error message -->
+          <div id="form-message" class="hidden rounded-xl p-4 text-sm font-medium"></div>
+
+        </form>
+      </div>
+
+
+      <!-- ───── TAB: ANALYTICS ───── -->
+      <div id="tab-analytics" class="hidden">
+        <div class="mb-8">
+          <h1 class="font-display text-3xl font-bold text-charcoal">Analytics</h1>
+          <p class="text-stone-mid mt-1">Track how restaurants perform on the platform.</p>
+        </div>
+
+        <!-- Time filter -->
+        <div class="flex gap-2 mb-8">
+          <button class="tab-btn active">Last 7 days</button>
+          <button class="tab-btn">Last 30 days</button>
+          <button class="tab-btn">All time</button>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          <div class="stat-card text-center">
+            <p class="text-2xl mb-1">👁️</p>
+            <p class="text-2xl font-bold text-charcoal">47,291</p>
+            <p class="text-xs text-stone-mid mt-1">Total Profile Views</p>
+          </div>
+          <div class="stat-card text-center">
+            <p class="text-2xl mb-1">🔍</p>
+            <p class="text-2xl font-bold text-charcoal">12,843</p>
+            <p class="text-xs text-stone-mid mt-1">Search Appearances</p>
+          </div>
+          <div class="stat-card text-center">
+            <p class="text-2xl mb-1">💬</p>
+            <p class="text-2xl font-bold text-charcoal">3,841</p>
+            <p class="text-xs text-stone-mid mt-1">WhatsApp Clicks</p>
+          </div>
+          <div class="stat-card text-center">
+            <p class="text-2xl mb-1">🌐</p>
+            <p class="text-2xl font-bold text-charcoal">2,194</p>
+            <p class="text-xs text-stone-mid mt-1">Website Redirects</p>
+          </div>
+        </div>
+
+        <!-- Simple Bar Chart (CSS) -->
+        <div class="bg-white rounded-2xl p-6 border border-stone-light/40 mb-8">
+          <h2 class="font-display text-xl font-bold text-charcoal mb-6">Profile Views — Last 7 Days</h2>
+          <div class="flex items-end gap-3 h-40">
+            <div class="flex flex-col items-center gap-2 flex-1">
+              <div class="w-full bg-warm-orange/20 rounded-t-lg" style="height:65%"></div>
+              <span class="text-xs text-stone-mid">Mon</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 flex-1">
+              <div class="w-full bg-warm-orange/20 rounded-t-lg" style="height:80%"></div>
+              <span class="text-xs text-stone-mid">Tue</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 flex-1">
+              <div class="w-full bg-warm-orange/20 rounded-t-lg" style="height:55%"></div>
+              <span class="text-xs text-stone-mid">Wed</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 flex-1">
+              <div class="w-full bg-warm-orange rounded-t-lg" style="height:100%"></div>
+              <span class="text-xs text-warm-orange font-bold">Thu</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 flex-1">
+              <div class="w-full bg-warm-orange/20 rounded-t-lg" style="height:90%"></div>
+              <span class="text-xs text-stone-mid">Fri</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 flex-1">
+              <div class="w-full bg-warm-orange/20 rounded-t-lg" style="height:70%"></div>
+              <span class="text-xs text-stone-mid">Sat</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 flex-1">
+              <div class="w-full bg-warm-orange/20 rounded-t-lg" style="height:45%"></div>
+              <span class="text-xs text-stone-mid">Sun</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top events -->
+        <div class="bg-white rounded-2xl p-6 border border-stone-light/40">
+          <h2 class="font-display text-xl font-bold text-charcoal mb-5">Top Events This Week</h2>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between py-2 border-b border-stone-pale">
+              <span class="text-sm font-medium text-charcoal">profile_view</span>
+              <span class="text-sm font-bold text-warm-orange">47,291</span>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b border-stone-pale">
+              <span class="text-sm font-medium text-charcoal">card_click</span>
+              <span class="text-sm font-bold text-warm-orange">18,442</span>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b border-stone-pale">
+              <span class="text-sm font-medium text-charcoal">whatsapp_click</span>
+              <span class="text-sm font-bold text-warm-orange">3,841</span>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b border-stone-pale">
+              <span class="text-sm font-medium text-charcoal">website_click</span>
+              <span class="text-sm font-bold text-warm-orange">2,194</span>
+            </div>
+            <div class="flex items-center justify-between py-2">
+              <span class="text-sm font-medium text-charcoal">search</span>
+              <span class="text-sm font-bold text-warm-orange">12,843</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ───── TAB: FEATURED ───── -->
+      <div id="tab-featured" class="hidden">
+        <div class="mb-8">
+          <h1 class="font-display text-3xl font-bold text-charcoal">Featured Listings</h1>
+          <p class="text-stone-mid mt-1">Control which restaurants appear in homepage spotlight sections.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 border border-stone-light/60 mb-6">
+          <p class="text-sm text-stone-mid mb-6">Featured restaurants appear in the "Editor's Picks" and "Trending Now" sections on the homepage. You can feature up to <strong>6 restaurants</strong> at a time in each section.</p>
+
+          <div class="space-y-3" id="featured-list">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+
+  <script src="../assets/js/supabase-client.js"></script>
+  <script src="../assets/js/admin.js"></script>
+</body>
+</html>

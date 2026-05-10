@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Discover restaurants worth remembering. AI-powered restaurant discovery for travelers and local food lovers." />
+  <meta property="og:title" content="YUMYUMPO — Discover Restaurants Worth Remembering" />
+  <meta property="og:description" content="AI-powered restaurant discovery for travelers and local food lovers." />
+  <meta property="og:type" content="website" />
+  <title>YUMYUMPO — Discover Restaurants Worth Remembering</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'warm-white':  '#FAFAF8',
+            'warm-beige':  '#F5EDE0',
+            'warm-orange': '#F97316',
+            'warm-amber':  '#FB923C',
+            'charcoal':    '#1C1917',
+            'stone-mid':   '#78716C',
+            'stone-light': '#D6D3D1',
+            'stone-pale':  '#F5F5F4',
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans:    ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+</head>
+
+<body class="bg-warm-white font-sans text-charcoal antialiased">
+
+  <!-- ============================================================
+       NAVIGATION
+  ============================================================ -->
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 md:h-20">
+
+        <!-- Logo -->
+        <a href="/" class="flex items-center gap-2 group">
+          <div class="w-8 h-8 rounded-lg bg-warm-orange flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+            <span class="text-white font-bold text-sm">Y</span>
+          </div>
+          <span class="font-display font-bold text-xl text-charcoal tracking-tight">
+            YUMYUMPO
+          </span>
+        </a>
+
+        <!-- Desktop Nav Links -->
+        <div class="hidden md:flex items-center gap-8">
+          <a href="#discover"  class="text-sm font-medium text-stone-mid hover:text-charcoal transition-colors">Discover</a>
+          <a href="#trending"  class="text-sm font-medium text-stone-mid hover:text-charcoal transition-colors">Trending</a>
+          <a href="#cuisines"  class="text-sm font-medium text-stone-mid hover:text-charcoal transition-colors">Cuisines</a>
+          <a href="admin/index.html" class="text-sm font-medium text-stone-mid hover:text-charcoal transition-colors">For Restaurants</a>
+        </div>
+
+        <!-- CTA Buttons -->
+        <div class="flex items-center gap-3">
+          <a href="admin/index.html" class="hidden md:inline-flex items-center gap-2 bg-charcoal text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-stone-800 transition-colors">
+            List Your Restaurant
+          </a>
+          <!-- Mobile Menu Toggle -->
+          <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-stone-pale transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-warm-white border-t border-stone-light shadow-lg">
+      <div class="px-4 py-4 space-y-3">
+        <a href="#discover"  class="block text-sm font-medium text-stone-mid hover:text-charcoal py-2">Discover</a>
+        <a href="#trending"  class="block text-sm font-medium text-stone-mid hover:text-charcoal py-2">Trending</a>
+        <a href="#cuisines"  class="block text-sm font-medium text-stone-mid hover:text-charcoal py-2">Cuisines</a>
+        <a href="admin/index.html" class="block text-sm font-medium text-stone-mid hover:text-charcoal py-2">For Restaurants</a>
+        <a href="admin/index.html" class="block text-center bg-charcoal text-white text-sm font-semibold px-5 py-3 rounded-full mt-2">
+          List Your Restaurant
+        </a>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- ============================================================
+       HERO SECTION
+  ============================================================ -->
+  <section class="hero-section relative min-h-screen flex items-center justify-center overflow-hidden">
+
+    <!-- Background Image -->
+    <div class="absolute inset-0">
+      <img
+        src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920&auto=format&fit=crop&q=80"
+        alt="Beautiful restaurant interior"
+        class="w-full h-full object-cover"
+        loading="eager"
+      />
+      <div class="absolute inset-0 hero-overlay"></div>
+    </div>
+
+    <!-- Floating ambient shapes -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+      <div class="ambient-blob ambient-blob-1"></div>
+      <div class="ambient-blob ambient-blob-2"></div>
+    </div>
+
+    <!-- Hero Content -->
+    <div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center">
+
+      <!-- Badge -->
+      <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full mb-8 fade-in-up" style="animation-delay: 0.1s">
+        <span class="w-2 h-2 rounded-full bg-warm-orange animate-pulse"></span>
+        AI-Powered Restaurant Discovery
+      </div>
+
+      <!-- Headline -->
+      <h1 class="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white leading-tight mb-6 fade-in-up" style="animation-delay: 0.2s">
+        Discover restaurants<br />
+        <em class="text-warm-orange not-italic">worth remembering.</em>
+      </h1>
+
+      <!-- Sub-headline -->
+      <p class="text-white/80 text-lg sm:text-xl md:text-2xl max-w-2xl mx-auto mb-12 font-light leading-relaxed fade-in-up" style="animation-delay: 0.3s">
+        Find your next favorite meal — from hidden local gems to unforgettable dining experiences, all in one place.
+      </p>
+
+      <!-- AI Search Bar -->
+      <div class="max-w-3xl mx-auto fade-in-up" style="animation-delay: 0.4s">
+        <div class="search-container bg-white rounded-2xl shadow-2xl p-2 flex items-center gap-2">
+
+          <!-- Location Pin Icon -->
+          <div class="hidden sm:flex items-center gap-2 pl-2 pr-3 border-r border-stone-light shrink-0">
+            <svg class="w-5 h-5 text-warm-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span class="text-sm font-medium text-charcoal whitespace-nowrap">Everywhere</span>
+          </div>
+
+          <!-- Search Input -->
+          <input
+            id="hero-search"
+            type="text"
+            placeholder="Best cafés in El Nido..."
+            class="flex-1 text-base md:text-lg text-charcoal placeholder-stone-mid bg-transparent outline-none px-3 py-3 min-w-0"
+            autocomplete="off"
+          />
+
+          <!-- Search Button -->
+          <button
+            id="hero-search-btn"
+            class="bg-warm-orange hover:bg-warm-amber text-white font-semibold px-6 py-3.5 rounded-xl flex items-center gap-2 transition-all duration-200 hover:scale-105 shrink-0 shadow-orange"
+            onclick="handleSearch()"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <span class="hidden sm:inline">Discover</span>
+          </button>
+        </div>
+
+        <!-- Quick Suggestion Chips -->
+        <div class="flex flex-wrap justify-center gap-2 mt-4">
+          <button class="suggestion-chip" onclick="fillSearch('Best burgers nearby')">🍔 Best burgers nearby</button>
+          <button class="suggestion-chip" onclick="fillSearch('Romantic dinner places')">🕯️ Romantic dinner</button>
+          <button class="suggestion-chip" onclick="fillSearch('Budget-friendly local food')">💚 Budget-friendly</button>
+          <button class="suggestion-chip" onclick="fillSearch('Best sunset dining')">🌅 Sunset dining</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 fade-in-up" style="animation-delay: 0.8s">
+      <span class="text-white/60 text-xs font-medium tracking-widest uppercase">Explore</span>
+      <div class="scroll-indicator"></div>
+    </div>
+
+  </section>
+
+
+  <!-- ============================================================
+       STATS STRIP
+  ============================================================ -->
+  <section class="bg-charcoal py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div class="stat-item">
+          <span class="block text-3xl font-bold text-warm-orange mb-1" data-count="2400">0</span>
+          <span class="text-sm text-white/60 font-medium">Restaurants Listed</span>
+        </div>
+        <div class="stat-item">
+          <span class="block text-3xl font-bold text-warm-orange mb-1" data-count="48">0</span>
+          <span class="text-sm text-white/60 font-medium">Cities Covered</span>
+        </div>
+        <div class="stat-item">
+          <span class="block text-3xl font-bold text-warm-orange mb-1" data-count="95">0</span>
+          <span class="text-sm text-white/60 font-medium">% Happy Travelers</span>
+        </div>
+        <div class="stat-item">
+          <span class="block text-3xl font-bold text-warm-orange mb-1" data-count="18000">0</span>
+          <span class="text-sm text-white/60 font-medium">Monthly Discoveries</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       POPULAR CUISINES
+  ============================================================ -->
+  <section id="cuisines" class="py-20 bg-warm-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+
+      <div class="section-header mb-12">
+        <p class="section-label">Browse by type</p>
+        <h2 class="section-title">Popular Cuisines</h2>
+      </div>
+
+      <div class="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4">
+
+        <div class="cuisine-pill snap-start shrink-0" onclick="filterByCuisine('Filipino')">
+          <span class="cuisine-emoji">🇵🇭</span>
+          <span>Filipino</span>
+        </div>
+        <div class="cuisine-pill snap-start shrink-0" onclick="filterByCuisine('Japanese')">
+          <span class="cuisine-emoji">🍜</span>
+          <span>Japanese</span>
+        </div>
+        <div class="cuisine-pill snap-start shrink-0" onclick="filterByCuisine('Italian')">
+          <span class="cuisine-emoji">🍕</span>
+          <span>Italian</span>
+        </div>
+        <div class="cuisine-pill snap-start shrink-0" onclick="filterByCuisine('Korean')">
+          <span class="cuisine-emoji">🥘</span>
+          <span>Korean</span>
+        </div>
+        <div class="cuisine-pill snap-start shrink-0" onclick="filterByCuisine('Seafood')">
+          <span class="cuisine-emoji">🦞</span>
+          <span>Seafood</span>
+        </div>
+        <div class="cuisine-pill snap-start shrink-0" onclick="filterByCuisine('Café')">
+          <span class="cuisine-emoji">☕</span>
+          <span>Café</span>
+        </div>
+        <div class="cuisine-pill snap-start shrink-0" onclick="filterByCuisine('BBQ')">
+          <span class="cuisine-emoji">🔥</span>
+          <span>BBQ & Grill</span>
+        </div>
+        <div class="cuisine-pill snap-start shrink-0" onclick="filterByCuisine('Vegan')">
+          <span class="cuisine-emoji">🥗</span>
+          <span>Vegan</span>
+        </div>
+        <div class="cuisine-pill snap-start shrink-0" onclick="filterByCuisine('Desserts')">
+          <span class="cuisine-emoji">🍨</span>
+          <span>Desserts</span>
+        </div>
+        <div class="cuisine-pill snap-start shrink-0" onclick="filterByCuisine('Burgers')">
+          <span class="cuisine-emoji">🍔</span>
+          <span>Burgers</span>
+        </div>
+        <div class="cuisine-pill snap-start shrink-0" onclick="filterByCuisine('Chinese')">
+          <span class="cuisine-emoji">🥟</span>
+          <span>Chinese</span>
+        </div>
+        <div class="cuisine-pill snap-start shrink-0" onclick="filterByCuisine('Mexican')">
+          <span class="cuisine-emoji">🌮</span>
+          <span>Mexican</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       FEATURED RESTAURANTS
+  ============================================================ -->
+  <section id="discover" class="py-20 bg-stone-pale">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+        <div class="section-header">
+          <p class="section-label">Editor's picks</p>
+          <h2 class="section-title">Featured Restaurants</h2>
+        </div>
+        <a href="#" class="text-sm font-semibold text-warm-orange hover:underline underline-offset-4 shrink-0">
+          View all →
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="featured-grid">
+        <!-- Cards injected by JS -->
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       TRENDING SECTION
+  ============================================================ -->
+  <section id="trending" class="py-20 bg-warm-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+        <div class="section-header">
+          <p class="section-label">What everyone's talking about</p>
+          <h2 class="section-title">Trending Now</h2>
+        </div>
+        <a href="#" class="text-sm font-semibold text-warm-orange hover:underline underline-offset-4 shrink-0">
+          View all →
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="trending-grid">
+        <!-- Cards injected by JS -->
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       TOURISM SPOTLIGHT
+  ============================================================ -->
+  <section class="py-20 bg-warm-beige">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+
+      <div class="section-header text-center mb-14">
+        <p class="section-label">For travelers</p>
+        <h2 class="section-title">Tourist Favorites</h2>
+        <p class="section-desc mt-4 max-w-2xl mx-auto">
+          Handpicked experiences loved by visitors. From beach-town bites to city dining — find the places that make every trip unforgettable.
+        </p>
+      </div>
+
+      <!-- Spotlight Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="tourism-grid">
+        <!-- Cards injected by JS -->
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       AI DISCOVERY CTA
+  ============================================================ -->
+  <section class="py-24 bg-charcoal relative overflow-hidden">
+
+    <!-- Background texture -->
+    <div class="absolute inset-0 opacity-5">
+      <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>
+    </div>
+
+    <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
+
+      <div class="inline-flex items-center gap-2 bg-warm-orange/10 border border-warm-orange/30 text-warm-orange text-xs font-semibold px-4 py-2 rounded-full mb-8">
+        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2L9.19 8.63L2 9.24L7 13.77L5.26 21L12 17.27L18.74 21L17 13.77L22 9.24L14.81 8.63L12 2Z"/>
+        </svg>
+        Powered by AI
+      </div>
+
+      <h2 class="font-display text-4xl sm:text-5xl md:text-6xl text-white leading-tight mb-6">
+        Tell us what you're<br />
+        <em class="text-warm-orange not-italic">craving right now.</em>
+      </h2>
+
+      <p class="text-white/60 text-lg md:text-xl mb-10 max-w-2xl mx-auto font-light">
+        Our AI understands your mood, budget, and taste preferences to surface exactly the right restaurant for your moment.
+      </p>
+
+      <!-- Conversational Search -->
+      <div class="max-w-2xl mx-auto">
+        <div class="relative">
+          <input
+            id="ai-search"
+            type="text"
+            placeholder="I want something cozy and budget-friendly..."
+            class="w-full bg-white/10 border border-white/20 text-white placeholder-white/40 rounded-2xl px-6 py-5 text-base outline-none focus:border-warm-orange/60 focus:bg-white/15 transition-all pr-16"
+          />
+          <button class="absolute right-3 top-1/2 -translate-y-1/2 bg-warm-orange hover:bg-warm-amber text-white p-3 rounded-xl transition-all hover:scale-105">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Example queries -->
+        <div class="flex flex-wrap justify-center gap-2 mt-4">
+          <button class="ai-chip" onclick="fillAiSearch('Best local breakfast spot')">Best local breakfast spot</button>
+          <button class="ai-chip" onclick="fillAiSearch('Cheap seafood by the beach')">Cheap seafood by the beach</button>
+          <button class="ai-chip" onclick="fillAiSearch('Cozy café with good WiFi')">Cozy café with good WiFi</button>
+          <button class="ai-chip" onclick="fillAiSearch('Romantic anniversary dinner')">Romantic anniversary dinner</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       RESTAURANT OWNER CTA
+  ============================================================ -->
+  <section class="py-24 bg-warm-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+        <!-- Content -->
+        <div>
+          <p class="section-label mb-4">Are you a restaurant owner?</p>
+          <h2 class="font-display text-4xl sm:text-5xl text-charcoal leading-tight mb-6">
+            Get discovered by<br />
+            <span class="text-warm-orange">thousands of diners</span><br />
+            every month.
+          </h2>
+          <p class="text-stone-mid text-lg leading-relaxed mb-8">
+            List your restaurant for free and reach travelers, locals, and food enthusiasts actively looking for their next great meal. No delivery. No commission. Just visibility.
+          </p>
+
+          <!-- Benefits -->
+          <div class="space-y-4 mb-10">
+            <div class="flex items-start gap-3">
+              <div class="w-6 h-6 rounded-full bg-warm-orange/10 flex items-center justify-center mt-0.5 shrink-0">
+                <svg class="w-3.5 h-3.5 text-warm-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-semibold text-charcoal text-sm">Hosted mini-website included</p>
+                <p class="text-stone-mid text-sm">Get a beautiful restaurant page even without a website.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-6 h-6 rounded-full bg-warm-orange/10 flex items-center justify-center mt-0.5 shrink-0">
+                <svg class="w-3.5 h-3.5 text-warm-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-semibold text-charcoal text-sm">Real-time analytics dashboard</p>
+                <p class="text-stone-mid text-sm">See who's viewing, clicking, and discovering your restaurant.</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div class="w-6 h-6 rounded-full bg-warm-orange/10 flex items-center justify-center mt-0.5 shrink-0">
+                <svg class="w-3.5 h-3.5 text-warm-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-semibold text-charcoal text-sm">AI-powered recommendations</p>
+                <p class="text-stone-mid text-sm">Get featured when diners search for your type of food.</p>
+              </div>
+            </div>
+          </div>
+
+          <a href="admin/index.html" class="inline-flex items-center gap-2 bg-charcoal text-white font-semibold px-8 py-4 rounded-full hover:bg-stone-800 transition-all hover:scale-105">
+            List My Restaurant — It's Free
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          </a>
+        </div>
+
+        <!-- Visual -->
+        <div class="relative">
+          <div class="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/5]">
+            <img
+              src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format&fit=crop&q=80"
+              alt="Beautiful restaurant"
+              class="w-full h-full object-cover"
+              loading="lazy"
+            />
+            <!-- Floating stats card -->
+            <div class="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-xl">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-warm-orange/10 flex items-center justify-center">
+                  <svg class="w-5 h-5 text-warm-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-xs text-stone-mid font-medium">This week's visibility</p>
+                  <p class="font-bold text-charcoal">3,847 profile views</p>
+                </div>
+                <div class="ml-auto">
+                  <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">↑ 24%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Decorative element -->
+          <div class="absolute -top-4 -right-4 w-24 h-24 bg-warm-orange/10 rounded-full blur-2xl"></div>
+          <div class="absolute -bottom-4 -left-4 w-32 h-32 bg-warm-beige rounded-full blur-2xl"></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       FOOTER
+  ============================================================ -->
+  <footer class="bg-charcoal text-white pt-16 pb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/10">
+
+        <!-- Brand -->
+        <div class="lg:col-span-1">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-warm-orange flex items-center justify-center">
+              <span class="text-white font-bold text-sm">Y</span>
+            </div>
+            <span class="font-display font-bold text-xl">YUMYUMPO</span>
+          </div>
+          <p class="text-white/50 text-sm leading-relaxed mb-6">
+            AI-powered restaurant discovery for modern travelers and local food lovers.
+          </p>
+          <div class="flex gap-3">
+            <a href="#" class="w-9 h-9 rounded-full bg-white/10 hover:bg-warm-orange flex items-center justify-center transition-colors">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+            <a href="#" class="w-9 h-9 rounded-full bg-white/10 hover:bg-warm-orange flex items-center justify-center transition-colors">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"/></svg>
+            </a>
+            <a href="#" class="w-9 h-9 rounded-full bg-white/10 hover:bg-warm-orange flex items-center justify-center transition-colors">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Discover -->
+        <div>
+          <h4 class="text-sm font-semibold text-white mb-5">Discover</h4>
+          <ul class="space-y-3 text-sm text-white/50">
+            <li><a href="#" class="hover:text-white transition-colors">Featured Restaurants</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Trending Now</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Tourist Favorites</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Best Cafés</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Romantic Dining</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Budget Eats</a></li>
+          </ul>
+        </div>
+
+        <!-- For Restaurants -->
+        <div>
+          <h4 class="text-sm font-semibold text-white mb-5">For Restaurants</h4>
+          <ul class="space-y-3 text-sm text-white/50">
+            <li><a href="admin/index.html" class="hover:text-white transition-colors">List Your Restaurant</a></li>
+            <li><a href="admin/index.html" class="hover:text-white transition-colors">Dashboard</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Analytics</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Mini-Website</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Pricing</a></li>
+          </ul>
+        </div>
+
+        <!-- Company -->
+        <div>
+          <h4 class="text-sm font-semibold text-white mb-5">Company</h4>
+          <ul class="space-y-3 text-sm text-white/50">
+            <li><a href="#" class="hover:text-white transition-colors">About</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Contact</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-white/30 text-sm">© 2025 YUMYUMPO. All rights reserved.</p>
+        <p class="text-white/30 text-sm flex items-center gap-1">
+          Made with
+          <svg class="w-3.5 h-3.5 text-warm-orange" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+          for food lovers everywhere.
+        </p>
+      </div>
+
+    </div>
+  </footer>
+
+
+  <!-- ============================================================
+       SCRIPTS
+  ============================================================ -->
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/main.js"></script>
+
+</body>
+</html>
