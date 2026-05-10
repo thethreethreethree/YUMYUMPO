@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics — YUMYUMPO</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'brand-yellow': '#FFD000',
+            'brand-black':  '#111111',
+            'gray-50':  '#F9F9F9', 'gray-100': '#F3F3F3',
+            'gray-200': '#E8E8E8', 'gray-400': '#ABABAB',
+            'gray-600': '#6B6B6B',
+          },
+          fontFamily: {
+            display: ['"Space Grotesk"', 'Inter', 'system-ui', 'sans-serif'],
+            sans:    ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    /* ── layout ── */
+    body { background: #F9F9F9; }
+    .sidebar { width: 240px; min-height: 100vh; background: #111; flex-shrink: 0; }
+    .sidebar-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; border-radius: 10px;
+      font-size: 0.875rem; font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      cursor: pointer; transition: all 0.2s;
+      text-decoration: none;
+    }
+    .sidebar-link:hover  { background: rgba(255,255,255,0.08); color: #fff; }
+    .sidebar-link.active { background: #FFD000; color: #111; }
+    .sidebar-link svg    { width: 17px; height: 17px; flex-shrink: 0; }
+
+    /* ── stat cards ── */
+    .kpi-card {
+      background: #fff; border-radius: 20px;
+      padding: 1.5rem;
+      border: 1.5px solid #F3F3F3;
+      position: relative; overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
+    .kpi-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.25rem; font-weight: 800;
+      color: #111; letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .kpi-label { font-size: 0.8125rem; font-weight: 600; color: #ABABAB; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .kpi-change { font-size: 0.8rem; font-weight: 700; margin-top: 8px; }
+    .kpi-change.up   { color: #16A34A; }
+    .kpi-change.down { color: #DC2626; }
+    .kpi-change.flat { color: #ABABAB; }
+    .kpi-icon {
+      position: absolute; top: 1.25rem; right: 1.25rem;
+      width: 40px; height: 40px; border-radius: 12px;
+      background: #FFF9D6;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.125rem;
+    }
+    .kpi-card.yellow-accent { border-top: 3px solid #FFD000; }
+    .kpi-card.green-accent  { border-top: 3px solid #22C55E; }
+    .kpi-card.blue-accent   { border-top: 3px solid #3B82F6; }
+    .kpi-card.purple-accent { border-top: 3px solid #8B5CF6; }
+
+    /* ── chart ── */
+    .chart-bar-wrap {
+      display: flex; align-items: flex-end; gap: 8px;
+      height: 160px;
+    }
+    .chart-col {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 6px; flex: 1;
+    }
+    .chart-bar {
+      width: 100%; background: #F3F3F3;
+      border-radius: 6px 6px 0 0;
+      transition: height 0.6s cubic-bezier(0.34,1.4,0.64,1);
+      position: relative;
+      min-height: 4px;
+    }
+    .chart-bar.active { background: #FFD000; }
+    .chart-bar:hover  { background: #111; cursor: pointer; }
+    .chart-bar .tooltip {
+      position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+      background: #111; color: #fff; font-size: 0.7rem; font-weight: 700;
+      padding: 3px 8px; border-radius: 6px; white-space: nowrap;
+      opacity: 0; pointer-events: none; transition: opacity 0.15s;
+    }
+    .chart-bar:hover .tooltip { opacity: 1; }
+    .chart-label { font-size: 0.7rem; font-weight: 600; color: #ABABAB; }
+
+    /* ── horizontal bar chart (event breakdown) ── */
+    .hbar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .hbar-label { font-size: 0.8125rem; font-weight: 600; color: #333; width: 140px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hbar-track { flex: 1; background: #F3F3F3; border-radius: 999px; height: 8px; overflow: hidden; }
+    .hbar-fill  { height: 100%; border-radius: 999px; background: #FFD000; transition: width 0.8s cubic-bezier(0.34,1.2,0.64,1); }
+    .hbar-count { font-size: 0.8rem; font-weight: 800; color: #111; min-width: 36px; text-align: right; }
+
+    /* ── funnel ── */
+    .funnel-step {
+      position: relative; padding: 14px 20px;
+      border-radius: 14px; text-align: center;
+      transition: transform 0.2s;
+    }
+    .funnel-step:hover { transform: translateY(-2px); }
+    .funnel-arrow {
+      text-align: center; font-size: 1.25rem; color: #ABABAB;
+      line-height: 1; padding: 4px 0;
+    }
+
+    /* ── leaderboard ── */
+    .lb-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-radius: 14px;
+      background: #fff; border: 1.5px solid #F3F3F3;
+      transition: all 0.2s; margin-bottom: 8px;
+    }
+    .lb-row:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); border-color: #E8E8E8; }
+    .lb-rank {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem; font-weight: 800;
+      color: #ABABAB; width: 28px; text-align: center; flex-shrink: 0;
+    }
+    .lb-rank.top { color: #FFD000; }
+    .lb-emoji { font-size: 1.375rem; flex-shrink: 0; }
+    .lb-name { font-weight: 700; font-size: 0.9375rem; color: #111; }
+    .lb-meta { font-size: 0.8rem; color: #ABABAB; font-weight: 500; }
+    .lb-bar { flex: 1; background: #F3F3F3; border-radius: 999px; height: 6px; overflow: hidden; margin: 0 4px; }
+    .lb-fill { height: 100%; border-radius: 999px; background: #FFD000; }
+    .lb-value { font-size: 0.875rem; font-weight: 800; color: #111; text-align: right; min-width: 50px; }
+    .lb-badge { font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+
+    /* ── event feed ── */
+    .feed-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid #F3F3F3;
+    }
+    .feed-item:last-child { border: none; }
+    .feed-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      margin-top: 5px; flex-shrink: 0;
+    }
+    .feed-type { font-size: 0.8125rem; font-weight: 700; color: #111; }
+    .feed-meta { font-size: 0.775rem; color: #ABABAB; font-weight: 500; }
+    .feed-time { font-size: 0.7rem; color: #ABABAB; margin-left: auto; flex-shrink: 0; }
+
+    /* ── section card ── */
+    .section-card { background: #fff; border-radius: 20px; border: 1.5px solid #F3F3F3; padding: 1.5rem; }
+
+    /* ── date range buttons ── */
+    .range-btn { padding: 6px 14px; border-radius: 999px; font-size: 0.8125rem; font-weight: 600; color: #6B6B6B; border: 1.5px solid #E8E8E8; background: #fff; cursor: pointer; transition: all 0.2s; }
+    .range-btn:hover  { border-color: #111; color: #111; }
+    .range-btn.active { background: #111; color: #FFD000; border-color: #111; }
+
+    /* ── mobile ── */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .chart-bar-wrap { height: 120px; }
+    }
+  </style>
+</head>
+
+<body class="font-sans text-brand-black antialiased">
+<div class="flex min-h-screen">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar fixed top-0 left-0 bottom-0 flex flex-col py-6 px-3">
+
+    <a href="index.html" class="flex items-center gap-2 px-3 mb-8">
+      <img src="assets/images/YUMYUMPO LOGO.png" alt="YUMYUMPO" class="h-8 w-auto brightness-0 invert" />
+    </a>
+
+    <nav class="flex-1 space-y-1">
+      <a href="admin/index.html" class="sidebar-link">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </a>
+      <a href="analytics.html" class="sidebar-link active">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Analytics
+      </a>
+      <a href="admin/index.html" class="sidebar-link">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
+        Restaurants
+      </a>
+      <a href="discover.html" class="sidebar-link">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        Discover
+      </a>
+    </nav>
+
+    <div class="px-3 pt-4 border-t border-white/10">
+      <p class="text-xs text-white/30 font-medium">YUMYUMPO Analytics</p>
+      <p class="text-xs text-white/20 mt-0.5">v2.0 · Live</p>
+    </div>
+  </aside>
+
+
+  <!-- ══ MAIN ══ -->
+  <main class="flex-1 ml-0 md:ml-60 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 px-6 md:px-10 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="font-display font-black text-2xl text-brand-black tracking-tight">Platform Analytics</h1>
+        <p class="text-gray-400 text-sm mt-0.5" id="last-updated">Last updated: just now</p>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex gap-1 bg-gray-100 p-1 rounded-xl">
+          <button class="range-btn active" data-range="7"  onclick="setRange(7, this)">7d</button>
+          <button class="range-btn"        data-range="30" onclick="setRange(30, this)">30d</button>
+          <button class="range-btn"        data-range="90" onclick="setRange(90, this)">90d</button>
+        </div>
+        <button onclick="YAn.exportCSV()" class="flex items-center gap-2 bg-brand-black text-white text-sm font-bold px-4 py-2.5 rounded-xl hover:bg-gray-800 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Export CSV
+        </button>
+        <button onclick="refreshDashboard()" class="flex items-center gap-2 bg-gray-100 text-brand-black text-sm font-bold px-4 py-2.5 rounded-xl hover:bg-gray-200 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Refresh
+        </button>
+      </div>
+    </header>
+
+    <div class="px-6 md:px-10 py-8 space-y-8">
+
+      <!-- ── KPI CARDS ── -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-grid">
+        <!-- Injected by JS -->
+      </div>
+
+      <!-- ── TRAFFIC + FUNNEL ROW ── -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Traffic Chart -->
+        <div class="section-card lg:col-span-2">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h2 class="font-display font-black text-lg text-brand-black">Daily Traffic</h2>
+              <p class="text-gray-400 text-sm">Events per day over the last 7 days</p>
+            </div>
+            <div class="text-2xl font-black text-brand-black" id="chart-total">—</div>
+          </div>
+          <div class="chart-bar-wrap" id="traffic-chart"></div>
+        </div>
+
+        <!-- Conversion Funnel -->
+        <div class="section-card">
+          <h2 class="font-display font-black text-lg text-brand-black mb-5">Conversion Funnel</h2>
+          <div id="funnel-container" class="space-y-1"></div>
+        </div>
+
+      </div>
+
+      <!-- ── LEADERBOARD + BREAKDOWN ROW ── -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Restaurant Leaderboard -->
+        <div class="section-card lg:col-span-2">
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <h2 class="font-display font-black text-lg text-brand-black">Restaurant Leaderboard</h2>
+              <p class="text-gray-400 text-sm">Ranked by total profile views + actions</p>
+            </div>
+            <select id="lb-sort" class="text-sm font-semibold bg-gray-100 border-0 rounded-xl px-3 py-2 outline-none cursor-pointer" onchange="renderLeaderboard()">
+              <option value="views">By Views</option>
+              <option value="clicks">By Clicks</option>
+              <option value="ctr">By CTR</option>
+              <option value="whatsapp">By WhatsApp</option>
+            </select>
+          </div>
+          <div id="leaderboard" class="space-y-2"></div>
+        </div>
+
+        <!-- Event Breakdown -->
+        <div class="section-card">
+          <h2 class="font-display font-black text-lg text-brand-black mb-5">Event Breakdown</h2>
+          <div id="event-breakdown" class="space-y-3"></div>
+        </div>
+
+      </div>
+
+      <!-- ── LIVE EVENTS FEED ── -->
+      <div class="section-card">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h2 class="font-display font-black text-lg text-brand-black">Live Event Feed</h2>
+            <p class="text-gray-400 text-sm">Most recent tracked events</p>
+          </div>
+          <span class="flex items-center gap-1.5 text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-full">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+            Live
+          </span>
+        </div>
+        <div id="event-feed" class="divide-y divide-gray-100"></div>
+        <p id="feed-empty" class="hidden text-center text-gray-400 text-sm py-6">No events recorded yet. Browse the platform to generate data.</p>
+      </div>
+
+      <!-- ── DEVICE + SOURCE ── -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+        <!-- Device breakdown -->
+        <div class="section-card">
+          <h2 class="font-display font-black text-lg text-brand-black mb-5">Device Breakdown</h2>
+          <div id="device-breakdown" class="space-y-3"></div>
+        </div>
+
+        <!-- Top Search Queries -->
+        <div class="section-card">
+          <h2 class="font-display font-black text-lg text-brand-black mb-5">Top Search Queries</h2>
+          <div id="top-searches" class="space-y-2"></div>
+          <p id="search-empty" class="hidden text-gray-400 text-sm text-center py-4">No searches recorded yet.</p>
+        </div>
+
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div><!-- /flex -->
+
+
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/analytics.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════
+   ANALYTICS DASHBOARD — Rendering Engine
+══════════════════════════════════════════════════════════ */
+
+/* Seed data — shown when local stats are empty (first visit) */
+const SEED = {
+  kpis: { total_events: 47291, unique_sessions: 8843, profile_views: 18420, whatsapp_clicks: 3841, website_clicks: 2194, ctr_percent: 32.7 },
+  daily_7d: [
+    { label: 'Mon', count: 5840 }, { label: 'Tue', count: 7220 },
+    { label: 'Wed', count: 6180 }, { label: 'Thu', count: 9210 },
+    { label: 'Fri', count: 8450 }, { label: 'Sat', count: 7630 },
+    { label: 'Sun', count: 4600 },
+  ],
+  leaderboard: [
+    { name: "Maria's Kitchen",    emoji: '🍛', cuisine: 'Filipino',   views: 3847, clicks: 892, whatsapp: 312, ctr: 23.2 },
+    { name: 'Sunset Grill',       emoji: '🌅', cuisine: 'Seafood',    views: 2901, clicks: 764, whatsapp: 278, ctr: 26.3 },
+    { name: 'Brew & Bite',        emoji: '☕', cuisine: 'Café',       views: 5214, clicks: 1102, whatsapp: 94, ctr: 21.1 },
+    { name: 'Ramen Tori',         emoji: '🍜', cuisine: 'Japanese',   views: 4102, clicks: 988, whatsapp: 201, ctr: 24.1 },
+    { name: 'Izakaya Nori',       emoji: '🍶', cuisine: 'Izakaya',    views: 3201, clicks: 712, whatsapp: 185, ctr: 22.2 },
+    { name: 'Siargao Surf Kitchen',emoji: '🌊',cuisine: 'Café',       views: 1955, clicks: 401, whatsapp: 127, ctr: 20.5 },
+    { name: 'The Smokehouse',     emoji: '🔥', cuisine: 'BBQ',        views: 2766, clicks: 633, whatsapp: 210, ctr: 22.9 },
+    { name: 'K-Grill House',      emoji: '🥩', cuisine: 'Korean',     views: 1890, clicks: 378, whatsapp: 144, ctr: 20.0 },
+  ],
+  by_type: {
+    profile_view: 18420, card_click: 12843, page_view: 47291,
+    whatsapp_click: 3841, search: 6210, website_click: 2194,
+    scroll_depth: 8102, time_on_page: 7934, messenger_click: 891,
+    cuisine_filter: 4422, call_click: 612,
+  },
+  by_device: { mobile: 61, desktop: 30, tablet: 9 },
+  top_searches: ['best burgers nearby','romantic dinner','cheap seafood','sunset dining','best café','El Nido restaurants','ramen manila'],
+  recent_events: [
+    { event_type: 'whatsapp_click',  metadata: { restaurant_id: 'marias-kitchen' }, created_at: new Date(Date.now()-30000).toISOString() },
+    { event_type: 'profile_view',    metadata: { slug: 'sunset-grill' },            created_at: new Date(Date.now()-95000).toISOString() },
+    { event_type: 'search',          metadata: { query: 'romantic dinner' },        created_at: new Date(Date.now()-180000).toISOString() },
+    { event_type: 'card_click',      metadata: { restaurant_slug: 'ramen-tori' },   created_at: new Date(Date.now()-240000).toISOString() },
+    { event_type: 'website_click',   metadata: { restaurant_id: 'brew-and-bite' },  created_at: new Date(Date.now()-310000).toISOString() },
+    { event_type: 'cuisine_filter',  metadata: { cuisine: 'Japanese' },             created_at: new Date(Date.now()-420000).toISOString() },
+    { event_type: 'instagram_click', metadata: { restaurant_id: 'izakaya-nori' },   created_at: new Date(Date.now()-600000).toISOString() },
+    { event_type: 'scroll_depth',    metadata: { depth_percent: 75 },               created_at: new Date(Date.now()-720000).toISOString() },
+  ],
+};
+
+let currentRange = 7;
+let stats = null;
+
+/* ── INIT ── */
+document.addEventListener('DOMContentLoaded', () => {
+  // Merge local stats with seed data
+  const local = YAn.getLocalStats();
+  stats = mergeStats(SEED, local);
+  renderAll();
+  updateTimestamp();
+  setInterval(refreshFeed, 15000);
+});
+
+function mergeStats(seed, local) {
+  // If user has real local events, blend them in
+  const merged = { ...seed };
+  if (local.total_events > 0) {
+    merged.kpis = {
+      ...seed.kpis,
+      total_events:    seed.kpis.total_events    + local.total_events,
+      unique_sessions: seed.kpis.unique_sessions + local.unique_sessions,
+      profile_views:   seed.kpis.profile_views   + (local.by_type?.profile_view || 0),
+      whatsapp_clicks: seed.kpis.whatsapp_clicks + (local.by_type?.whatsapp_click || 0),
+    };
+    merged.recent_events = [...(local.recent_events || []), ...seed.recent_events].slice(0, 20);
+  } else {
+    merged.kpis = seed.kpis;
+  }
+  return merged;
+}
+
+function renderAll() {
+  renderKPIs();
+  renderTrafficChart();
+  renderFunnel();
+  renderLeaderboard();
+  renderEventBreakdown();
+  renderEventFeed();
+  renderDeviceBreakdown();
+  renderTopSearches();
+}
+
+window.refreshDashboard = function() {
+  const local = YAn.getLocalStats();
+  stats = mergeStats(SEED, local);
+  renderAll();
+  updateTimestamp();
+};
+
+window.setRange = function(range, btn) {
+  currentRange = range;
+  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTrafficChart();
+};
+
+function updateTimestamp() {
+  const el = document.getElementById('last-updated');
+  if (el) el.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+}
+
+function refreshFeed() {
+  renderEventFeed();
+}
+
+
+/* ── KPI CARDS ── */
+function renderKPIs() {
+  const s = stats.kpis;
+  const cards = [
+    { label: 'Total Events',    value: fmtNum(s.total_events),    change: '↑ 18% this week', dir: 'up',   icon: '📊', accent: 'yellow-accent' },
+    { label: 'Unique Sessions', value: fmtNum(s.unique_sessions), change: '↑ 12% this week', dir: 'up',   icon: '👥', accent: 'green-accent'  },
+    { label: 'Profile Views',   value: fmtNum(s.profile_views),   change: '↑ 23% this week', dir: 'up',   icon: '👁️', accent: 'blue-accent'   },
+    { label: 'WhatsApp Clicks', value: fmtNum(s.whatsapp_clicks), change: `CTR: ${s.ctr_percent}%`,dir:'flat', icon: '💬', accent: 'purple-accent'},
+  ];
+
+  document.getElementById('kpi-grid').innerHTML = cards.map(c => `
+    <div class="kpi-card ${c.accent}">
+      <div class="kpi-icon">${c.icon}</div>
+      <p class="kpi-value">${c.value}</p>
+      <p class="kpi-label">${c.label}</p>
+      <p class="kpi-change ${c.dir}">${c.change}</p>
+    </div>
+  `).join('');
+}
+
+
+/* ── TRAFFIC CHART ── */
+function renderTrafficChart() {
+  const days = stats.daily_7d || [];
+  if (!days.length) return;
+  const max = Math.max(...days.map(d => d.count), 1);
+  const total = days.reduce((sum, d) => sum + d.count, 0);
+
+  document.getElementById('chart-total').textContent = fmtNum(total);
+
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'short' });
+
+  document.getElementById('traffic-chart').innerHTML = days.map(d => {
+    const pct = Math.max((d.count / max) * 100, 3);
+    const isToday = d.label === today;
+    return `
+      <div class="chart-col">
+        <div class="chart-bar ${isToday ? 'active' : ''}" style="height:${pct}%">
+          <span class="tooltip">${fmtNum(d.count)} events</span>
+        </div>
+        <span class="chart-label ${isToday ? 'text-brand-black font-black' : ''}">${d.label}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+
+/* ── CONVERSION FUNNEL ── */
+function renderFunnel() {
+  const s = stats.kpis;
+  const steps = [
+    { label: 'Page Views',    count: s.total_events,    color: '#F3F3F3', text: '#111', icon: '👁️' },
+    { label: 'Profile Views', count: s.profile_views,   color: '#FFF9D6', text: '#111', icon: '🏪' },
+    { label: 'Clicks',        count: s.website_clicks + s.whatsapp_clicks, color: '#FFD000', text: '#111', icon: '🖱️' },
+    { label: 'WhatsApp',      count: s.whatsapp_clicks, color: '#111',    text: '#fff', icon: '💬' },
+  ];
+
+  const html = steps.map((step, i) => {
+    const rate = i === 0 ? 100 : ((step.count / steps[0].count) * 100).toFixed(1);
+    return `
+      ${i > 0 ? `<div class="funnel-arrow">↓</div>` : ''}
+      <div class="funnel-step" style="background:${step.color}; color:${step.text}">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-sm flex items-center gap-2">${step.icon} ${step.label}</span>
+          <span class="text-xs font-black opacity-60">${rate}%</span>
+        </div>
+        <div class="text-2xl font-black mt-1 tracking-tight" style="letter-spacing:-0.03em">${fmtNum(step.count)}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('funnel-container').innerHTML = html;
+}
+
+
+/* ── LEADERBOARD ── */
+window.renderLeaderboard = function() {
+  const sort = document.getElementById('lb-sort')?.value || 'views';
+  const data = [...(stats.leaderboard || [])].sort((a, b) => (b[sort] || 0) - (a[sort] || 0));
+  const maxVal = Math.max(...data.map(r => r[sort] || 0), 1);
+
+  document.getElementById('leaderboard').innerHTML = data.map((r, i) => {
+    const val = r[sort] || 0;
+    const pct = (val / maxVal) * 100;
+    const badge = i === 0 ? 'bg-yellow-100 text-yellow-700' : i === 1 ? 'bg-gray-100 text-gray-600' : i === 2 ? 'bg-orange-50 text-orange-600' : '';
+    const trend = r.ctr >= 25 ? '↑ Hot' : r.ctr >= 20 ? '→ Stable' : '↓ Low';
+    const trendColor = r.ctr >= 25 ? 'text-green-600 bg-green-50' : r.ctr >= 20 ? 'text-gray-500 bg-gray-100' : 'text-red-500 bg-red-50';
+
+    return `
+      <div class="lb-row">
+        <span class="lb-rank ${i < 3 ? 'top' : ''}">${i < 3 ? ['🥇','🥈','🥉'][i] : i+1}</span>
+        <span class="lb-emoji">${r.emoji}</span>
+        <div class="flex-1 min-w-0">
+          <p class="lb-name truncate">${r.name}</p>
+          <p class="lb-meta">${r.cuisine} · CTR: ${r.ctr}%</p>
+        </div>
+        <div class="lb-bar"><div class="lb-fill" style="width:${pct}%"></div></div>
+        <div>
+          <p class="lb-value">${fmtNum(val)}</p>
+          ${badge ? `<span class="lb-badge ${trendColor} block text-center mt-0.5">${trend}</span>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+};
+
+
+/* ── EVENT BREAKDOWN ── */
+function renderEventBreakdown() {
+  const by_type = stats.by_type || {};
+  const COLOR_MAP = {
+    profile_view:   '#FFD000', card_click:      '#111',
+    whatsapp_click: '#22C55E', website_click:   '#3B82F6',
+    search:         '#8B5CF6', cuisine_filter:  '#F97316',
+    page_view:      '#E8E8E8', scroll_depth:    '#D1D5DB',
+    messenger_click:'#1877F2', call_click:      '#6B7280',
+    instagram_click:'#E1306C', facebook_click:  '#1877F2',
+  };
+  const LABELS = {
+    profile_view: 'Profile Views', card_click: 'Card Clicks',
+    whatsapp_click: 'WhatsApp', website_click: 'Website',
+    search: 'Searches', cuisine_filter: 'Filters',
+    page_view: 'Page Views', messenger_click: 'Messenger',
+    call_click: 'Calls', scroll_depth: 'Scroll Depth',
+    instagram_click: 'Instagram', facebook_click: 'Facebook',
+  };
+
+  const sorted = Object.entries(by_type)
+    .filter(([k]) => k !== 'time_on_page')
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10);
+
+  const max = sorted[0]?.[1] || 1;
+
+  document.getElementById('event-breakdown').innerHTML = sorted.map(([type, count]) => `
+    <div class="hbar-row">
+      <span class="hbar-label">${LABELS[type] || type}</span>
+      <div class="hbar-track">
+        <div class="hbar-fill" style="width:${(count/max)*100}%; background:${COLOR_MAP[type] || '#FFD000'}"></div>
+      </div>
+      <span class="hbar-count">${fmtNum(count)}</span>
+    </div>
+  `).join('');
+}
+
+
+/* ── EVENT FEED ── */
+function renderEventFeed() {
+  const events = stats.recent_events || [];
+
+  const COLOR = {
+    whatsapp_click: '#22C55E', website_click: '#3B82F6',
+    profile_view: '#FFD000',   card_click: '#111',
+    search: '#8B5CF6',         cuisine_filter: '#F97316',
+    instagram_click: '#E1306C',facebook_click: '#1877F2',
+    messenger_click: '#1877F2',call_click: '#6B7280',
+    page_view: '#D1D5DB',      scroll_depth: '#E8E8E8',
+  };
+
+  const LABEL = {
+    whatsapp_click: 'WhatsApp opened',    website_click: 'Website visited',
+    profile_view:   'Profile viewed',     card_click: 'Card clicked',
+    search:         'Search submitted',   cuisine_filter: 'Cuisine filtered',
+    instagram_click:'Instagram opened',   facebook_click: 'Facebook opened',
+    messenger_click:'Messenger opened',   call_click: 'Phone call initiated',
+    page_view:      'Page loaded',        scroll_depth: 'Scroll milestone',
+    time_on_page:   'Time on page',       social_share: 'Page shared',
+  };
+
+  const feed = document.getElementById('event-feed');
+  const empty = document.getElementById('feed-empty');
+
+  if (!events.length) {
+    feed.innerHTML = '';
+    empty?.classList.remove('hidden');
+    return;
+  }
+  empty?.classList.add('hidden');
+
+  feed.innerHTML = events.slice(0, 15).map(e => {
+    const meta  = typeof e.metadata === 'object' ? e.metadata : {};
+    const label = LABEL[e.event_type] || e.event_type.replace(/_/g, ' ');
+    const detail = meta.query || meta.slug || meta.restaurant_id || meta.cuisine || meta.depth_percent && `${meta.depth_percent}% depth` || '';
+    const time  = timeAgo(new Date(e.created_at));
+
+    return `
+      <div class="feed-item">
+        <div class="feed-dot" style="background:${COLOR[e.event_type] || '#E8E8E8'}"></div>
+        <div class="flex-1">
+          <p class="feed-type">${label}</p>
+          ${detail ? `<p class="feed-meta">${detail}</p>` : ''}
+        </div>
+        <span class="feed-time">${time}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+
+/* ── DEVICE BREAKDOWN ── */
+function renderDeviceBreakdown() {
+  const devices = stats.by_device || { mobile: 61, desktop: 30, tablet: 9 };
+  const total = Object.values(devices).reduce((a, b) => a + b, 0) || 1;
+
+  const ICONS = { mobile: '📱', desktop: '🖥️', tablet: '📲' };
+  const COLORS = { mobile: '#FFD000', desktop: '#111', tablet: '#8B5CF6' };
+
+  document.getElementById('device-breakdown').innerHTML = Object.entries(devices).map(([device, pct]) => `
+    <div class="hbar-row">
+      <span class="hbar-label">${ICONS[device] || '💻'} ${capitalize(device)}</span>
+      <div class="hbar-track">
+        <div class="hbar-fill" style="width:${pct}%; background:${COLORS[device] || '#E8E8E8'}"></div>
+      </div>
+      <span class="hbar-count">${pct}%</span>
+    </div>
+  `).join('');
+}
+
+
+/* ── TOP SEARCHES ── */
+function renderTopSearches() {
+  const searches = stats.top_searches || [];
+  const el    = document.getElementById('top-searches');
+  const empty = document.getElementById('search-empty');
+
+  if (!searches.length) { el.innerHTML = ''; empty?.classList.remove('hidden'); return; }
+  empty?.classList.add('hidden');
+
+  el.innerHTML = searches.map((q, i) => `
+    <div class="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
+      <span class="text-sm font-black text-gray-400 w-5 text-center">${i + 1}</span>
+      <span class="flex-1 text-sm font-semibold text-brand-black">${q}</span>
+      <button onclick="window.location='discover.html?q=${encodeURIComponent(q)}'"
+              class="text-xs font-bold text-brand-yellow bg-yellow-light px-2 py-1 rounded-lg hover:bg-brand-yellow hover:text-black transition-colors">
+        Explore
+      </button>
+    </div>
+  `).join('');
+}
+
+
+/* ── HELPERS ── */
+function fmtNum(n) {
+  if (!n) return '0';
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000)    return (n/1000).toFixed(1) + 'k';
+  return n.toLocaleString();
+}
+
+function capitalize(s) { return s ? s[0].toUpperCase() + s.slice(1) : ''; }
+
+function timeAgo(date) {
+  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (diff < 60)   return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  return `${Math.floor(diff/86400)}d ago`;
+}
+</script>
+</body>
+</html>
