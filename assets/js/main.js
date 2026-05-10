@@ -253,31 +253,48 @@ function renderTourismRestaurants() {
 
 /* ── CARD TEMPLATES ── */
 function featuredCard(r) {
-  const stars = renderStars(r.rating);
-  const tagsHTML = r.tags.map((t, i) =>
-    `<span class="card-tag ${i === 0 ? 'orange' : ''}">${t}</span>`
+  const tagsHTML = (r.tags || []).map((t, i) =>
+    `<span class="card-tag ${i === 0 ? 'yellow' : ''}">${tagEmoji(t)}${t}</span>`
   ).join('');
 
   return `
-    <article class="restaurant-card" onclick="goToRestaurant('${r.slug}')" role="button" tabindex="0">
+    <article
+      class="restaurant-card"
+      onclick="goToRestaurant('${r.slug}')"
+      role="button" tabindex="0"
+      aria-label="View ${r.name}"
+    >
       <div class="card-image-wrap">
-        <img src="${r.image}" alt="${r.name}" loading="lazy" />
-        <div class="card-badge">${r.badge}</div>
-        <div class="card-logo">
-          <span class="card-logo-placeholder">${r.logo_emoji}</span>
-        </div>
+        <img
+          src="${r.image}"
+          alt="${r.name}"
+          loading="lazy"
+          onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&auto=format&fit=crop&q=75'"
+        />
+        <span class="card-badge white">${r.badge}</span>
+        <button
+          class="card-save-btn"
+          onclick="event.stopPropagation(); toggleHomeSave('${r.slug}', this)"
+          aria-label="Save ${r.name}"
+          title="Save to favourites"
+        >
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+        </button>
+        <div class="card-logo" aria-hidden="true">${r.logo_emoji}</div>
       </div>
       <div class="card-body">
         <div class="card-rating">
-          ${stars}
-          <span>${r.rating}</span>
-          <span class="review-count">(${r.reviews.toLocaleString()} reviews)</span>
+          <span class="stars">★★★★★</span>
+          <span class="score">${r.rating}</span>
+          <span class="count">(${r.reviews.toLocaleString()} reviews)</span>
         </div>
         <h3 class="card-name">${r.name}</h3>
         <p class="card-cuisine">${r.cuisine}</p>
         <p class="card-desc">${r.description}</p>
         <div class="card-location">
-          <svg class="w-3.5 h-3.5 text-warm-orange flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
           </svg>
           ${r.location}
@@ -290,17 +307,28 @@ function featuredCard(r) {
 
 function trendingCard(r) {
   return `
-    <article class="trending-card" onclick="goToRestaurant('${r.slug}')" role="button" tabindex="0">
+    <article
+      class="trending-card"
+      onclick="goToRestaurant('${r.slug}')"
+      role="button" tabindex="0"
+      aria-label="View ${r.name}"
+    >
       <div class="trending-card-image">
-        <img src="${r.image}" alt="${r.name}" loading="lazy" />
+        <img
+          src="${r.image}"
+          alt="${r.name}"
+          loading="lazy"
+          onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&auto=format&fit=crop&q=75'"
+        />
       </div>
       <div class="trending-card-body">
         <p class="trending-rank">${r.rank}</p>
         <h3 class="trending-name">${r.name}</h3>
         <p class="trending-meta">${r.cuisine} · ${r.location}</p>
-        <div class="flex items-center gap-1 mt-2">
-          <span class="text-yellow-400 text-xs">★</span>
-          <span class="text-xs font-semibold text-charcoal">${r.rating}</span>
+        <div class="flex items-center gap-1.5 mt-2">
+          <span class="text-yellow-400 text-sm">★</span>
+          <span class="text-xs font-black text-brand-black">${r.rating}</span>
+          <span class="text-xs text-gray-400">${r.location}</span>
         </div>
       </div>
     </article>
@@ -309,8 +337,18 @@ function trendingCard(r) {
 
 function tourismCard(r) {
   return `
-    <article class="tourism-card" onclick="goToRestaurant('${r.slug}')" role="button" tabindex="0">
-      <img src="${r.image}" alt="${r.name}" loading="lazy" />
+    <article
+      class="tourism-card"
+      onclick="goToRestaurant('${r.slug}')"
+      role="button" tabindex="0"
+      aria-label="View ${r.name}"
+    >
+      <img
+        src="${r.image}"
+        alt="${r.name}"
+        loading="lazy"
+        onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&auto=format&fit=crop&q=75'"
+      />
       <div class="tourism-card-overlay"></div>
       <div class="tourism-card-content">
         <span class="tourism-card-tag">${r.tag}</span>
@@ -325,27 +363,47 @@ function skeletonCard(type = 'featured') {
   const isSmall = type === 'trending';
   return `
     <div class="skeleton-card">
-      <div class="skeleton-image skeleton" style="${isSmall ? 'aspect-ratio:3/2' : ''}"></div>
+      <div class="skeleton-image skeleton" style="${isSmall ? 'aspect-ratio:3/2' : 'aspect-ratio:4/3'}"></div>
       <div class="skeleton-body">
-        <div class="skeleton skeleton-line" style="width:60%"></div>
-        <div class="skeleton skeleton-line" style="width:80%; height:20px"></div>
-        <div class="skeleton skeleton-line" style="width:45%"></div>
-        <div class="skeleton skeleton-line" style="width:90%"></div>
+        <div class="skeleton skeleton-line" style="width:35%; height:10px"></div>
+        <div class="skeleton skeleton-line" style="width:75%; height:18px; margin-top:6px"></div>
+        <div class="skeleton skeleton-line" style="width:50%; height:10px"></div>
+        <div class="skeleton skeleton-line" style="width:90%; height:10px"></div>
+        <div class="skeleton skeleton-line" style="width:65%; height:10px"></div>
       </div>
     </div>
   `;
 }
 
 
-/* ── STAR RENDERER ── */
-function renderStars(rating) {
-  const full  = Math.floor(rating);
-  const half  = rating % 1 >= 0.5 ? 1 : 0;
-  let html = '';
-  for (let i = 0; i < full; i++) html += '<span class="star">★</span>';
-  if (half) html += '<span class="star" style="opacity:0.5">★</span>';
-  return html;
+/* ── TAG EMOJI HELPER (shared with discover.js context on homepage) ── */
+function tagEmoji(tag) {
+  const map = {
+    'Budget-Friendly': '💸 ', 'Local Favorite': '❤️ ', 'Romantic': '🕯️ ',
+    'Family-Friendly': '👨‍👩‍👧 ', 'Late Night': '🌙 ', 'Beach Dining': '🏖️ ',
+    'Scenic View': '🌅 ', 'Hidden Gem': '💎 ', 'Backpacker-Approved': '🎒 ',
+    'Instagrammable': '📸 ', 'WiFi-Friendly': '📶 ', 'Date Spot': '💑 ',
+    'Must Try': '🔥 ', 'Healthy': '🥗 ', 'Group-Friendly': '👥 ',
+  };
+  return map[tag] || '';
 }
+
+
+/* ── SAVE TOGGLE (homepage cards) ── */
+window.toggleHomeSave = function(slug, btn) {
+  const saved = JSON.parse(localStorage.getItem('yumyumpo_saved') || '[]');
+  const idx   = saved.indexOf(slug);
+  if (idx === -1) {
+    saved.push(slug);
+    btn.style.background = 'var(--yellow, #FFD000)';
+    btn.title = 'Saved!';
+  } else {
+    saved.splice(idx, 1);
+    btn.style.background = '';
+    btn.title = 'Save to favourites';
+  }
+  localStorage.setItem('yumyumpo_saved', JSON.stringify(saved));
+};
 
 
 /* ── NAVIGATION ── */
@@ -382,12 +440,8 @@ window.fillAiSearch = function (text) {
 
 window.filterByCuisine = function (cuisine) {
   trackEvent('cuisine_filter', { cuisine });
-  // Toggle active state
-  document.querySelectorAll('.cuisine-pill').forEach(el => {
-    el.classList.toggle('active', el.textContent.trim() === cuisine);
-  });
-  // In production: filter restaurant grid via Supabase query
-  console.log(`Filtering by: ${cuisine}`);
+  // Navigate to discover page with pre-applied cuisine filter
+  window.location.href = `discover.html?cuisine=${encodeURIComponent(cuisine)}`;
 };
 
 // Rotate placeholder text in hero search
@@ -465,18 +519,18 @@ function initStatsCounter() {
 function animateCount(el, target) {
   const duration = 1800;
   const startTime = performance.now();
-  const suffix = el.nextElementSibling?.textContent?.includes('%') ? '' : '';
+  // Read suffix directly from the element's original text (set in HTML as e.g. "0+" or "0%")
+  const originalText = el.textContent || '';
+  const suffix = originalText.includes('%') ? '%' : '+';
 
   const tick = (now) => {
     const elapsed  = now - startTime;
     const progress = Math.min(elapsed / duration, 1);
-    const eased    = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+    const eased    = 1 - Math.pow(1 - progress, 3);
     const value    = Math.floor(eased * target);
-
-    el.textContent = value.toLocaleString() + (el.nextElementSibling?.textContent?.includes('%') ? '%' : '+');
-
+    el.textContent = value.toLocaleString() + suffix;
     if (progress < 1) requestAnimationFrame(tick);
-    else el.textContent = target.toLocaleString() + (target < 100 ? '%' : '+');
+    else el.textContent = target.toLocaleString() + suffix;
   };
 
   requestAnimationFrame(tick);
