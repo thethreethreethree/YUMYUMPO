@@ -120,31 +120,31 @@ function renderHeader(r) {
   if (!container) return;
 
   const stars = renderStars(r.google_rating || 0);
-  const tagsHTML = (r.tags || []).slice(0, 4).map(t =>
-    `<span class="inline-block bg-stone-pale text-stone-mid text-xs font-medium px-3 py-1 rounded-full">${t}</span>`
+  const tagsHTML = (r.tags || []).slice(0, 5).map((t, i) =>
+    `<span class="r-tag ${i === 0 ? 'yellow' : 'gray'}">${t}</span>`
   ).join('');
 
   container.innerHTML = `
     <div class="flex items-start gap-4 mb-6">
-      <div class="w-16 h-16 rounded-2xl bg-warm-beige border-2 border-white shadow-md flex items-center justify-center text-3xl shrink-0">
+      <div class="w-16 h-16 rounded-2xl bg-yellow-light border-2 border-white shadow-lg flex items-center justify-center text-3xl shrink-0">
         🍛
       </div>
       <div class="flex-1 min-w-0">
-        <p class="text-xs font-semibold text-warm-orange uppercase tracking-wider mb-1">${r.cuisine_type || 'Restaurant'}</p>
-        <h1 class="font-display text-3xl sm:text-4xl font-bold text-charcoal leading-tight">${r.name}</h1>
-        ${r.tagline ? `<p class="text-stone-mid mt-1">${r.tagline}</p>` : ''}
+        <p class="text-xs font-black text-brand-yellow uppercase tracking-widest mb-1" style="color:#B8960A">${r.cuisine_type || 'Restaurant'}</p>
+        <h1 class="font-display text-3xl sm:text-4xl font-black text-brand-black leading-tight tracking-tight">${r.name}</h1>
+        ${r.tagline ? `<p class="text-gray-400 mt-1 font-medium">${r.tagline}</p>` : ''}
       </div>
     </div>
 
-    <div class="flex flex-wrap items-center gap-4 mb-6">
-      <div class="flex items-center gap-2">
-        <div class="flex text-yellow-400 text-lg">${stars}</div>
-        <span class="font-bold text-charcoal">${r.google_rating}</span>
-        <span class="text-stone-mid text-sm">(${(r.review_count || 0).toLocaleString()} Google Reviews)</span>
+    <div class="flex flex-wrap items-center gap-4 mb-5">
+      <div class="flex items-center gap-2 bg-yellow-light px-3 py-1.5 rounded-full">
+        <span class="text-yellow-500 text-base leading-none">★</span>
+        <span class="font-black text-brand-black text-sm">${r.google_rating}</span>
+        <span class="text-gray-400 text-sm">(${(r.review_count || 0).toLocaleString()} reviews)</span>
       </div>
       ${r.location ? `
-      <div class="flex items-center gap-1.5 text-sm text-stone-mid">
-        <svg class="w-4 h-4 text-warm-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="flex items-center gap-1.5 text-sm text-gray-400 font-medium">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
         </svg>
         ${r.location}
@@ -152,6 +152,9 @@ function renderHeader(r) {
     </div>
 
     <div class="flex flex-wrap gap-2">${tagsHTML}</div>
+
+    <!-- Divider -->
+    <div class="mt-6 pt-6 border-t border-gray-100"></div>
   `;
 }
 
@@ -177,9 +180,11 @@ function renderHours(r) {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
   grid.innerHTML = r.hours.map(h => `
-    <div class="flex items-center justify-between bg-white rounded-xl px-4 py-3 border ${h.day === today ? 'border-warm-orange/40 bg-orange-50' : 'border-stone-light/60'}">
-      <span class="text-sm font-semibold ${h.day === today ? 'text-warm-orange' : 'text-charcoal'}">${h.day}${h.day === today ? ' <span class="text-xs font-normal">(Today)</span>' : ''}</span>
-      <span class="text-sm ${h.closed ? 'text-red-400' : 'text-stone-mid'}">${h.closed ? 'Closed' : `${h.open} – ${h.close}`}</span>
+    <div class="hours-row ${h.day === today ? 'today' : ''}">
+      <span class="text-sm font-bold ${h.day === today ? 'text-brand-black' : 'text-gray-800'}">
+        ${h.day}${h.day === today ? ' <span class="text-xs font-semibold text-yellow-600 ml-1">(Today)</span>' : ''}
+      </span>
+      <span class="text-sm font-semibold ${h.closed ? 'text-red-400' : 'text-gray-400'}">${h.closed ? 'Closed' : `${h.open} – ${h.close}`}</span>
     </div>
   `).join('');
 }
@@ -195,8 +200,11 @@ function renderMenu(r) {
 
   container.innerHTML = r.menu_categories.map(cat => `
     <div>
-      <h3 class="font-display text-xl font-bold text-charcoal mb-5">${cat.name}</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="flex items-center gap-3 mb-4">
+        <h3 class="r-section-title text-lg">${cat.name}</h3>
+        <div class="flex-1 h-px bg-gray-100"></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         ${cat.items.map(item => menuItemCard(item)).join('')}
       </div>
     </div>
@@ -205,23 +213,23 @@ function renderMenu(r) {
 
 function menuItemCard(item) {
   const tagsHTML = (item.tags || []).map(t =>
-    `<span class="text-xs font-semibold text-warm-orange bg-orange-50 px-2.5 py-0.5 rounded-full">${t}</span>`
+    `<span class="r-tag yellow text-xs">${t}</span>`
   ).join('');
 
   return `
-    <div class="menu-item-card flex gap-3 p-3">
-      <div class="w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-stone-pale">
+    <div class="menu-item-card">
+      <div class="w-24 h-auto shrink-0 bg-gray-100" style="min-height:96px">
         ${item.image
-          ? `<img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover" loading="lazy" />`
-          : `<div class="w-full h-full flex items-center justify-center text-3xl">🍽️</div>`
+          ? `<img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover" style="min-height:96px" loading="lazy" />`
+          : `<div class="w-full h-24 flex items-center justify-center text-3xl">🍽️</div>`
         }
       </div>
-      <div class="flex-1 min-w-0">
+      <div class="flex-1 min-w-0 p-3">
         <div class="flex items-start justify-between gap-2 mb-1">
-          <h4 class="font-semibold text-charcoal text-sm leading-tight">${item.name}</h4>
-          <span class="font-bold text-warm-orange text-sm whitespace-nowrap">${item.price}</span>
+          <h4 class="font-bold text-brand-black text-sm leading-tight">${item.name}</h4>
+          <span class="font-black text-brand-black text-sm whitespace-nowrap" style="color:#8A6900">${item.price}</span>
         </div>
-        <p class="text-stone-mid text-xs leading-relaxed mb-2 line-clamp-2">${item.description || ''}</p>
+        <p class="text-gray-400 text-xs leading-relaxed mb-2 line-clamp-2">${item.description || ''}</p>
         <div class="flex flex-wrap gap-1">${tagsHTML}</div>
       </div>
     </div>
@@ -245,7 +253,7 @@ function renderMap(r) {
   }
 
   if (r.address && addr) {
-    addr.querySelector('span').textContent = r.address;
+    addr.textContent = r.address;
   }
 }
 
@@ -258,17 +266,17 @@ function renderActionCard(r) {
 
   const actions = [];
 
-  if (r.website_url) {
-    actions.push({ label: 'Visit Website', href: r.website_url, icon: webIcon(), color: 'bg-charcoal hover:bg-stone-800 text-white', track: 'website_click' });
-  }
   if (r.whatsapp_url) {
-    actions.push({ label: 'Order via WhatsApp', href: r.whatsapp_url, icon: waIcon(), color: 'bg-green-500 hover:bg-green-600 text-white', track: 'whatsapp_click' });
+    actions.push({ label: 'Order via WhatsApp', href: r.whatsapp_url, icon: waIcon(), cls: 'green', track: 'whatsapp_click' });
+  }
+  if (r.website_url) {
+    actions.push({ label: 'Visit Website', href: r.website_url, icon: webIcon(), cls: 'yellow', track: 'website_click' });
   }
   if (r.messenger_url) {
-    actions.push({ label: 'Message on Messenger', href: r.messenger_url, icon: messengerIcon(), color: 'bg-blue-500 hover:bg-blue-600 text-white', track: 'messenger_click' });
+    actions.push({ label: 'Open Messenger', href: r.messenger_url, icon: messengerIcon(), cls: 'black', track: 'messenger_click' });
   }
   if (r.phone) {
-    actions.push({ label: `Call: ${r.phone}`, href: `tel:${r.phone}`, icon: phoneIcon(), color: 'bg-stone-pale hover:bg-stone-light text-charcoal border border-stone-light', track: 'call_click' });
+    actions.push({ label: `Call: ${r.phone}`, href: `tel:${r.phone}`, icon: phoneIcon(), cls: 'outline', track: 'call_click' });
   }
 
   if (!actions.length) return;
@@ -276,7 +284,7 @@ function renderActionCard(r) {
   buttons.innerHTML = actions.map(a => `
     <a href="${a.href}" target="_blank" rel="noopener noreferrer"
        onclick="trackAction('${a.track}', '${r.id}')"
-       class="flex items-center gap-3 ${a.color} font-semibold text-sm px-5 py-3.5 rounded-xl w-full transition-colors">
+       class="action-btn ${a.cls}">
       ${a.icon}
       ${a.label}
     </a>
@@ -303,11 +311,11 @@ function renderInfoCard(r) {
   if (!rows.length) return;
   card.classList.remove('hidden');
   list.innerHTML = rows.map(row => `
-    <div class="flex items-start gap-3">
-      <span class="text-base mt-0.5">${row.icon}</span>
+    <div class="info-row">
+      <div class="info-icon">${row.icon}</div>
       <div>
-        <p class="text-xs text-stone-mid font-medium">${row.label}</p>
-        <p class="text-sm text-charcoal font-semibold">${row.value}</p>
+        <p class="text-xs text-gray-400 font-medium mb-0.5">${row.label}</p>
+        <p class="text-sm text-brand-black font-bold">${row.value}</p>
       </div>
     </div>
   `).join('');
@@ -328,8 +336,8 @@ function renderSocialCard(r) {
   card.classList.remove('hidden');
   links.innerHTML = socials.map(s => `
     <a href="${s.href}" target="_blank" rel="noopener noreferrer"
-       class="flex items-center gap-2 bg-stone-pale hover:bg-stone-light text-charcoal text-sm font-medium px-4 py-2.5 rounded-xl transition-colors">
-      <span>${s.icon}</span>${s.label}
+       class="action-btn outline flex-1 justify-center text-sm py-2.5 px-4" style="width:auto">
+      <span class="text-base">${s.icon}</span>${s.label}
     </a>
   `).join('');
 }
@@ -337,9 +345,9 @@ function renderSocialCard(r) {
 
 /* ── MOBILE ACTION BAR ── */
 function renderMobileBar(r) {
-  const wa      = document.getElementById('mobile-whatsapp');
-  const call    = document.getElementById('mobile-call');
-  const website = document.getElementById('mobile-website');
+  const wa      = document.getElementById('m-whatsapp');
+  const call    = document.getElementById('m-call');
+  const website = document.getElementById('m-website');
 
   if (wa && r.whatsapp_url) {
     wa.classList.remove('hidden');
