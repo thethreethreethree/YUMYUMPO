@@ -15,7 +15,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
   <!-- Custom Styles -->
   <link rel="stylesheet" href="assets/css/styles.css" />
@@ -26,17 +26,17 @@
       theme: {
         extend: {
           colors: {
-            'warm-white':  '#FAFAF8',
-            'warm-beige':  '#F5EDE0',
-            'warm-orange': '#F97316',
-            'warm-amber':  '#FB923C',
-            'charcoal':    '#1C1917',
-            'stone-mid':   '#78716C',
-            'stone-light': '#D6D3D1',
-            'stone-pale':  '#F5F5F4',
+            'brand-yellow': '#FFD000',
+            'brand-black':  '#111111',
+            'gray-100':     '#F3F3F3',
+            'gray-200':     '#E8E8E8',
+            'gray-400':     '#ABABAB',
+            'gray-600':     '#6B6B6B',
+            'yellow-light': '#FFF9D6',
+            'yellow-pale':  '#FFFDF0',
           },
           fontFamily: {
-            display: ['"Playfair Display"', 'Georgia', 'serif'],
+            display: ['"Space Grotesk"', 'Inter', 'system-ui', 'sans-serif'],
             sans:    ['Inter', 'system-ui', 'sans-serif'],
           },
         },
@@ -45,7 +45,7 @@
   </script>
 </head>
 
-<body class="bg-warm-white font-sans text-charcoal antialiased">
+<body class="bg-white font-sans text-brand-black antialiased">
 
   <!-- ============================================================
        NAVIGATION
@@ -55,32 +55,26 @@
       <div class="flex items-center justify-between h-16 md:h-20">
 
         <!-- Logo -->
-        <a href="/" class="flex items-center gap-2 group">
-          <div class="w-8 h-8 rounded-lg bg-warm-orange flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-            <span class="text-white font-bold text-sm">Y</span>
-          </div>
-          <span class="font-display font-bold text-xl text-charcoal tracking-tight">
-            YUMYUMPO
-          </span>
+        <a href="/" class="flex items-center shrink-0">
+          <img src="assets/images/YUMYUMPO LOGO.png" alt="YUMYUMPO" class="nav-logo-img" />
         </a>
 
         <!-- Desktop Nav Links -->
-        <div class="hidden md:flex items-center gap-8">
-          <a href="#discover"  class="text-sm font-medium text-stone-mid hover:text-charcoal transition-colors">Discover</a>
-          <a href="#trending"  class="text-sm font-medium text-stone-mid hover:text-charcoal transition-colors">Trending</a>
-          <a href="#cuisines"  class="text-sm font-medium text-stone-mid hover:text-charcoal transition-colors">Cuisines</a>
-          <a href="admin/index.html" class="text-sm font-medium text-stone-mid hover:text-charcoal transition-colors">For Restaurants</a>
+        <div class="hidden md:flex items-center gap-7">
+          <a href="discover.html"    class="text-sm font-600 text-gray-600 hover:text-brand-black transition-colors">Discover</a>
+          <a href="#trending"        class="text-sm font-600 text-gray-600 hover:text-brand-black transition-colors">Trending</a>
+          <a href="#cuisines"        class="text-sm font-600 text-gray-600 hover:text-brand-black transition-colors">Cuisines</a>
+          <a href="admin/index.html" class="text-sm font-600 text-gray-600 hover:text-brand-black transition-colors">For Restaurants</a>
         </div>
 
-        <!-- CTA Buttons -->
+        <!-- CTA -->
         <div class="flex items-center gap-3">
-          <a href="admin/index.html" class="hidden md:inline-flex items-center gap-2 bg-charcoal text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-stone-800 transition-colors">
+          <a href="admin/index.html" class="hidden md:inline-flex btn-primary text-sm py-2.5 px-5">
             List Your Restaurant
           </a>
-          <!-- Mobile Menu Toggle -->
-          <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-stone-pale transition-colors">
+          <button id="mobile-menu-btn" class="md:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors" onclick="toggleMobileMenu()">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
           </button>
         </div>
@@ -89,13 +83,13 @@
     </div>
 
     <!-- Mobile Menu -->
-    <div id="mobile-menu" class="hidden md:hidden bg-warm-white border-t border-stone-light shadow-lg">
-      <div class="px-4 py-4 space-y-3">
-        <a href="#discover"  class="block text-sm font-medium text-stone-mid hover:text-charcoal py-2">Discover</a>
-        <a href="#trending"  class="block text-sm font-medium text-stone-mid hover:text-charcoal py-2">Trending</a>
-        <a href="#cuisines"  class="block text-sm font-medium text-stone-mid hover:text-charcoal py-2">Cuisines</a>
-        <a href="admin/index.html" class="block text-sm font-medium text-stone-mid hover:text-charcoal py-2">For Restaurants</a>
-        <a href="admin/index.html" class="block text-center bg-charcoal text-white text-sm font-semibold px-5 py-3 rounded-full mt-2">
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200 shadow-lg">
+      <div class="px-4 py-4 space-y-1">
+        <a href="discover.html"    class="block text-sm font-600 text-gray-600 hover:text-brand-black py-2.5 px-2 rounded-xl hover:bg-gray-100">🗺️ Discover</a>
+        <a href="#trending"        class="block text-sm font-600 text-gray-600 hover:text-brand-black py-2.5 px-2 rounded-xl hover:bg-gray-100">🔥 Trending</a>
+        <a href="#cuisines"        class="block text-sm font-600 text-gray-600 hover:text-brand-black py-2.5 px-2 rounded-xl hover:bg-gray-100">🍽️ Cuisines</a>
+        <a href="admin/index.html" class="block text-sm font-600 text-gray-600 hover:text-brand-black py-2.5 px-2 rounded-xl hover:bg-gray-100">🏪 For Restaurants</a>
+        <a href="admin/index.html" class="block btn-primary justify-center mt-3 text-sm py-3">
           List Your Restaurant
         </a>
       </div>
@@ -129,20 +123,20 @@
     <div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center">
 
       <!-- Badge -->
-      <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full mb-8 fade-in-up" style="animation-delay: 0.1s">
-        <span class="w-2 h-2 rounded-full bg-warm-orange animate-pulse"></span>
-        AI-Powered Restaurant Discovery
+      <div class="inline-flex items-center gap-2 bg-brand-yellow text-brand-black text-xs font-black px-4 py-2 rounded-full mb-8 fade-in-up uppercase tracking-wider" style="animation-delay: 0.1s">
+        <span class="text-base">🎒</span>
+        The Backpacker's Food Bible
       </div>
 
       <!-- Headline -->
-      <h1 class="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white leading-tight mb-6 fade-in-up" style="animation-delay: 0.2s">
-        Discover restaurants<br />
-        <em class="text-warm-orange not-italic">worth remembering.</em>
+      <h1 class="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white font-black leading-tight tracking-tight mb-6 fade-in-up" style="animation-delay: 0.2s">
+        Great trips start<br />
+        with <span class="text-brand-yellow">great food.</span>
       </h1>
 
       <!-- Sub-headline -->
-      <p class="text-white/80 text-lg sm:text-xl md:text-2xl max-w-2xl mx-auto mb-12 font-light leading-relaxed fade-in-up" style="animation-delay: 0.3s">
-        Find your next favorite meal — from hidden local gems to unforgettable dining experiences, all in one place.
+      <p class="text-white/70 text-lg sm:text-xl max-w-2xl mx-auto mb-12 font-medium leading-relaxed fade-in-up" style="animation-delay: 0.3s">
+        AI-powered discovery for travelers and locals. From hidden street food to iconic local institutions — find it all here.
       </p>
 
       <!-- AI Search Bar -->
@@ -151,7 +145,7 @@
 
           <!-- Location Pin Icon -->
           <div class="hidden sm:flex items-center gap-2 pl-2 pr-3 border-r border-stone-light shrink-0">
-            <svg class="w-5 h-5 text-warm-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
@@ -170,7 +164,7 @@
           <!-- Search Button -->
           <button
             id="hero-search-btn"
-            class="bg-warm-orange hover:bg-warm-amber text-white font-semibold px-6 py-3.5 rounded-xl flex items-center gap-2 transition-all duration-200 hover:scale-105 shrink-0 shadow-orange"
+            class="btn-search shrink-0"
             onclick="handleSearch()"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,24 +197,24 @@
   <!-- ============================================================
        STATS STRIP
   ============================================================ -->
-  <section class="bg-charcoal py-8">
+  <section class="stats-strip py-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
         <div class="stat-item">
-          <span class="block text-3xl font-bold text-warm-orange mb-1" data-count="2400">0</span>
-          <span class="text-sm text-white/60 font-medium">Restaurants Listed</span>
+          <span class="stat-number block text-4xl font-black text-brand-yellow mb-1" data-count="2400">0+</span>
+          <span class="text-sm text-white/50 font-medium">Restaurants Listed</span>
         </div>
         <div class="stat-item">
-          <span class="block text-3xl font-bold text-warm-orange mb-1" data-count="48">0</span>
-          <span class="text-sm text-white/60 font-medium">Cities Covered</span>
+          <span class="stat-number block text-4xl font-black text-brand-yellow mb-1" data-count="48">0+</span>
+          <span class="text-sm text-white/50 font-medium">Cities Covered</span>
         </div>
         <div class="stat-item">
-          <span class="block text-3xl font-bold text-warm-orange mb-1" data-count="95">0</span>
-          <span class="text-sm text-white/60 font-medium">% Happy Travelers</span>
+          <span class="stat-number block text-4xl font-black text-brand-yellow mb-1" data-count="95">0%</span>
+          <span class="text-sm text-white/50 font-medium">Happy Travelers</span>
         </div>
         <div class="stat-item">
-          <span class="block text-3xl font-bold text-warm-orange mb-1" data-count="18000">0</span>
-          <span class="text-sm text-white/60 font-medium">Monthly Discoveries</span>
+          <span class="stat-number block text-4xl font-black text-brand-yellow mb-1" data-count="18000">0+</span>
+          <span class="text-sm text-white/50 font-medium">Monthly Discoveries</span>
         </div>
       </div>
     </div>
@@ -305,7 +299,7 @@
           <p class="section-label">Editor's picks</p>
           <h2 class="section-title">Featured Restaurants</h2>
         </div>
-        <a href="#" class="text-sm font-semibold text-warm-orange hover:underline underline-offset-4 shrink-0">
+        <a href="discover.html" class="text-sm font-black text-yellow-600 hover:text-brand-black transition-colors shrink-0">
           View all →
         </a>
       </div>
@@ -329,7 +323,7 @@
           <p class="section-label">What everyone's talking about</p>
           <h2 class="section-title">Trending Now</h2>
         </div>
-        <a href="#" class="text-sm font-semibold text-warm-orange hover:underline underline-offset-4 shrink-0">
+        <a href="discover.html" class="text-sm font-black text-yellow-600 hover:text-brand-black transition-colors shrink-0">
           View all →
         </a>
       </div>
@@ -377,19 +371,19 @@
 
     <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 text-center">
 
-      <div class="inline-flex items-center gap-2 bg-warm-orange/10 border border-warm-orange/30 text-warm-orange text-xs font-semibold px-4 py-2 rounded-full mb-8">
+      <div class="inline-flex items-center gap-2 bg-brand-yellow text-brand-black text-xs font-black px-4 py-2 rounded-full mb-8 uppercase tracking-wider">
         <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2L9.19 8.63L2 9.24L7 13.77L5.26 21L12 17.27L18.74 21L17 13.77L22 9.24L14.81 8.63L12 2Z"/>
         </svg>
         Powered by AI
       </div>
 
-      <h2 class="font-display text-4xl sm:text-5xl md:text-6xl text-white leading-tight mb-6">
+      <h2 class="font-display text-4xl sm:text-5xl md:text-6xl text-white font-black leading-tight tracking-tight mb-6">
         Tell us what you're<br />
-        <em class="text-warm-orange not-italic">craving right now.</em>
+        <span class="text-brand-yellow">craving right now.</span>
       </h2>
 
-      <p class="text-white/60 text-lg md:text-xl mb-10 max-w-2xl mx-auto font-light">
+      <p class="text-white/60 text-lg md:text-xl mb-10 max-w-2xl mx-auto font-medium">
         Our AI understands your mood, budget, and taste preferences to surface exactly the right restaurant for your moment.
       </p>
 
@@ -400,11 +394,11 @@
             id="ai-search"
             type="text"
             placeholder="I want something cozy and budget-friendly..."
-            class="w-full bg-white/10 border border-white/20 text-white placeholder-white/40 rounded-2xl px-6 py-5 text-base outline-none focus:border-warm-orange/60 focus:bg-white/15 transition-all pr-16"
+            class="w-full bg-white/10 border border-white/15 text-white placeholder-white/35 rounded-2xl px-6 py-5 text-base outline-none focus:border-brand-yellow/60 focus:bg-white/15 transition-all pr-16"
           />
-          <button class="absolute right-3 top-1/2 -translate-y-1/2 bg-warm-orange hover:bg-warm-amber text-white p-3 rounded-xl transition-all hover:scale-105">
+          <button class="absolute right-3 top-1/2 -translate-y-1/2 bg-brand-yellow hover:bg-yellow-300 text-brand-black p-3 rounded-xl transition-all hover:scale-105 font-bold">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
             </svg>
           </button>
         </div>
@@ -434,7 +428,7 @@
           <p class="section-label mb-4">Are you a restaurant owner?</p>
           <h2 class="font-display text-4xl sm:text-5xl text-charcoal leading-tight mb-6">
             Get discovered by<br />
-            <span class="text-warm-orange">thousands of diners</span><br />
+            <span class="text-yellow-600">thousands of diners</span><br />
             every month.
           </h2>
           <p class="text-stone-mid text-lg leading-relaxed mb-8">
@@ -445,7 +439,7 @@
           <div class="space-y-4 mb-10">
             <div class="flex items-start gap-3">
               <div class="w-6 h-6 rounded-full bg-warm-orange/10 flex items-center justify-center mt-0.5 shrink-0">
-                <svg class="w-3.5 h-3.5 text-warm-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-3.5 h-3.5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                 </svg>
               </div>
@@ -456,7 +450,7 @@
             </div>
             <div class="flex items-start gap-3">
               <div class="w-6 h-6 rounded-full bg-warm-orange/10 flex items-center justify-center mt-0.5 shrink-0">
-                <svg class="w-3.5 h-3.5 text-warm-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-3.5 h-3.5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                 </svg>
               </div>
@@ -467,7 +461,7 @@
             </div>
             <div class="flex items-start gap-3">
               <div class="w-6 h-6 rounded-full bg-warm-orange/10 flex items-center justify-center mt-0.5 shrink-0">
-                <svg class="w-3.5 h-3.5 text-warm-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-3.5 h-3.5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                 </svg>
               </div>
@@ -499,7 +493,7 @@
             <div class="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-xl">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-warm-orange/10 flex items-center justify-center">
-                  <svg class="w-5 h-5 text-warm-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                   </svg>
@@ -536,10 +530,7 @@
         <!-- Brand -->
         <div class="lg:col-span-1">
           <div class="flex items-center gap-2 mb-4">
-            <div class="w-8 h-8 rounded-lg bg-warm-orange flex items-center justify-center">
-              <span class="text-white font-bold text-sm">Y</span>
-            </div>
-            <span class="font-display font-bold text-xl">YUMYUMPO</span>
+            <img src="assets/images/YUMYUMPO LOGO.png" alt="YUMYUMPO" class="h-9 w-auto brightness-0 invert" />
           </div>
           <p class="text-white/50 text-sm leading-relaxed mb-6">
             AI-powered restaurant discovery for modern travelers and local food lovers.
@@ -600,7 +591,7 @@
         <p class="text-white/30 text-sm">© 2025 YUMYUMPO. All rights reserved.</p>
         <p class="text-white/30 text-sm flex items-center gap-1">
           Made with
-          <svg class="w-3.5 h-3.5 text-warm-orange" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+          <svg class="w-3.5 h-3.5 text-yellow-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
           for food lovers everywhere.
         </p>
       </div>

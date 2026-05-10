@@ -194,14 +194,12 @@ function initNavbar() {
 
 /* ── MOBILE MENU ── */
 function initMobileMenu() {
-  const btn  = document.getElementById('mobile-menu-btn');
-  const menu = document.getElementById('mobile-menu');
-  if (!btn || !menu) return;
-
-  btn.addEventListener('click', () => {
-    menu.classList.toggle('hidden');
-  });
+  // Legacy listener — also wired via onclick in HTML
 }
+
+window.toggleMobileMenu = function() {
+  document.getElementById('mobile-menu')?.classList.toggle('hidden');
+};
 
 
 /* ── RENDER CARDS ── */
@@ -363,7 +361,7 @@ window.handleSearch = function () {
   const query = document.getElementById('hero-search')?.value?.trim();
   if (!query) return;
   trackEvent('search', { query });
-  window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+  window.location.href = `discover.html?q=${encodeURIComponent(query)}`;
 };
 
 window.fillSearch = function (text) {

@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Browse all restaurants on YUMYUMPO — filter by cuisine, mood, rating and more." />
+  <meta property="og:title" content="Discover Restaurants — YUMYUMPO" />
+  <meta property="og:type"  content="website" />
+  <title>Discover Restaurants — YUMYUMPO</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'brand-yellow': '#FFD000',
+            'brand-black':  '#111111',
+            'brand-white':  '#FFFFFF',
+            'gray-50':      '#F9F9F9',
+            'gray-100':     '#F3F3F3',
+            'gray-200':     '#E8E8E8',
+            'gray-400':     '#ABABAB',
+            'gray-600':     '#6B6B6B',
+            'gray-800':     '#333333',
+            'yellow-light': '#FFF9D6',
+            'yellow-pale':  '#FFFDF0',
+          },
+          fontFamily: {
+            display: ['"Space Grotesk"', 'Inter', 'system-ui', 'sans-serif'],
+            sans:    ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+</head>
+
+<body class="bg-gray-50 font-sans text-brand-black antialiased">
+
+<!-- ══════════════════════════════════════════════════════════
+     NAVIGATION
+══════════════════════════════════════════════════════════ -->
+<nav id="navbar" class="solid fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+  <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Logo -->
+      <a href="index.html" class="flex items-center gap-2 shrink-0">
+        <img src="assets/images/YUMYUMPO LOGO.png" alt="YUMYUMPO" class="nav-logo-img" />
+      </a>
+
+      <!-- Desktop search in nav -->
+      <div class="hidden md:flex flex-1 max-w-md mx-6">
+        <div class="discover-search-wrap">
+          <svg class="discover-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input
+            id="nav-search"
+            type="text"
+            placeholder="Search restaurants, cuisines, vibes..."
+            class="discover-search-input"
+            oninput="syncSearch(this.value)"
+          />
+          <button class="discover-search-clear" id="nav-search-clear" onclick="clearSearch()">✕</button>
+        </div>
+      </div>
+
+      <!-- Right -->
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="hidden md:inline-flex items-center gap-1.5 text-sm font-600 text-gray-600 hover:text-brand-black transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          Home
+        </a>
+        <a href="admin/index.html" class="btn-primary text-sm py-2.5 px-5">
+          List My Restaurant
+        </a>
+        <!-- Mobile filter toggle -->
+        <button id="mobile-filter-btn" class="md:hidden p-2.5 rounded-xl bg-brand-black text-brand-yellow" onclick="openFilterDrawer()">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 4a1 1 0 011-1h16a1 1 0 010 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h10a1 1 0 010 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h6a1 1 0 010 2H4a1 1 0 01-1-1z"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</nav>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     DISCOVER HERO — compact, punchy
+══════════════════════════════════════════════════════════ -->
+<section class="pt-16 bg-brand-black overflow-hidden relative">
+  <!-- Background collage -->
+  <div class="absolute inset-0 opacity-20">
+    <div class="grid grid-cols-5 h-full gap-0.5">
+      <div class="overflow-hidden"><img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&auto=format&fit=crop&q=60" class="w-full h-full object-cover" alt="" loading="eager" /></div>
+      <div class="overflow-hidden"><img src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&auto=format&fit=crop&q=60" class="w-full h-full object-cover" alt="" loading="eager" /></div>
+      <div class="overflow-hidden"><img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=60" class="w-full h-full object-cover" alt="" loading="eager" /></div>
+      <div class="overflow-hidden"><img src="https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&auto=format&fit=crop&q=60" class="w-full h-full object-cover" alt="" loading="eager" /></div>
+      <div class="overflow-hidden"><img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&auto=format&fit=crop&q=60" class="w-full h-full object-cover" alt="" loading="eager" /></div>
+    </div>
+    <!-- Gradient overlay to darken collage -->
+    <div class="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/60 to-brand-black/50"></div>
+  </div>
+
+  <!-- Hero content -->
+  <div class="relative z-10 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20">
+    <div class="max-w-3xl">
+
+      <!-- Stamp badge -->
+      <div class="inline-flex items-center gap-2 bg-brand-yellow text-brand-black text-xs font-black px-4 py-2 rounded-full mb-6 uppercase tracking-wider fade-in-up">
+        <span class="text-base">🗺️</span>
+        Explore the food map
+      </div>
+
+      <h1 class="font-display text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight tracking-tight mb-4 fade-in-up" style="animation-delay:0.1s">
+        Every great trip starts<br />
+        with <span class="text-brand-yellow">great food.</span>
+      </h1>
+      <p class="text-white/60 text-base md:text-lg max-w-xl font-medium mb-8 fade-in-up" style="animation-delay:0.2s">
+        Browse hundreds of restaurants loved by backpackers, foodies, and locals alike. Filter by vibe, cuisine, or budget.
+      </p>
+
+      <!-- Mobile search bar (hidden on desktop — nav has it) -->
+      <div class="md:hidden fade-in-up" style="animation-delay:0.3s">
+        <div class="discover-search-wrap">
+          <svg class="discover-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input
+            id="mobile-hero-search"
+            type="text"
+            placeholder="Ramen, sunset views, cheap eats..."
+            class="discover-search-input"
+            oninput="syncSearch(this.value)"
+          />
+        </div>
+      </div>
+
+      <!-- Quick vibe filters -->
+      <div class="flex flex-wrap gap-2 mt-6 fade-in-up" style="animation-delay:0.35s">
+        <span class="text-white/40 text-sm font-medium self-center mr-1">Quick vibes:</span>
+        <button class="suggestion-chip" onclick="applyVibe('Budget-Friendly')">💸 Budget-Friendly</button>
+        <button class="suggestion-chip" onclick="applyVibe('Hidden Gem')">💎 Hidden Gems</button>
+        <button class="suggestion-chip" onclick="applyVibe('Backpacker-Approved')">🎒 Backpacker-Approved</button>
+        <button class="suggestion-chip" onclick="applyVibe('Beach Dining')">🏖️ Beach Dining</button>
+        <button class="suggestion-chip" onclick="applyVibe('Late Night')">🌙 Late Night</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     CUISINE FILTER BAR
+══════════════════════════════════════════════════════════ -->
+<div class="filter-bar">
+  <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center gap-3 overflow-x-auto scrollbar-hide py-3">
+
+      <button class="filter-tab active shrink-0" data-cuisine="all" onclick="setCuisine('all', this)">
+        All
+        <span class="tab-count" id="tab-count-all">0</span>
+      </button>
+      <button class="filter-tab shrink-0" data-cuisine="Filipino" onclick="setCuisine('Filipino', this)">
+        🇵🇭 Filipino
+      </button>
+      <button class="filter-tab shrink-0" data-cuisine="Japanese" onclick="setCuisine('Japanese', this)">
+        🍜 Japanese
+      </button>
+      <button class="filter-tab shrink-0" data-cuisine="Seafood" onclick="setCuisine('Seafood', this)">
+        🦞 Seafood
+      </button>
+      <button class="filter-tab shrink-0" data-cuisine="Café" onclick="setCuisine('Café', this)">
+        ☕ Café
+      </button>
+      <button class="filter-tab shrink-0" data-cuisine="Korean" onclick="setCuisine('Korean', this)">
+        🥘 Korean
+      </button>
+      <button class="filter-tab shrink-0" data-cuisine="Italian" onclick="setCuisine('Italian', this)">
+        🍕 Italian
+      </button>
+      <button class="filter-tab shrink-0" data-cuisine="BBQ" onclick="setCuisine('BBQ', this)">
+        🔥 BBQ & Grill
+      </button>
+      <button class="filter-tab shrink-0" data-cuisine="Chinese" onclick="setCuisine('Chinese', this)">
+        🥟 Chinese
+      </button>
+      <button class="filter-tab shrink-0" data-cuisine="Vegan" onclick="setCuisine('Vegan', this)">
+        🥗 Vegan
+      </button>
+      <button class="filter-tab shrink-0" data-cuisine="Burgers" onclick="setCuisine('Burgers', this)">
+        🍔 Burgers
+      </button>
+      <button class="filter-tab shrink-0" data-cuisine="Mexican" onclick="setCuisine('Mexican', this)">
+        🌮 Mexican
+      </button>
+      <button class="filter-tab shrink-0" data-cuisine="Desserts" onclick="setCuisine('Desserts', this)">
+        🍨 Desserts
+      </button>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MAIN CONTENT — sidebar + grid
+══════════════════════════════════════════════════════════ -->
+<main class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex gap-8">
+
+    <!-- ── LEFT SIDEBAR (desktop only) ─────────────────── -->
+    <aside class="hidden lg:block w-72 shrink-0">
+      <div class="filter-sidebar">
+
+        <!-- Sort -->
+        <div class="sidebar-section">
+          <p class="sidebar-section-title">Sort by</p>
+          <div class="relative">
+            <select class="sort-select w-full" id="sort-select" onchange="applySort(this.value)">
+              <option value="rating">⭐ Top Rated</option>
+              <option value="reviews">💬 Most Reviewed</option>
+              <option value="newest">🆕 Newest First</option>
+              <option value="name">🔤 A → Z</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Rating filter -->
+        <div class="sidebar-section">
+          <p class="sidebar-section-title">Minimum Rating</p>
+          <div class="flex flex-wrap gap-2">
+            <button class="rating-btn active" data-rating="0" onclick="setRating(0, this)">Any</button>
+            <button class="rating-btn" data-rating="3.5" onclick="setRating(3.5, this)">3.5+</button>
+            <button class="rating-btn" data-rating="4" onclick="setRating(4, this)">4.0+</button>
+            <button class="rating-btn" data-rating="4.5" onclick="setRating(4.5, this)">4.5+</button>
+          </div>
+        </div>
+
+        <!-- Vibe / Tag filters -->
+        <div class="sidebar-section">
+          <p class="sidebar-section-title">Vibe / Tags</p>
+          <div class="space-y-1">
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="Budget-Friendly"     onchange="toggleTag(this)" />
+              <span class="filter-checkbox-label">💸 Budget-Friendly</span>
+              <span class="filter-checkbox-count">12</span>
+            </label>
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="Hidden Gem"          onchange="toggleTag(this)" />
+              <span class="filter-checkbox-label">💎 Hidden Gem</span>
+              <span class="filter-checkbox-count">8</span>
+            </label>
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="Backpacker-Approved" onchange="toggleTag(this)" />
+              <span class="filter-checkbox-label">🎒 Backpacker-Approved</span>
+              <span class="filter-checkbox-count">15</span>
+            </label>
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="Romantic"            onchange="toggleTag(this)" />
+              <span class="filter-checkbox-label">🕯️ Romantic</span>
+              <span class="filter-checkbox-count">9</span>
+            </label>
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="Local Favorite"      onchange="toggleTag(this)" />
+              <span class="filter-checkbox-label">❤️ Local Favorite</span>
+              <span class="filter-checkbox-count">21</span>
+            </label>
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="Late Night"          onchange="toggleTag(this)" />
+              <span class="filter-checkbox-label">🌙 Late Night</span>
+              <span class="filter-checkbox-count">7</span>
+            </label>
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="Beach Dining"        onchange="toggleTag(this)" />
+              <span class="filter-checkbox-label">🏖️ Beach Dining</span>
+              <span class="filter-checkbox-count">6</span>
+            </label>
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="Scenic View"         onchange="toggleTag(this)" />
+              <span class="filter-checkbox-label">🌅 Scenic View</span>
+              <span class="filter-checkbox-count">11</span>
+            </label>
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="Family-Friendly"     onchange="toggleTag(this)" />
+              <span class="filter-checkbox-label">👨‍👩‍👧 Family-Friendly</span>
+              <span class="filter-checkbox-count">14</span>
+            </label>
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="Instagrammable"      onchange="toggleTag(this)" />
+              <span class="filter-checkbox-label">📸 Instagrammable</span>
+              <span class="filter-checkbox-count">18</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Location filter -->
+        <div class="sidebar-section">
+          <p class="sidebar-section-title">Location</p>
+          <div class="space-y-1">
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="loc:Palawan"     onchange="toggleLocation(this)" />
+              <span class="filter-checkbox-label">Palawan</span>
+              <span class="filter-checkbox-count">8</span>
+            </label>
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="loc:Boracay"     onchange="toggleLocation(this)" />
+              <span class="filter-checkbox-label">Boracay</span>
+              <span class="filter-checkbox-count">6</span>
+            </label>
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="loc:Siargao"     onchange="toggleLocation(this)" />
+              <span class="filter-checkbox-label">Siargao</span>
+              <span class="filter-checkbox-count">5</span>
+            </label>
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="loc:Manila"      onchange="toggleLocation(this)" />
+              <span class="filter-checkbox-label">Metro Manila</span>
+              <span class="filter-checkbox-count">12</span>
+            </label>
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="loc:Cebu"        onchange="toggleLocation(this)" />
+              <span class="filter-checkbox-label">Cebu</span>
+              <span class="filter-checkbox-count">7</span>
+            </label>
+            <label class="filter-checkbox-row">
+              <input type="checkbox" value="loc:Bohol"       onchange="toggleLocation(this)" />
+              <span class="filter-checkbox-label">Bohol</span>
+              <span class="filter-checkbox-count">4</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Reset button -->
+        <button class="btn-outline w-full justify-center text-sm py-3" onclick="resetAllFilters()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Reset All Filters
+        </button>
+
+      </div>
+    </aside>
+
+
+    <!-- ── RESULTS AREA ─────────────────────────────────── -->
+    <div class="flex-1 min-w-0">
+
+      <!-- Results header row -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+
+        <!-- Count + active filters -->
+        <div>
+          <p class="font-display font-bold text-xl text-brand-black" id="results-count">
+            Loading restaurants...
+          </p>
+          <!-- Active filter chips -->
+          <div class="flex flex-wrap gap-2 mt-2" id="active-filter-chips"></div>
+        </div>
+
+        <!-- Right side controls -->
+        <div class="flex items-center gap-3 shrink-0">
+
+          <!-- Mobile: sort dropdown -->
+          <div class="lg:hidden relative">
+            <select class="sort-select" onchange="applySort(this.value)">
+              <option value="rating">⭐ Top Rated</option>
+              <option value="reviews">💬 Most Reviewed</option>
+              <option value="newest">🆕 Newest</option>
+              <option value="name">🔤 A → Z</option>
+            </select>
+          </div>
+
+          <!-- View toggle -->
+          <div class="flex gap-1 bg-gray-100 rounded-xl p-1">
+            <button id="grid-view-btn"
+              class="p-2 rounded-lg bg-white text-brand-black shadow-sm transition-all"
+              onclick="setView('grid')" title="Grid view"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M1 2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H2a1 1 0 01-1-1V2zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H7a1 1 0 01-1-1V2zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1V2zM1 7a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H2a1 1 0 01-1-1V7zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H7a1 1 0 01-1-1V7zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1V7zM1 12a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H2a1 1 0 01-1-1v-2zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H7a1 1 0 01-1-1v-2zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1v-2z"/>
+              </svg>
+            </button>
+            <button id="list-view-btn"
+              class="p-2 rounded-lg text-gray-400 transition-all hover:text-brand-black"
+              onclick="setView('list')" title="List view"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M2.5 12a.5.5 0 01.5-.5h10a.5.5 0 010 1H3a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h10a.5.5 0 010 1H3a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h10a.5.5 0 010 1H3a.5.5 0 01-.5-.5z"/>
+              </svg>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── RESTAURANT GRID ── -->
+      <div id="results-grid" class="results-grid">
+        <!-- Skeleton loading state -->
+        <div class="skeleton-card"><div class="skeleton-image skeleton"></div><div class="skeleton-body"><div class="skeleton skeleton-line" style="width:40%"></div><div class="skeleton skeleton-line" style="width:70%;height:20px"></div><div class="skeleton skeleton-line" style="width:55%"></div><div class="skeleton skeleton-line" style="width:90%"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-image skeleton"></div><div class="skeleton-body"><div class="skeleton skeleton-line" style="width:35%"></div><div class="skeleton skeleton-line" style="width:80%;height:20px"></div><div class="skeleton skeleton-line" style="width:50%"></div><div class="skeleton skeleton-line" style="width:85%"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-image skeleton"></div><div class="skeleton-body"><div class="skeleton skeleton-line" style="width:45%"></div><div class="skeleton skeleton-line" style="width:65%;height:20px"></div><div class="skeleton skeleton-line" style="width:60%"></div><div class="skeleton skeleton-line" style="width:95%"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-image skeleton"></div><div class="skeleton-body"><div class="skeleton skeleton-line" style="width:30%"></div><div class="skeleton skeleton-line" style="width:75%;height:20px"></div><div class="skeleton skeleton-line" style="width:45%"></div><div class="skeleton skeleton-line" style="width:88%"></div></div></div>
+        <div class="skeleton-card hidden sm:block"><div class="skeleton-image skeleton"></div><div class="skeleton-body"><div class="skeleton skeleton-line" style="width:50%"></div><div class="skeleton skeleton-line" style="width:60%;height:20px"></div><div class="skeleton skeleton-line" style="width:40%"></div><div class="skeleton skeleton-line" style="width:80%"></div></div></div>
+        <div class="skeleton-card hidden lg:block"><div class="skeleton-image skeleton"></div><div class="skeleton-body"><div class="skeleton skeleton-line" style="width:38%"></div><div class="skeleton skeleton-line" style="width:72%;height:20px"></div><div class="skeleton skeleton-line" style="width:52%"></div><div class="skeleton skeleton-line" style="width:92%"></div></div></div>
+      </div>
+
+      <!-- Load more -->
+      <div class="flex justify-center mt-12" id="load-more-wrap">
+        <button class="btn-load-more" id="load-more-btn" onclick="loadMore()">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+          </svg>
+          Load More Restaurants
+        </button>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MOBILE FILTER DRAWER
+══════════════════════════════════════════════════════════ -->
+<div class="filter-drawer-overlay" id="drawer-overlay" onclick="closeFilterDrawer()"></div>
+
+<div class="filter-drawer" id="filter-drawer">
+  <div class="drawer-handle"></div>
+
+  <div class="flex items-center justify-between mb-6">
+    <h3 class="font-display font-bold text-xl">Filters</h3>
+    <button onclick="closeFilterDrawer()" class="p-2 rounded-xl bg-gray-100 text-gray-600">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Sort -->
+  <div class="sidebar-section">
+    <p class="sidebar-section-title">Sort by</p>
+    <div class="relative">
+      <select class="sort-select w-full" onchange="applySort(this.value)">
+        <option value="rating">⭐ Top Rated</option>
+        <option value="reviews">💬 Most Reviewed</option>
+        <option value="newest">🆕 Newest First</option>
+        <option value="name">🔤 A → Z</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Rating -->
+  <div class="sidebar-section">
+    <p class="sidebar-section-title">Minimum Rating</p>
+    <div class="flex flex-wrap gap-2">
+      <button class="rating-btn active" onclick="setRating(0, this)">Any</button>
+      <button class="rating-btn" onclick="setRating(3.5, this)">3.5+</button>
+      <button class="rating-btn" onclick="setRating(4, this)">4.0+</button>
+      <button class="rating-btn" onclick="setRating(4.5, this)">4.5+</button>
+    </div>
+  </div>
+
+  <!-- Vibes -->
+  <div class="sidebar-section">
+    <p class="sidebar-section-title">Vibe / Tags</p>
+    <div class="grid grid-cols-2 gap-2">
+      <button class="filter-tab text-left" onclick="applyVibe('Budget-Friendly')">💸 Budget-Friendly</button>
+      <button class="filter-tab text-left" onclick="applyVibe('Hidden Gem')">💎 Hidden Gem</button>
+      <button class="filter-tab text-left" onclick="applyVibe('Backpacker-Approved')">🎒 Backpacker</button>
+      <button class="filter-tab text-left" onclick="applyVibe('Romantic')">🕯️ Romantic</button>
+      <button class="filter-tab text-left" onclick="applyVibe('Local Favorite')">❤️ Local Favorite</button>
+      <button class="filter-tab text-left" onclick="applyVibe('Late Night')">🌙 Late Night</button>
+      <button class="filter-tab text-left" onclick="applyVibe('Beach Dining')">🏖️ Beach Dining</button>
+      <button class="filter-tab text-left" onclick="applyVibe('Scenic View')">🌅 Scenic View</button>
+    </div>
+  </div>
+
+  <!-- Apply / Reset -->
+  <div class="flex gap-3 mt-4 pb-4">
+    <button class="btn-primary flex-1 justify-center" onclick="closeFilterDrawer()">
+      See Results
+    </button>
+    <button class="btn-outline flex-1 justify-center" onclick="resetAllFilters(); closeFilterDrawer()">
+      Reset
+    </button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     FOOTER — minimal
+══════════════════════════════════════════════════════════ -->
+<footer class="bg-brand-black text-white mt-20 py-10">
+  <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <img src="assets/images/YUMYUMPO LOGO.png" alt="YUMYUMPO" class="h-8 w-auto" />
+        <span class="text-white/40 text-sm">AI-powered restaurant discovery</span>
+      </div>
+      <div class="flex gap-6 text-sm text-white/40">
+        <a href="index.html"       class="hover:text-white transition-colors">Home</a>
+        <a href="admin/index.html" class="hover:text-white transition-colors">List a Restaurant</a>
+        <a href="#"                class="hover:text-white transition-colors">About</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/discover.js"></script>
+</body>
+</html>
