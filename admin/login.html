@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login — YUMYUMPO</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'brand-yellow': '#FFD000', 'brand-black': '#111111',
+            'yellow-light': '#FFF9D6', 'gray-100': '#F3F3F3',
+            'gray-200': '#E8E8E8', 'gray-400': '#ABABAB', 'gray-600': '#6B6B6B',
+          },
+          fontFamily: {
+            display: ['"Space Grotesk"', 'Inter', 'system-ui', 'sans-serif'],
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    body { min-height: 100vh; }
+
+    /* Left panel */
+    .brand-panel {
+      background: #111;
+      position: relative; overflow: hidden;
+    }
+    .brand-panel::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 30% 60%, rgba(255,208,0,0.18) 0%, transparent 60%),
+                  radial-gradient(circle at 80% 20%, rgba(255,208,0,0.08) 0%, transparent 50%);
+    }
+    .brand-grid {
+      position: absolute; inset: 0; opacity: 0.04;
+      background-image: linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    .brand-float {
+      animation: brandFloat 6s ease-in-out infinite;
+    }
+    @keyframes brandFloat {
+      0%,100% { transform: translateY(0) rotate(-2deg); }
+      50%      { transform: translateY(-12px) rotate(2deg); }
+    }
+
+    /* Form panel */
+    .login-input {
+      width: 100%; background: #F3F3F3;
+      border: 2px solid #E8E8E8;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 0.9375rem; color: #111;
+      outline: none; transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .login-input:focus {
+      border-color: #FFD000; background: #fff;
+      box-shadow: 0 0 0 4px rgba(255,208,0,0.15);
+    }
+    .login-input.error { border-color: #EF4444; }
+
+    .btn-login {
+      width: 100%; background: #FFD000; color: #111;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem; font-weight: 800;
+      padding: 15px; border-radius: 14px;
+      border: none; cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: -0.01em;
+    }
+    .btn-login:hover:not(:disabled) {
+      background: #E6BB00;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,208,0,0.4);
+    }
+    .btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* Password toggle */
+    .pw-toggle {
+      position: absolute; right: 16px; top: 50%;
+      transform: translateY(-50%);
+      color: #ABABAB; cursor: pointer;
+      transition: color 0.2s; background: none; border: none;
+    }
+    .pw-toggle:hover { color: #111; }
+
+    /* Shake animation on error */
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%,60%  { transform: translateX(-8px); }
+      40%,80%  { transform: translateX(8px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+
+    /* Loading spinner */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2.5px solid rgba(17,17,17,0.3);
+      border-top-color: #111;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block; vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Floating testimonial cards */
+    .float-card {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px; padding: 16px;
+    }
+  </style>
+</head>
+
+<body class="font-sans antialiased bg-gray-100 flex min-h-screen">
+
+  <!-- ══ LEFT BRAND PANEL (desktop only) ══ -->
+  <div class="brand-panel hidden lg:flex flex-col justify-between w-[44%] p-12 relative">
+    <div class="brand-grid"></div>
+
+    <!-- Logo -->
+    <div class="relative z-10">
+      <img src="../assets/images/YUMYUMPO LOGO.png" alt="YUMYUMPO" class="h-10 w-auto brightness-0 invert" />
+    </div>
+
+    <!-- Center content -->
+    <div class="relative z-10">
+      <div class="brand-float inline-block mb-8">
+        <div class="w-24 h-24 bg-brand-yellow rounded-3xl flex items-center justify-center text-5xl shadow-2xl" style="box-shadow:0 20px 60px rgba(255,208,0,0.35)">
+          🍽️
+        </div>
+      </div>
+
+      <h1 class="font-display font-black text-white text-4xl leading-tight tracking-tight mb-4" style="letter-spacing:-0.03em">
+        Manage your<br />
+        restaurant empire.
+      </h1>
+      <p class="text-white/55 text-base leading-relaxed max-w-sm">
+        Add restaurants, track performance, manage featured listings, and grow your platform — all from one place.
+      </p>
+
+      <!-- Stats -->
+      <div class="flex gap-6 mt-10">
+        <div>
+          <p class="font-display font-black text-white text-2xl" style="letter-spacing:-0.03em">2,400+</p>
+          <p class="text-white/40 text-sm font-medium">Restaurants</p>
+        </div>
+        <div class="w-px bg-white/10"></div>
+        <div>
+          <p class="font-display font-black text-white text-2xl" style="letter-spacing:-0.03em">47k</p>
+          <p class="text-white/40 text-sm font-medium">Monthly Views</p>
+        </div>
+        <div class="w-px bg-white/10"></div>
+        <div>
+          <p class="font-display font-black text-white text-2xl" style="letter-spacing:-0.03em">32%</p>
+          <p class="text-white/40 text-sm font-medium">Avg CTR</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom testimonial card -->
+    <div class="relative z-10">
+      <div class="float-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-9 h-9 rounded-full bg-brand-yellow flex items-center justify-center text-lg">🍛</div>
+          <div>
+            <p class="text-white text-sm font-bold">Maria's Kitchen</p>
+            <p class="text-white/40 text-xs">El Nido, Palawan</p>
+          </div>
+          <div class="ml-auto">
+            <span class="text-xs font-black text-green-400 bg-green-400/10 px-2 py-1 rounded-full">↑ 24%</span>
+          </div>
+        </div>
+        <p class="text-white/60 text-xs leading-relaxed">
+          "Our profile views tripled within a week of listing on YUMYUMPO."
+        </p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ RIGHT FORM PANEL ══ -->
+  <div class="flex-1 flex items-center justify-center p-6 md:p-12 bg-white lg:bg-gray-100">
+    <div class="w-full max-w-md">
+
+      <!-- Mobile logo -->
+      <div class="flex justify-center mb-8 lg:hidden">
+        <img src="../assets/images/YUMYUMPO LOGO.png" alt="YUMYUMPO" class="h-10 w-auto" />
+      </div>
+
+      <!-- Card -->
+      <div class="bg-white rounded-3xl p-8 md:p-10 shadow-xl border border-gray-200 lg:shadow-none lg:border-0 lg:p-0 lg:rounded-none lg:bg-transparent">
+
+        <div class="mb-8">
+          <h2 class="font-display font-black text-3xl text-brand-black tracking-tight mb-1.5" style="letter-spacing:-0.02em">
+            Welcome back 👋
+          </h2>
+          <p class="text-gray-400 text-sm font-medium">Sign in to your admin dashboard.</p>
+        </div>
+
+        <!-- Error banner -->
+        <div id="error-banner" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm font-semibold px-4 py-3 rounded-xl mb-5 flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span id="error-text">Invalid email or password.</span>
+        </div>
+
+        <!-- Success banner -->
+        <div id="success-banner" class="hidden bg-green-50 border border-green-200 text-green-700 text-sm font-semibold px-4 py-3 rounded-xl mb-5 flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span>Signed in successfully! Redirecting…</span>
+        </div>
+
+        <form id="login-form" onsubmit="handleLogin(event)" novalidate class="space-y-5">
+
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-bold text-brand-black mb-2">Email address</label>
+            <input
+              id="email-input"
+              type="email"
+              autocomplete="email"
+              placeholder="admin@yumyumpo.com"
+              class="login-input"
+              required
+            />
+          </div>
+
+          <!-- Password -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-sm font-bold text-brand-black">Password</label>
+              <button type="button" onclick="showForgotPassword()" class="text-xs font-semibold text-gray-400 hover:text-brand-black transition-colors">
+                Forgot password?
+              </button>
+            </div>
+            <div class="relative">
+              <input
+                id="password-input"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Enter your password"
+                class="login-input"
+                required
+              />
+              <button type="button" class="pw-toggle" onclick="togglePassword()" aria-label="Show password">
+                <svg id="pw-eye" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Remember me -->
+          <label class="flex items-center gap-3 cursor-pointer group">
+            <input type="checkbox" id="remember-me" class="w-4 h-4 accent-brand-yellow" />
+            <span class="text-sm font-medium text-gray-600 group-hover:text-brand-black transition-colors">Keep me signed in</span>
+          </label>
+
+          <!-- Submit -->
+          <button type="submit" id="login-btn" class="btn-login">
+            Sign In to Dashboard
+          </button>
+
+        </form>
+
+        <!-- Demo credentials hint -->
+        <div class="mt-6 p-4 bg-yellow-light rounded-2xl border border-yellow-200">
+          <p class="text-xs font-black text-brand-black uppercase tracking-wider mb-2">Demo Access</p>
+          <div class="space-y-1">
+            <p class="text-xs text-gray-600 font-medium">Email: <span class="font-bold text-brand-black cursor-pointer" onclick="fillDemo()">admin@yumyumpo.com</span></p>
+            <p class="text-xs text-gray-600 font-medium">Password: <span class="font-bold text-brand-black cursor-pointer" onclick="fillDemo()">yumyumpo2025</span></p>
+          </div>
+          <button onclick="fillDemo()" class="mt-3 w-full text-xs font-black text-brand-black bg-brand-yellow py-2 rounded-xl hover:bg-yellow-400 transition-colors">
+            Use Demo Credentials
+          </button>
+        </div>
+
+        <!-- Back link -->
+        <p class="text-center text-sm text-gray-400 mt-6">
+          <a href="../index.html" class="font-semibold text-brand-black hover:underline">← Back to YUMYUMPO</a>
+        </p>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Forgot Password Modal -->
+  <div id="forgot-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeForgotModal()"></div>
+    <div class="relative bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl">
+      <h3 class="font-display font-black text-xl text-brand-black mb-2">Reset Password</h3>
+      <p class="text-gray-400 text-sm mb-6">Enter your email and we'll send you a reset link.</p>
+      <input id="reset-email" type="email" placeholder="your@email.com" class="login-input mb-4" />
+      <button onclick="sendReset()" class="btn-login mb-3">Send Reset Link</button>
+      <button onclick="closeForgotModal()" class="w-full py-3 text-sm font-bold text-gray-400 hover:text-brand-black transition-colors">Cancel</button>
+    </div>
+  </div>
+
+
+  <script src="../assets/js/supabase-client.js"></script>
+  <script>
+    /* ── Auth check — if already logged in, skip to dashboard ── */
+    document.addEventListener('supabase:ready', async () => {
+      const { data: { session } } = await window.supabase.auth.getSession();
+      if (session) window.location.href = 'index.html';
+    });
+
+    /* ── Demo credentials ── */
+    window.fillDemo = function() {
+      document.getElementById('email-input').value    = 'admin@yumyumpo.com';
+      document.getElementById('password-input').value = 'yumyumpo2025';
+    };
+
+    /* ── Toggle password visibility ── */
+    window.togglePassword = function() {
+      const input = document.getElementById('password-input');
+      input.type  = input.type === 'password' ? 'text' : 'password';
+    };
+
+    /* ── Login ── */
+    window.handleLogin = async function(e) {
+      e.preventDefault();
+
+      const email    = document.getElementById('email-input').value.trim();
+      const password = document.getElementById('password-input').value;
+      const btn      = document.getElementById('login-btn');
+      const error    = document.getElementById('error-banner');
+      const success  = document.getElementById('success-banner');
+
+      if (!email || !password) {
+        showError('Please enter your email and password.');
+        return;
+      }
+
+      // Loading state
+      btn.disabled   = true;
+      btn.innerHTML  = '<span class="spinner"></span>&nbsp; Signing in…';
+      error.classList.add('hidden');
+
+      // Demo mode — bypass Supabase if using demo creds or no Supabase
+      const isDemo = email === 'admin@yumyumpo.com' && password === 'yumyumpo2025';
+
+      if (isDemo || !window.supabase) {
+        // Store a local auth flag for demo mode
+        localStorage.setItem('yyp_admin_demo', 'true');
+        success.classList.remove('hidden');
+        setTimeout(() => window.location.href = 'index.html', 1000);
+        return;
+      }
+
+      const { data, error: authError } = await window.supabase.auth.signInWithPassword({ email, password });
+
+      if (authError) {
+        btn.disabled   = false;
+        btn.innerHTML  = 'Sign In to Dashboard';
+        showError(authError.message || 'Invalid email or password.');
+        return;
+      }
+
+      success.classList.remove('hidden');
+      setTimeout(() => window.location.href = 'index.html', 900);
+    };
+
+    function showError(msg) {
+      const banner = document.getElementById('error-banner');
+      const text   = document.getElementById('error-text');
+      if (text)    text.textContent = msg;
+      banner.classList.remove('hidden');
+      document.getElementById('login-form').classList.add('shake');
+      setTimeout(() => document.getElementById('login-form').classList.remove('shake'), 400);
+    }
+
+    /* ── Forgot password ── */
+    window.showForgotPassword = function() {
+      const modal = document.getElementById('forgot-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    };
+    window.closeForgotModal = function() {
+      document.getElementById('forgot-modal').classList.add('hidden');
+      document.getElementById('forgot-modal').classList.remove('flex');
+    };
+    window.sendReset = async function() {
+      const email = document.getElementById('reset-email').value.trim();
+      if (!email) return;
+      if (window.supabase) {
+        await window.supabase.auth.resetPasswordForEmail(email);
+      }
+      closeForgotModal();
+      alert(`If ${email} exists in our system, a reset link has been sent.`);
+    };
+
+    /* ── Enter key ── */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('login-form').dispatchEvent(new Event('submit'));
+    });
+  </script>
+</body>
+</html>

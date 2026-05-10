@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard — YUMYUMPO</title>
+  <title>Admin — YUMYUMPO</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -31,253 +31,410 @@
 
   <style>
     body { background: #F9F9F9; }
+
+    /* ── Sidebar ── */
     .sidebar { width: 240px; min-height: 100vh; background: #111; flex-shrink: 0; }
     .sidebar-link {
       display: flex; align-items: center; gap: 10px;
       padding: 10px 16px; border-radius: 10px;
       font-size: 0.875rem; font-weight: 600;
-      color: rgba(255,255,255,0.5);
-      cursor: pointer; transition: all 0.2s;
+      color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s;
+      text-decoration: none;
     }
     .sidebar-link:hover  { background: rgba(255,255,255,0.08); color: #fff; }
     .sidebar-link.active { background: #FFD000; color: #111; }
     .sidebar-link svg    { width: 17px; height: 17px; flex-shrink: 0; }
 
+    /* ── Cards ── */
     .stat-card { background: #fff; border-radius: 18px; padding: 1.375rem; border: 1.5px solid #F3F3F3; }
     .stat-value { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 800; color: #111; letter-spacing: -0.03em; }
     .stat-label { font-size: 0.8rem; font-weight: 600; color: #ABABAB; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px; }
+    .section-card { background: #fff; border-radius: 20px; border: 1.5px solid #F3F3F3; padding: 1.5rem; }
 
+    /* ── Form inputs ── */
     .form-input {
       width: 100%; background: #F3F3F3; border: 1.5px solid #E8E8E8;
       border-radius: 12px; padding: 0.75rem 1rem;
       font-size: 0.875rem; color: #111; outline: none; transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
     }
     .form-input:focus { border-color: #FFD000; background: #fff; box-shadow: 0 0 0 3px rgba(255,208,0,0.15); }
     .form-label { display: block; font-size: 0.8125rem; font-weight: 700; color: #111; margin-bottom: 6px; }
 
-    .btn-yellow { background: #FFD000; color: #111; font-weight: 700; font-size: 0.875rem; padding: 0.75rem 1.5rem; border-radius: 12px; transition: all 0.2s; border: none; cursor: pointer; }
-    .btn-yellow:hover { background: #E6BB00; transform: translateY(-1px); }
-    .btn-outline { background: #F3F3F3; color: #111; font-weight: 700; font-size: 0.875rem; padding: 0.75rem 1.5rem; border-radius: 12px; border: 1.5px solid #E8E8E8; transition: all 0.2s; cursor: pointer; }
+    /* ── Buttons ── */
+    .btn-yellow  { background: #FFD000; color: #111; font-weight: 700; font-size: 0.875rem; padding: 0.75rem 1.5rem; border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 7px; }
+    .btn-yellow:hover  { background: #E6BB00; transform: translateY(-1px); }
+    .btn-black   { background: #111; color: #fff; font-weight: 700; font-size: 0.875rem; padding: 0.75rem 1.5rem; border-radius: 12px; border: none; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 7px; }
+    .btn-black:hover   { background: #222; }
+    .btn-outline { background: #F3F3F3; color: #111; font-weight: 700; font-size: 0.875rem; padding: 0.75rem 1.5rem; border-radius: 12px; border: 1.5px solid #E8E8E8; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 7px; }
     .btn-outline:hover { background: #fff; border-color: #111; }
+    .btn-sm      { padding: 0.5rem 1rem; font-size: 0.8125rem; border-radius: 10px; }
+    .btn-danger  { background: #FEE2E2; color: #DC2626; border: 1.5px solid #FECACA; }
+    .btn-danger:hover  { background: #DC2626; color: #fff; border-color: #DC2626; }
 
+    /* ── Restaurant rows ── */
     .restaurant-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:14px; background:#fff; border:1.5px solid #F3F3F3; transition: all 0.2s; }
     .restaurant-row:hover { border-color: #E8E8E8; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
 
-    .tag-toggle {
-      font-size: 0.75rem; font-weight: 700; padding: 5px 12px; border-radius: 999px;
+    /* ── Tag pills ── */
+    .tag-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.8125rem; font-weight: 700;
+      padding: 7px 14px; border-radius: 999px;
       border: 1.5px solid #E8E8E8; background: #fff; color: #6B6B6B;
       cursor: pointer; transition: all 0.2s;
     }
-    .tag-toggle:hover  { border-color: #FFD000; color: #111; }
-    .tag-toggle.active { background: #FFD000; border-color: #FFD000; color: #111; }
+    .tag-pill:hover  { border-color: #FFD000; color: #111; }
+    .tag-pill.active { background: #FFD000; border-color: #FFD000; color: #111; }
+    .tag-pill .remove-tag { opacity: 0; transition: opacity 0.15s; font-size: 0.875rem; line-height: 1; }
+    .tag-pill:hover .remove-tag { opacity: 0.6; }
 
-    /* Mini sparkline bars */
+    /* ── Performance badges ── */
+    .perf-badge { font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+    .perf-hot    { background: #DCFCE7; color: #15803D; }
+    .perf-stable { background: #FEF9C3; color: #854D0E; }
+    .perf-low    { background: #FEE2E2; color: #991B1B; }
+
+    /* ── Mini sparklines ── */
     .sparkline { display:flex; align-items:flex-end; gap:2px; height:28px; }
     .spark-bar { width:4px; background:#F3F3F3; border-radius:2px; min-height:3px; }
     .spark-bar.lit { background:#FFD000; }
 
-    /* Performance badge */
-    .perf-badge { font-size:0.65rem; font-weight:800; padding:2px 8px; border-radius:999px; }
-    .perf-hot    { background:#DCFCE7; color:#15803D; }
-    .perf-stable { background:#FEF9C3; color:#854D0E; }
-    .perf-low    { background:#FEE2E2; color:#991B1B; }
+    /* ══ EDIT MODAL ══ */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(17,17,17,0.65); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem; opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal-box {
+      background: #fff; border-radius: 24px;
+      width: 100%; max-width: 780px;
+      max-height: 90vh; overflow-y: auto;
+      transform: translateY(20px) scale(0.97);
+      transition: transform 0.3s cubic-bezier(0.34,1.4,0.64,1);
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0) scale(1); }
 
-    /* Analytics mini chart */
-    .mini-bar-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-    .mini-bar-label { font-size:0.8rem; font-weight:600; color:#333; width:120px; flex-shrink:0; }
-    .mini-bar-track { flex:1; background:#F3F3F3; border-radius:999px; height:7px; }
-    .mini-bar-fill  { height:100%; border-radius:999px; background:#FFD000; transition:width 0.6s ease; }
-    .mini-bar-val   { font-size:0.8rem; font-weight:800; color:#111; min-width:42px; text-align:right; }
+    /* ══ IMAGE UPLOAD ══ */
+    .drop-zone {
+      border: 2px dashed #E8E8E8; border-radius: 16px;
+      padding: 2.5rem; text-align: center;
+      cursor: pointer; transition: all 0.2s; background: #F9F9F9;
+    }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: #FFD000; background: #FFF9D6; }
+    .drop-zone.drag-over .drop-icon { transform: scale(1.15); }
+    .drop-icon { font-size: 2.5rem; display: block; margin-bottom: 8px; transition: transform 0.2s; }
+    .image-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 12px; }
+    .image-preview-item { position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #F3F3F3; }
+    .image-preview-item img { width: 100%; height: 100%; object-fit: cover; }
+    .image-preview-remove {
+      position: absolute; top: 4px; right: 4px;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: rgba(0,0,0,0.7); color: #fff;
+      font-size: 0.75rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border: none;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .image-preview-item:hover .image-preview-remove { opacity: 1; }
+    .upload-progress { height: 4px; background: #F3F3F3; border-radius: 2px; overflow: hidden; margin-top: 8px; }
+    .upload-progress-bar { height: 100%; background: #FFD000; border-radius: 2px; transition: width 0.3s ease; }
 
+    /* ══ CUISINE CARDS ══ */
+    .cuisine-card {
+      background: #fff; border-radius: 16px; border: 1.5px solid #F3F3F3;
+      padding: 1rem; display: flex; flex-direction: column; align-items: center;
+      gap: 8px; text-align: center; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .cuisine-card:hover { border-color: #FFD000; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .cuisine-card.inactive { opacity: 0.5; }
+    .cuisine-emoji-btn { font-size: 2.25rem; display: block; }
+
+    /* ══ INTELLIGENCE ALERTS ══ */
+    .intel-card {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px 18px; border-radius: 16px; border: 1.5px solid;
+    }
+
+    /* ── Mobile ── */
     @media (max-width:768px) { .sidebar { display:none; } }
   </style>
 </head>
 
 <body class="font-sans text-brand-black antialiased">
+
+<!-- ══════════════════════════════════════════════════════════
+     EDIT RESTAURANT MODAL
+══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="edit-modal" onclick="closeEditModal(event)">
+  <div class="modal-box">
+    <div class="flex items-center justify-between p-6 border-b border-gray-100">
+      <h2 class="font-display font-black text-xl text-brand-black" id="modal-title">Edit Restaurant</h2>
+      <button onclick="closeEditModalDirect()" class="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <form id="edit-form" onsubmit="saveEdit(event)" class="p-6 space-y-5">
+      <input type="hidden" id="edit-restaurant-id" />
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div><label class="form-label">Restaurant Name *</label><input type="text" name="name" id="edit-name" class="form-input" required /></div>
+        <div><label class="form-label">URL Slug</label><input type="text" name="slug" id="edit-slug" class="form-input" /></div>
+      </div>
+      <div><label class="form-label">Tagline</label><input type="text" name="tagline" id="edit-tagline" class="form-input" /></div>
+      <div><label class="form-label">Description</label><textarea name="description" id="edit-description" class="form-input" rows="3"></textarea></div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">Cuisine Type</label>
+          <select name="cuisine_type" id="edit-cuisine" class="form-input">
+            <option>Filipino</option><option>Japanese</option><option>Italian</option>
+            <option>Korean</option><option>Chinese</option><option>Seafood</option>
+            <option>BBQ & Grill</option><option>Café</option><option>Vegan</option>
+            <option>Burgers</option><option>Mexican</option><option>Desserts</option>
+          </select>
+        </div>
+        <div><label class="form-label">Location</label><input type="text" name="location" id="edit-location" class="form-input" /></div>
+      </div>
+
+      <div><label class="form-label">Full Address</label><input type="text" name="address" id="edit-address" class="form-input" /></div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div><label class="form-label">Google Rating</label><input type="number" name="google_rating" id="edit-rating" class="form-input" min="1" max="5" step="0.1" /></div>
+        <div><label class="form-label">Review Count</label><input type="number" name="review_count" id="edit-reviews" class="form-input" min="0" /></div>
+      </div>
+
+      <!-- Image Upload in Modal -->
+      <div>
+        <label class="form-label mb-2">Cover Image</label>
+        <div class="flex gap-3 mb-2">
+          <input type="url" name="cover_image_url" id="edit-cover" class="form-input flex-1" placeholder="https://…  or upload below" />
+        </div>
+        <div class="drop-zone" id="edit-drop-zone" onclick="document.getElementById('edit-file-input').click()">
+          <span class="drop-icon">🖼️</span>
+          <p class="text-sm font-bold text-brand-black">Click to upload or drag & drop</p>
+          <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP — max 5MB each</p>
+        </div>
+        <input type="file" id="edit-file-input" accept="image/*" multiple class="hidden" onchange="handleFileSelect(event, 'edit')" />
+        <div class="image-preview-grid" id="edit-preview-grid"></div>
+        <div class="upload-progress hidden" id="edit-upload-progress"><div class="upload-progress-bar" id="edit-progress-bar" style="width:0%"></div></div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div><label class="form-label">WhatsApp URL</label><input type="url" name="whatsapp_url" id="edit-whatsapp" class="form-input" placeholder="https://wa.me/639…" /></div>
+        <div><label class="form-label">Website URL</label><input type="url" name="website_url" id="edit-website" class="form-input" /></div>
+        <div><label class="form-label">Instagram</label><input type="url" name="instagram_url" id="edit-instagram" class="form-input" /></div>
+        <div><label class="form-label">Facebook</label><input type="url" name="facebook_url" id="edit-facebook" class="form-input" /></div>
+        <div><label class="form-label">Phone</label><input type="tel" name="phone" id="edit-phone" class="form-input" /></div>
+        <div><label class="form-label">Messenger</label><input type="url" name="messenger_url" id="edit-messenger" class="form-input" /></div>
+      </div>
+
+      <div class="flex gap-4">
+        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="edit-featured" class="accent-brand-yellow w-4 h-4" /><span class="text-sm font-semibold">Featured</span></label>
+        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="edit-active" class="accent-brand-yellow w-4 h-4" /><span class="text-sm font-semibold">Active</span></label>
+      </div>
+
+      <div id="edit-message" class="hidden rounded-xl p-3 text-sm font-semibold"></div>
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="btn-yellow flex-1 justify-center">Save Changes</button>
+        <button type="button" onclick="closeEditModalDirect()" class="btn-outline">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MAIN LAYOUT
+══════════════════════════════════════════════════════════ -->
 <div class="flex min-h-screen">
 
-  <!-- ══ SIDEBAR ══ -->
-  <aside class="sidebar fixed top-0 left-0 bottom-0 flex flex-col py-6 px-3">
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar fixed top-0 left-0 bottom-0 flex flex-col py-6 px-3 z-40">
 
     <a href="../index.html" class="flex items-center gap-2 px-3 mb-8">
       <img src="../assets/images/YUMYUMPO LOGO.png" alt="YUMYUMPO" class="h-8 w-auto brightness-0 invert" />
     </a>
 
-    <nav class="flex-1 space-y-1">
-      <div class="sidebar-link active" onclick="showTab('dashboard')">
+    <nav class="flex-1 space-y-0.5" id="sidebar-nav">
+      <div class="sidebar-link active" data-tab="dashboard" onclick="showTab('dashboard')">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
         Dashboard
       </div>
-      <div class="sidebar-link" onclick="showTab('restaurants')">
+      <div class="sidebar-link" data-tab="restaurants" onclick="showTab('restaurants')">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
         Restaurants
       </div>
-      <div class="sidebar-link" onclick="showTab('add')">
+      <div class="sidebar-link" data-tab="add" onclick="showTab('add')">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
         Add Restaurant
+      </div>
+      <div class="sidebar-link" data-tab="featured" onclick="showTab('featured')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        Featured
+      </div>
+      <div class="sidebar-link" data-tab="cuisines" onclick="showTab('cuisines')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"/></svg>
+        Cuisines
+      </div>
+      <div class="sidebar-link" data-tab="tags" onclick="showTab('tags')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+        AI Tags
       </div>
       <a href="../analytics.html" class="sidebar-link">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
         Analytics
       </a>
-      <div class="sidebar-link" onclick="showTab('featured')">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-        Featured
-      </div>
     </nav>
 
-    <div class="px-3 pt-4 border-t border-white/10 space-y-2">
+    <div class="px-3 pt-4 border-t border-white/10 space-y-0.5">
       <a href="../index.html" class="sidebar-link">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
         View Site
       </a>
+      <button onclick="handleLogout()" class="sidebar-link w-full text-left">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        Sign Out
+      </button>
     </div>
   </aside>
 
 
-  <!-- ══ MAIN ══ -->
+  <!-- ── MAIN CONTENT ── -->
   <main class="flex-1 ml-0 md:ml-60 min-h-screen">
 
-    <!-- ════ TAB: DASHBOARD ════ -->
+    <!-- ════ DASHBOARD ════ -->
     <div id="tab-dashboard">
-
-      <header class="bg-white border-b border-gray-200 px-6 md:px-10 py-5">
-        <h1 class="font-display font-black text-2xl text-brand-black">Dashboard</h1>
-        <p class="text-gray-400 text-sm mt-0.5">Welcome back. Here's what's happening on YUMYUMPO.</p>
+      <header class="bg-white border-b border-gray-200 px-6 md:px-10 py-5 flex items-center justify-between">
+        <div>
+          <h1 class="font-display font-black text-2xl text-brand-black">Dashboard</h1>
+          <p class="text-gray-400 text-sm mt-0.5" id="admin-greeting">Welcome back.</p>
+        </div>
+        <button onclick="showTab('add')" class="btn-yellow btn-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Add Restaurant
+        </button>
       </header>
 
       <div class="px-6 md:px-10 py-8 space-y-8">
-
         <!-- KPIs -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="stat-card">
+          <div class="stat-card border-t-4 border-brand-yellow">
             <p class="stat-value" id="stat-total">—</p>
             <p class="stat-label">Active Restaurants</p>
             <p class="text-xs text-green-600 font-semibold mt-2">↑ 12 this month</p>
           </div>
-          <div class="stat-card">
+          <div class="stat-card border-t-4 border-green-400">
             <p class="stat-value">47.2k</p>
             <p class="stat-label">Profile Views</p>
             <p class="text-xs text-green-600 font-semibold mt-2">↑ 23% vs last month</p>
           </div>
-          <div class="stat-card">
+          <div class="stat-card border-t-4 border-blue-400">
             <p class="stat-value">3,841</p>
             <p class="stat-label">WhatsApp Clicks</p>
             <p class="text-xs text-green-600 font-semibold mt-2">↑ 18% vs last month</p>
           </div>
-          <div class="stat-card">
+          <div class="stat-card border-t-4 border-purple-400">
             <p class="stat-value">32.7%</p>
-            <p class="stat-label">Avg CTR</p>
+            <p class="stat-label">Platform CTR</p>
             <p class="text-xs text-gray-400 font-semibold mt-2">→ Stable</p>
           </div>
         </div>
 
-        <!-- Top Performers + Quick Actions -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
           <!-- Top performers -->
-          <div class="bg-white rounded-2xl border border-gray-200 p-6 lg:col-span-2">
+          <div class="section-card lg:col-span-2">
             <div class="flex items-center justify-between mb-5">
-              <h2 class="font-display font-black text-lg text-brand-black">Top Performing Restaurants</h2>
+              <h2 class="font-display font-black text-lg text-brand-black">Top Performers</h2>
               <button onclick="showTab('restaurants')" class="text-sm font-bold text-brand-black underline underline-offset-2">View all →</button>
             </div>
-            <div class="space-y-3" id="top-restaurants-list"></div>
+            <div id="top-restaurants-list" class="space-y-1"></div>
           </div>
-
-          <!-- Quick Actions -->
-          <div class="space-y-4">
+          <!-- Quick actions -->
+          <div class="space-y-3">
             <button onclick="showTab('add')" class="w-full flex items-center gap-3 bg-brand-yellow text-brand-black font-bold px-5 py-4 rounded-2xl hover:bg-yellow-400 transition-all hover:scale-105 text-left">
               <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              <div><p class="text-sm">Add New Restaurant</p><p class="text-xs opacity-70 font-normal">List a new business</p></div>
+              <div><p class="text-sm">Add New Restaurant</p><p class="text-xs opacity-60 font-normal">List a business</p></div>
             </button>
             <button onclick="showTab('featured')" class="w-full flex items-center gap-3 bg-brand-black text-white font-bold px-5 py-4 rounded-2xl hover:bg-gray-800 transition-all hover:scale-105 text-left">
               <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-              <div><p class="text-sm">Manage Featured</p><p class="text-xs opacity-70 font-normal">Homepage spotlights</p></div>
+              <div><p class="text-sm">Manage Featured</p><p class="text-xs opacity-60 font-normal">Homepage spotlights</p></div>
             </button>
             <a href="../analytics.html" class="w-full flex items-center gap-3 bg-white border border-gray-200 text-brand-black font-bold px-5 py-4 rounded-2xl hover:border-brand-yellow transition-all hover:scale-105 text-left">
-              <svg class="w-5 h-5 shrink-0 text-brand-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-              <div><p class="text-sm">Full Analytics</p><p class="text-xs text-gray-400 font-normal">Deep dive into data</p></div>
+              <svg class="w-5 h-5 shrink-0 text-brand-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10"/></svg>
+              <div><p class="text-sm">Platform Analytics</p><p class="text-xs text-gray-400 font-normal">Full dashboard →</p></div>
             </a>
           </div>
         </div>
 
-        <!-- Restaurant Intelligence -->
-        <div class="bg-white rounded-2xl border border-gray-200 p-6">
-          <div class="flex items-end justify-between mb-5">
-            <div>
-              <h2 class="font-display font-black text-lg text-brand-black">Restaurant Intelligence</h2>
-              <p class="text-gray-400 text-sm">Visibility scores + action opportunities</p>
-            </div>
-            <span class="text-xs font-bold text-brand-black bg-brand-yellow px-3 py-1.5 rounded-full">This Week</span>
+        <!-- Intelligence -->
+        <div class="section-card">
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="font-display font-black text-lg text-brand-black">Restaurant Intelligence</h2>
+            <span class="text-xs font-black bg-brand-yellow text-brand-black px-3 py-1.5 rounded-full">AI Insights</span>
           </div>
-          <div class="space-y-3" id="intelligence-list"></div>
+          <div id="intelligence-list" class="space-y-3"></div>
         </div>
-
       </div>
-    </div><!-- /dashboard -->
+    </div>
 
 
-    <!-- ════ TAB: RESTAURANTS ════ -->
+    <!-- ════ RESTAURANTS ════ -->
     <div id="tab-restaurants" class="hidden">
-
       <header class="bg-white border-b border-gray-200 px-6 md:px-10 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 class="font-display font-black text-2xl text-brand-black">Restaurants</h1>
-          <p class="text-gray-400 text-sm mt-0.5">Manage all listings on the platform.</p>
-        </div>
-        <button onclick="showTab('add')" class="btn-yellow flex items-center gap-2">
+        <div><h1 class="font-display font-black text-2xl text-brand-black">Restaurants</h1><p class="text-gray-400 text-sm mt-0.5"><span id="restaurant-count">—</span> total listings</p></div>
+        <button onclick="showTab('add')" class="btn-yellow btn-sm">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           Add New
         </button>
       </header>
-
       <div class="px-6 md:px-10 py-8">
         <div class="flex flex-col sm:flex-row gap-3 mb-6">
           <input type="text" placeholder="Search restaurants…" class="form-input flex-1" id="restaurant-search" oninput="filterRestaurants()" />
-          <select class="form-input sm:w-48" id="cuisine-filter" onchange="filterRestaurants()">
+          <select class="form-input sm:w-44" id="cuisine-filter" onchange="filterRestaurants()">
             <option value="">All Cuisines</option>
             <option>Filipino</option><option>Japanese</option><option>Seafood</option>
             <option>Café</option><option>Korean</option><option>BBQ</option><option>Vegan</option>
           </select>
-          <select class="form-input sm:w-40" id="status-filter" onchange="filterRestaurants()">
+          <select class="form-input sm:w-36" id="status-filter" onchange="filterRestaurants()">
             <option value="">All Status</option>
-            <option value="active">Active</option>
             <option value="featured">Featured</option>
+            <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
         </div>
         <div class="space-y-2" id="restaurant-list"></div>
       </div>
-    </div><!-- /restaurants -->
+    </div>
 
 
-    <!-- ════ TAB: ADD RESTAURANT ════ -->
+    <!-- ════ ADD RESTAURANT ════ -->
     <div id="tab-add" class="hidden">
-
       <header class="bg-white border-b border-gray-200 px-6 md:px-10 py-5">
         <h1 class="font-display font-black text-2xl text-brand-black">Add Restaurant</h1>
-        <p class="text-gray-400 text-sm mt-0.5">Fill in the details to list a new restaurant.</p>
+        <p class="text-gray-400 text-sm mt-0.5">List a new restaurant on the YUMYUMPO platform.</p>
       </header>
-
       <div class="px-6 md:px-10 py-8">
       <form id="add-restaurant-form" onsubmit="submitRestaurant(event)" class="max-w-3xl space-y-6">
 
-        <!-- Basic Info -->
-        <div class="bg-white rounded-2xl p-6 border border-gray-200 space-y-5">
+        <div class="section-card space-y-5">
           <h2 class="font-display font-black text-lg text-brand-black">Basic Information</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label class="form-label">Restaurant Name *</label><input type="text" name="name" class="form-input" placeholder="e.g., Maria's Kitchen" required /></div>
-            <div>
-              <label class="form-label">URL Slug *</label>
-              <input type="text" name="slug" class="form-input" placeholder="e.g., marias-kitchen" required />
-              <p class="text-xs text-gray-400 mt-1">platform.com/restaurant/<strong>slug</strong></p>
-            </div>
+            <div><label class="form-label">URL Slug *</label><input type="text" name="slug" class="form-input" placeholder="e.g., marias-kitchen" required /><p class="text-xs text-gray-400 mt-1">platform.com/restaurant/<strong>slug</strong></p></div>
           </div>
           <div><label class="form-label">Tagline</label><input type="text" name="tagline" class="form-input" placeholder="e.g., Home-cooked Filipino food with heart." /></div>
           <div><label class="form-label">Description *</label><textarea name="description" class="form-input" rows="4" placeholder="Tell the story of this restaurant…" required></textarea></div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div>
-              <label class="form-label">Cuisine Type *</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="form-label">Cuisine Type *</label>
               <select name="cuisine_type" class="form-input" required>
                 <option value="">Select cuisine…</option>
                 <option>Filipino</option><option>Japanese</option><option>Italian</option>
@@ -291,19 +448,35 @@
           <div><label class="form-label">Full Address</label><input type="text" name="address" class="form-input" placeholder="e.g., 123 Main Street, El Nido, Palawan 5313" /></div>
         </div>
 
-        <!-- Ratings -->
-        <div class="bg-white rounded-2xl p-6 border border-gray-200 space-y-5">
-          <h2 class="font-display font-black text-lg text-brand-black">Google Ratings</h2>
-          <div class="grid grid-cols-2 gap-5">
+        <!-- Image Upload -->
+        <div class="section-card space-y-4">
+          <h2 class="font-display font-black text-lg text-brand-black">Photos</h2>
+          <div>
+            <label class="form-label">Cover Image URL</label>
+            <input type="url" name="cover_image_url" id="add-cover-url" class="form-input mb-3" placeholder="https://…  or upload below" />
+            <div class="drop-zone" id="add-drop-zone" onclick="document.getElementById('add-file-input').click()">
+              <span class="drop-icon">📸</span>
+              <p class="text-sm font-bold text-brand-black">Click to upload or drag & drop</p>
+              <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP — max 5MB per image</p>
+              <p class="text-xs text-gray-400">Images upload to Supabase Storage automatically</p>
+            </div>
+            <input type="file" id="add-file-input" accept="image/*" multiple class="hidden" onchange="handleFileSelect(event, 'add')" />
+            <div class="image-preview-grid" id="add-preview-grid"></div>
+            <div class="upload-progress hidden" id="add-upload-progress"><div class="upload-progress-bar" id="add-progress-bar" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <div class="section-card space-y-4">
+          <h2 class="font-display font-black text-lg text-brand-black">Ratings</h2>
+          <div class="grid grid-cols-2 gap-4">
             <div><label class="form-label">Google Rating (1–5)</label><input type="number" name="google_rating" class="form-input" placeholder="4.7" min="1" max="5" step="0.1" /></div>
             <div><label class="form-label">Review Count</label><input type="number" name="review_count" class="form-input" placeholder="1,238" min="0" /></div>
           </div>
         </div>
 
-        <!-- Contact -->
-        <div class="bg-white rounded-2xl p-6 border border-gray-200 space-y-5">
+        <div class="section-card space-y-4">
           <h2 class="font-display font-black text-lg text-brand-black">Contact &amp; Links</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label class="form-label">Phone</label><input type="tel" name="phone" class="form-input" placeholder="+63 912 345 6789" /></div>
             <div><label class="form-label">Website URL</label><input type="url" name="website_url" class="form-input" placeholder="https://yourrestaurant.com" /></div>
             <div><label class="form-label">WhatsApp URL</label><input type="url" name="whatsapp_url" class="form-input" placeholder="https://wa.me/639…" /></div>
@@ -313,63 +486,145 @@
           </div>
         </div>
 
-        <!-- Images -->
-        <div class="bg-white rounded-2xl p-6 border border-gray-200 space-y-5">
-          <h2 class="font-display font-black text-lg text-brand-black">Images</h2>
-          <p class="text-gray-400 text-sm">Paste image URLs from Supabase Storage or any CDN.</p>
-          <div><label class="form-label">Cover Image URL *</label><input type="url" name="cover_image_url" class="form-input" placeholder="https://…" required /></div>
-          <div><label class="form-label">Logo Image URL</label><input type="url" name="logo_image_url" class="form-input" placeholder="https://…" /></div>
-        </div>
-
-        <!-- Tags -->
-        <div class="bg-white rounded-2xl p-6 border border-gray-200 space-y-5">
-          <h2 class="font-display font-black text-lg text-brand-black">Tags</h2>
+        <div class="section-card space-y-4">
+          <h2 class="font-display font-black text-lg text-brand-black">AI Tags</h2>
+          <p class="text-gray-400 text-sm">Select all that apply — used by the AI discovery engine.</p>
           <div class="flex flex-wrap gap-2" id="tag-selector"></div>
           <input type="hidden" name="tags" id="selected-tags" />
         </div>
 
-        <!-- Settings -->
-        <div class="bg-white rounded-2xl p-6 border border-gray-200 space-y-4">
+        <div class="section-card space-y-3">
           <h2 class="font-display font-black text-lg text-brand-black">Settings</h2>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" name="is_featured" class="w-4 h-4 accent-brand-yellow" />
-            <span class="text-sm font-semibold text-brand-black">Mark as Featured (homepage spotlight)</span>
-          </label>
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" name="is_active" checked class="w-4 h-4 accent-brand-yellow" />
-            <span class="text-sm font-semibold text-brand-black">Active (visible on platform)</span>
-          </label>
+          <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" name="is_featured" class="w-4 h-4 accent-brand-yellow" /><span class="text-sm font-semibold">Featured on homepage</span></label>
+          <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" name="is_active" checked class="w-4 h-4 accent-brand-yellow" /><span class="text-sm font-semibold">Active (visible to users)</span></label>
         </div>
 
         <div class="flex gap-3">
           <button type="submit" class="btn-yellow">Save Restaurant</button>
           <button type="button" onclick="showTab('restaurants')" class="btn-outline">Cancel</button>
         </div>
-        <div id="form-message" class="hidden rounded-xl p-4 text-sm font-semibold"></div>
-
+        <div id="form-message" class="hidden rounded-xl p-3 text-sm font-semibold"></div>
       </form>
       </div>
-    </div><!-- /add -->
+    </div>
 
 
-    <!-- ════ TAB: FEATURED ════ -->
+    <!-- ════ FEATURED ════ -->
     <div id="tab-featured" class="hidden">
-
       <header class="bg-white border-b border-gray-200 px-6 md:px-10 py-5">
         <h1 class="font-display font-black text-2xl text-brand-black">Featured Listings</h1>
-        <p class="text-gray-400 text-sm mt-0.5">Control the homepage spotlight sections.</p>
+        <p class="text-gray-400 text-sm mt-0.5">Control homepage spotlight sections. Max 6 per section.</p>
       </header>
-
       <div class="px-6 md:px-10 py-8 max-w-3xl">
-        <div class="bg-white rounded-2xl p-6 border border-gray-200 mb-6">
-          <p class="text-sm text-gray-600 mb-6">Featured restaurants appear in the <strong>Editor's Picks</strong> section on the homepage. Maximum <strong>6 restaurants</strong> per section.</p>
-          <div id="featured-list" class="space-y-3"></div>
-        </div>
+        <div class="section-card"><div id="featured-list"></div></div>
       </div>
-    </div><!-- /featured -->
+    </div>
+
+
+    <!-- ════ CUISINE CATEGORIES ════ -->
+    <div id="tab-cuisines" class="hidden">
+      <header class="bg-white border-b border-gray-200 px-6 md:px-10 py-5 flex items-center justify-between">
+        <div><h1 class="font-display font-black text-2xl text-brand-black">Cuisine Categories</h1><p class="text-gray-400 text-sm mt-0.5">Manage the cuisine types shown across the platform.</p></div>
+        <button onclick="openAddCuisine()" class="btn-yellow btn-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          New Cuisine
+        </button>
+      </header>
+      <div class="px-6 md:px-10 py-8">
+        <!-- Add cuisine inline form -->
+        <div id="add-cuisine-form" class="hidden section-card mb-6">
+          <h3 class="font-display font-black text-lg text-brand-black mb-4">Add New Cuisine</h3>
+          <div class="flex gap-3 flex-wrap">
+            <div><label class="form-label">Emoji</label><input type="text" id="new-cuisine-emoji" class="form-input w-24 text-2xl text-center" placeholder="🍛" maxlength="4" /></div>
+            <div class="flex-1"><label class="form-label">Cuisine Name</label><input type="text" id="new-cuisine-name" class="form-input" placeholder="e.g., Filipino" /></div>
+            <div><label class="form-label">Sort Order</label><input type="number" id="new-cuisine-order" class="form-input w-24" value="99" min="0" /></div>
+          </div>
+          <div class="flex gap-3 mt-4">
+            <button onclick="saveCuisine()" class="btn-yellow btn-sm">Save Cuisine</button>
+            <button onclick="closeAddCuisine()" class="btn-outline btn-sm">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Cuisine grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4" id="cuisine-grid"></div>
+      </div>
+    </div>
+
+
+    <!-- ════ AI TAGS ════ -->
+    <div id="tab-tags" class="hidden">
+      <header class="bg-white border-b border-gray-200 px-6 md:px-10 py-5">
+        <h1 class="font-display font-black text-2xl text-brand-black">AI Tag Management</h1>
+        <p class="text-gray-400 text-sm mt-0.5">Tags power the AI discovery engine. Manage what travelers can search for.</p>
+      </header>
+      <div class="px-6 md:px-10 py-8 space-y-8">
+
+        <!-- Tag stats -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="stat-card"><p class="stat-value" id="tags-total">—</p><p class="stat-label">Total Tags</p></div>
+          <div class="stat-card"><p class="stat-value" id="tags-used">—</p><p class="stat-label">Tags in Use</p></div>
+          <div class="stat-card"><p class="stat-value" id="tags-restaurants">—</p><p class="stat-label">Tagged Restaurants</p></div>
+          <div class="stat-card"><p class="stat-value" id="tags-top">—</p><p class="stat-label">Most Used Tag</p></div>
+        </div>
+
+        <!-- Add tag -->
+        <div class="section-card">
+          <h2 class="font-display font-black text-lg text-brand-black mb-4">Add New Tag</h2>
+          <div class="flex gap-3 flex-wrap items-end">
+            <div class="flex-1 min-w-48"><label class="form-label">Tag Name</label><input type="text" id="new-tag-input" class="form-input" placeholder="e.g., Sunset Dining" onkeydown="if(event.key==='Enter')addTag()" /></div>
+            <div class="w-32"><label class="form-label">Category</label>
+              <select id="new-tag-category" class="form-input">
+                <option value="vibe">Vibe</option>
+                <option value="meal">Meal Type</option>
+                <option value="feature">Feature</option>
+                <option value="diet">Diet</option>
+                <option value="location">Location</option>
+              </select>
+            </div>
+            <button onclick="addTag()" class="btn-yellow btn-sm mb-0.5">Add Tag</button>
+          </div>
+        </div>
+
+        <!-- Tag cloud grouped by category -->
+        <div class="section-card">
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="font-display font-black text-lg text-brand-black">All Tags</h2>
+            <select id="tag-filter-cat" class="form-input w-40" onchange="renderTagsTab()">
+              <option value="">All Categories</option>
+              <option value="vibe">Vibe</option>
+              <option value="meal">Meal Type</option>
+              <option value="feature">Feature</option>
+              <option value="diet">Diet</option>
+              <option value="location">Location</option>
+            </select>
+          </div>
+          <div id="tags-cloud" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <!-- Tag usage table -->
+        <div class="section-card">
+          <h2 class="font-display font-black text-lg text-brand-black mb-5">Tag Usage by Restaurant</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-gray-100">
+                  <th class="text-left font-black text-gray-400 text-xs uppercase tracking-wider pb-3">Tag</th>
+                  <th class="text-left font-black text-gray-400 text-xs uppercase tracking-wider pb-3">Category</th>
+                  <th class="text-center font-black text-gray-400 text-xs uppercase tracking-wider pb-3">Restaurants</th>
+                  <th class="text-center font-black text-gray-400 text-xs uppercase tracking-wider pb-3">AI Searches</th>
+                  <th class="text-right pb-3"></th>
+                </tr>
+              </thead>
+              <tbody id="tags-table" class="divide-y divide-gray-50"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
 
   </main>
-</div><!-- /flex -->
+</div>
 
 
 <script src="../assets/js/supabase-client.js"></script>
