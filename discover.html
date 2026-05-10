@@ -80,6 +80,10 @@
           </svg>
           Home
         </a>
+        <a href="ai-search.html" class="hidden md:inline-flex items-center gap-1.5 text-sm font-700 text-brand-black bg-brand-yellow hover:opacity-90 transition-opacity px-4 py-2.5 rounded-xl">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Ask AI
+        </a>
         <a href="admin/index.html" class="btn-primary text-sm py-2.5 px-5">
           List My Restaurant
         </a>
@@ -147,8 +151,17 @@
         </div>
       </div>
 
+      <!-- Ask AI CTA -->
+      <div class="mt-6 fade-in-up" style="animation-delay:0.32s">
+        <a href="ai-search.html" class="inline-flex items-center gap-2 bg-brand-yellow text-brand-black font-bold text-sm px-5 py-3 rounded-2xl hover:opacity-90 transition-all hover:scale-105 shadow-lg shadow-yellow-400/20">
+          <span class="text-base">🤖</span>
+          Ask YAI — describe your craving in plain English
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </a>
+      </div>
+
       <!-- Quick vibe filters -->
-      <div class="flex flex-wrap gap-2 mt-6 fade-in-up" style="animation-delay:0.35s">
+      <div class="flex flex-wrap gap-2 mt-4 fade-in-up" style="animation-delay:0.35s">
         <span class="text-white/40 text-sm font-medium self-center mr-1">Quick vibes:</span>
         <button class="suggestion-chip" onclick="applyVibe('Budget-Friendly')">💸 Budget-Friendly</button>
         <button class="suggestion-chip" onclick="applyVibe('Hidden Gem')">💎 Hidden Gems</button>

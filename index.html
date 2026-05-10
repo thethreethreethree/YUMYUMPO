@@ -408,7 +408,7 @@
             placeholder="I want something cozy and budget-friendly..."
             class="w-full bg-white/10 border border-white/15 text-white placeholder-white/35 rounded-2xl px-6 py-5 text-base outline-none focus:border-brand-yellow/60 focus:bg-white/15 transition-all pr-16"
           />
-          <button class="absolute right-3 top-1/2 -translate-y-1/2 bg-brand-yellow hover:bg-yellow-300 text-brand-black p-3 rounded-xl transition-all hover:scale-105 font-bold">
+          <button id="ai-search-btn" onclick="submitHeroAISearch()" class="absolute right-3 top-1/2 -translate-y-1/2 bg-brand-yellow hover:bg-yellow-300 text-brand-black p-3 rounded-xl transition-all hover:scale-105 font-bold">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
             </svg>
@@ -617,6 +617,34 @@
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/analytics.js"></script>
   <script src="assets/js/main.js"></script>
+
+  <script>
+  /* ── Hero AI search bar → ai-search.html ── */
+  function submitHeroAISearch() {
+    const input = document.getElementById('ai-search');
+    const q = input ? input.value.trim() : '';
+    if (q) {
+      window.location.href = 'ai-search.html?q=' + encodeURIComponent(q);
+    } else {
+      window.location.href = 'ai-search.html';
+    }
+  }
+  function fillAiSearch(text) {
+    const input = document.getElementById('ai-search');
+    if (input) {
+      input.value = text;
+      input.focus();
+    }
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('ai-search');
+    if (input) {
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') submitHeroAISearch();
+      });
+    }
+  });
+  </script>
 
 </body>
 </html>

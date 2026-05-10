@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ask YAI — AI Restaurant Discovery · YUMYUMPO</title>
+  <meta name="description" content="Chat with YAI, your AI food guide for the Philippines. Describe your craving, vibe, or occasion and get personalized restaurant recommendations instantly." />
+  <link rel="icon" href="assets/images/YUMYUMPO LOGO.png" type="image/png" />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'brand-yellow': '#FFD000',
+            'brand-black':  '#111111',
+            'brand-gray':   '#1C1C1C',
+            'brand-muted':  '#6B6B6B',
+            /* legacy aliases */
+            'warm-orange':  '#FFD000',
+            'charcoal':     '#111111',
+            'warm-white':   '#FAFAFA',
+            'stone-pale':   '#F5F5F4',
+            'stone-mid':    '#6B6B6B',
+          },
+          fontFamily: { grotesk: ['"Space Grotesk"', 'sans-serif'] },
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <style>
+    :root { --yellow: #FFD000; --black: #111111; }
+    body { background: #0D0D0D; font-family: 'Space Grotesk', sans-serif; }
+
+    /* ── chat scroll ── */
+    #chat-messages {
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    #chat-messages::-webkit-scrollbar { width: 4px; }
+    #chat-messages::-webkit-scrollbar-track { background: transparent; }
+    #chat-messages::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+    /* ── message bubbles ── */
+    .msg-user {
+      background: var(--yellow);
+      color: var(--black);
+      border-radius: 20px 20px 4px 20px;
+    }
+    .msg-ai {
+      background: #1A1A1A;
+      color: #F0F0F0;
+      border-radius: 20px 20px 20px 4px;
+      border: 1px solid #2A2A2A;
+    }
+    .msg-ai a { color: var(--yellow); text-decoration: none; }
+    .msg-ai a:hover { text-decoration: underline; }
+
+    /* ── typing indicator ── */
+    .typing-dot {
+      width: 7px; height: 7px;
+      background: #555;
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%,80%,100% { transform: translateY(0); }
+      40%          { transform: translateY(-6px); }
+    }
+
+    /* ── restaurant card inside chat ── */
+    .chat-restaurant-card {
+      background: #111;
+      border: 1px solid #2A2A2A;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: border-color .2s, transform .2s;
+      cursor: pointer;
+    }
+    .chat-restaurant-card:hover {
+      border-color: var(--yellow);
+      transform: translateY(-2px);
+    }
+    .chat-restaurant-card img {
+      width: 100%; height: 140px;
+      object-fit: cover;
+    }
+
+    /* ── suggestion chips ── */
+    .suggestion-chip {
+      background: #1A1A1A;
+      border: 1px solid #333;
+      color: #D0D0D0;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .suggestion-chip:hover {
+      background: var(--yellow);
+      border-color: var(--yellow);
+      color: var(--black);
+    }
+
+    /* ── input area ── */
+    #chat-input {
+      background: #1A1A1A;
+      border: 1px solid #2A2A2A;
+      border-radius: 999px;
+      color: #F0F0F0;
+      outline: none;
+      transition: border-color .2s;
+    }
+    #chat-input:focus { border-color: var(--yellow); }
+    #chat-input::placeholder { color: #555; }
+
+    #send-btn {
+      background: var(--yellow);
+      color: var(--black);
+      border-radius: 999px;
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: opacity .15s, transform .15s;
+      flex-shrink: 0;
+    }
+    #send-btn:hover { opacity: .85; }
+    #send-btn:active { transform: scale(.95); }
+    #send-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── score bar ── */
+    .score-bar-fill {
+      height: 3px;
+      background: var(--yellow);
+      border-radius: 2px;
+      transition: width .6s ease;
+    }
+
+    /* ── mood collection cards ── */
+    .mood-card {
+      background: #1A1A1A;
+      border: 1px solid #252525;
+      border-radius: 14px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all .2s;
+      text-align: center;
+    }
+    .mood-card:hover {
+      border-color: var(--yellow);
+      background: #222;
+      transform: translateY(-2px);
+    }
+
+    /* ── welcome hero ── */
+    #welcome-state .yai-glow {
+      background: radial-gradient(circle at 50% 60%, rgba(255,208,0,.15) 0%, transparent 70%);
+    }
+
+    /* ── nav ── */
+    .ai-nav {
+      background: rgba(13,13,13,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #1C1C1C;
+    }
+
+    /* ── rating stars ── */
+    .star-fill { color: var(--yellow); }
+    .star-empty { color: #333; }
+
+    /* ── tag pill inside card ── */
+    .chat-tag {
+      background: rgba(255,208,0,.1);
+      color: var(--yellow);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* reveal animation */
+    .reveal-up { opacity:0; transform:translateY(16px); transition: opacity .4s, transform .4s; }
+    .revealed  { opacity:1; transform:translateY(0); }
+  </style>
+</head>
+<body class="min-h-screen text-white">
+
+  <!-- ════════════════════════════════════════
+       NAV
+  ════════════════════════════════════════ -->
+  <nav class="ai-nav fixed top-0 left-0 right-0 z-50 px-4 md:px-8 h-16 flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-3">
+      <img src="assets/images/YUMYUMPO LOGO.png" alt="YUMYUMPO" class="h-8 w-auto" onerror="this.style.display='none'" />
+      <span class="font-grotesk font-800 text-lg text-white hidden sm:block">YUMYUMPO</span>
+    </a>
+
+    <div class="flex items-center gap-3">
+      <!-- model badge -->
+      <div class="hidden md:flex items-center gap-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-full px-3 py-1.5">
+        <span class="w-2 h-2 rounded-full bg-brand-yellow animate-pulse"></span>
+        <span class="text-xs text-gray-400 font-medium">YAI · Local Intelligence</span>
+      </div>
+      <a href="discover.html" class="text-sm text-gray-400 hover:text-white transition-colors">Discover</a>
+      <a href="index.html" class="text-sm bg-brand-yellow text-brand-black font-bold px-4 py-1.5 rounded-full hover:opacity-90 transition-opacity">Home</a>
+    </div>
+  </nav>
+
+  <!-- ════════════════════════════════════════
+       MAIN LAYOUT
+  ════════════════════════════════════════ -->
+  <main class="flex flex-col h-screen pt-16">
+
+    <!-- chat area -->
+    <div id="chat-messages" class="flex-1 overflow-y-auto px-4 md:px-0">
+      <div class="max-w-2xl mx-auto py-6 space-y-6">
+
+        <!-- WELCOME STATE -->
+        <div id="welcome-state">
+          <!-- glow backdrop -->
+          <div class="yai-glow w-full h-64 absolute left-0 pointer-events-none"></div>
+
+          <div class="text-center py-10 relative">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-brand-yellow mb-5 shadow-lg shadow-yellow-400/20">
+              <span class="text-4xl">🤖</span>
+            </div>
+            <h1 class="font-grotesk font-extrabold text-3xl md:text-4xl text-white mb-2">Meet YAI</h1>
+            <p class="text-gray-400 text-base max-w-sm mx-auto mb-8">Your AI food guide for the Philippines. Describe your craving, vibe, or occasion — I'll find the perfect spot.</p>
+
+            <!-- example prompts grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left mb-8" id="example-prompts">
+              <!-- filled by JS -->
+            </div>
+
+            <!-- mood collections -->
+            <p class="text-xs text-gray-500 font-semibold uppercase tracking-widest mb-4">Or browse by vibe</p>
+            <div class="grid grid-cols-3 sm:grid-cols-5 gap-2" id="mood-grid">
+              <!-- filled by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- MESSAGES will be appended here -->
+
+      </div>
+    </div>
+
+    <!-- ── suggestions bar ── -->
+    <div id="suggestions-bar" class="hidden px-4 pb-2">
+      <div class="max-w-2xl mx-auto">
+        <div id="suggestion-chips" class="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ── input bar ── -->
+    <div class="border-t border-[#1C1C1C] bg-[#0D0D0D] px-4 py-3">
+      <div class="max-w-2xl mx-auto">
+        <div class="flex items-center gap-3">
+          <input
+            id="chat-input"
+            type="text"
+            placeholder="I'm craving something spicy near Makati..."
+            class="flex-1 px-5 py-3 text-sm"
+            autocomplete="off"
+            maxlength="280"
+          />
+          <button id="send-btn" aria-label="Send">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+        <p class="text-center text-xs text-gray-600 mt-2">YAI uses local intelligence + optional Claude AI · <a href="discover.html" class="text-gray-500 hover:text-brand-yellow transition-colors">Browse all restaurants →</a></p>
+      </div>
+    </div>
+  </main>
+
+
+  <!-- ════════════════════════════════════════
+       SCRIPTS
+  ════════════════════════════════════════ -->
+  <script src="assets/js/analytics.js"></script>
+  <script src="assets/js/ai-search.js"></script>
+
+  <script>
+  /* ══════════════════════════════════════════════════════════
+     AI SEARCH UI — chat controller
+  ══════════════════════════════════════════════════════════ */
+  (function () {
+    'use strict';
+
+    /* ── DOM refs ── */
+    const chatMessages  = document.getElementById('chat-messages');
+    const msgContainer  = chatMessages.querySelector('.space-y-6');
+    const welcomeState  = document.getElementById('welcome-state');
+    const chatInput     = document.getElementById('chat-input');
+    const sendBtn       = document.getElementById('send-btn');
+    const suggestionsBar= document.getElementById('suggestions-bar');
+    const chipContainer = document.getElementById('suggestion-chips');
+    const examplePromptsEl = document.getElementById('example-prompts');
+    const moodGrid      = document.getElementById('mood-grid');
+
+    let chatStarted = false;
+
+    /* ── EXAMPLE PROMPTS ── */
+    const EXAMPLES = [
+      { icon: '🌊', text: 'Best seafood spot in Siargao for backpackers' },
+      { icon: '💑', text: 'Romantic dinner for anniversary in BGC' },
+      { icon: '🍜', text: 'Authentic ramen under ₱400 in Makati' },
+      { icon: '📸', text: 'Instagrammable café with good coffee in Cebu' },
+      { icon: '🏖️', text: 'Beachfront restaurant for sunset drinks' },
+      { icon: '🌱', text: 'Vegan-friendly lunch near the city center' },
+    ];
+
+    EXAMPLES.forEach(ex => {
+      const btn = document.createElement('button');
+      btn.className = 'flex items-start gap-3 bg-[#1A1A1A] border border-[#252525] hover:border-brand-yellow rounded-2xl p-4 text-left transition-all group';
+      btn.innerHTML = `<span class="text-xl flex-shrink-0">${ex.icon}</span><span class="text-sm text-gray-300 group-hover:text-white transition-colors">${ex.text}</span>`;
+      btn.addEventListener('click', () => submitQuery(ex.text));
+      examplePromptsEl.appendChild(btn);
+    });
+
+    /* ── MOOD GRID ── */
+    const MOODS = [
+      { emoji: '💑', label: 'Romantic' },
+      { emoji: '🎒', label: 'Backpacker' },
+      { emoji: '🌅', label: 'Beachfront' },
+      { emoji: '📸', label: 'Aesthetic' },
+      { emoji: '👨‍👩‍👧', label: 'Family' },
+      { emoji: '🍺', label: 'Night Out' },
+      { emoji: '💰', label: 'Budget' },
+      { emoji: '🌱', label: 'Vegan' },
+      { emoji: '🍣', label: 'Japanese' },
+      { emoji: '🍕', label: 'Italian' },
+    ];
+
+    MOODS.forEach(m => {
+      const card = document.createElement('button');
+      card.className = 'mood-card';
+      card.innerHTML = `<div class="text-2xl mb-1">${m.emoji}</div><div class="text-xs text-gray-400 font-semibold">${m.label}</div>`;
+      card.addEventListener('click', () => submitQuery(m.label + ' restaurants'));
+      moodGrid.appendChild(card);
+    });
+
+    /* ════════════════════════════════════════
+       MESSAGE RENDERING
+    ════════════════════════════════════════ */
+
+    function appendUserMessage(text) {
+      const div = document.createElement('div');
+      div.className = 'flex justify-end reveal-up';
+      div.innerHTML = `
+        <div class="msg-user px-5 py-3 max-w-[80%] text-sm font-medium">${escHtml(text)}</div>
+      `;
+      msgContainer.appendChild(div);
+      requestAnimationFrame(() => div.classList.add('revealed'));
+      scrollBottom();
+    }
+
+    function appendTypingIndicator() {
+      const div = document.createElement('div');
+      div.id = 'typing-indicator';
+      div.className = 'flex items-start gap-3 reveal-up';
+      div.innerHTML = `
+        <div class="w-8 h-8 rounded-full bg-brand-yellow flex items-center justify-center flex-shrink-0 text-base">🤖</div>
+        <div class="msg-ai px-5 py-4 flex items-center gap-2">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      `;
+      msgContainer.appendChild(div);
+      requestAnimationFrame(() => div.classList.add('revealed'));
+      scrollBottom();
+      return div;
+    }
+
+    function removeTypingIndicator() {
+      const el = document.getElementById('typing-indicator');
+      if (el) el.remove();
+    }
+
+    function appendAIMessage(html, suggestions = []) {
+      const div = document.createElement('div');
+      div.className = 'flex items-start gap-3 reveal-up';
+      div.innerHTML = `
+        <div class="w-8 h-8 rounded-full bg-brand-yellow flex items-center justify-center flex-shrink-0 text-base flex-shrink-0">🤖</div>
+        <div class="msg-ai px-5 py-4 flex-1 min-w-0 text-sm leading-relaxed">${html}</div>
+      `;
+      msgContainer.appendChild(div);
+      requestAnimationFrame(() => div.classList.add('revealed'));
+      scrollBottom();
+
+      if (suggestions.length) showSuggestions(suggestions);
+    }
+
+    function appendRestaurantCards(restaurants) {
+      if (!restaurants || !restaurants.length) return;
+      const div = document.createElement('div');
+      div.className = 'pl-11 reveal-up';
+      div.innerHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+          ${restaurants.slice(0, 4).map(r => restaurantCardHTML(r)).join('')}
+        </div>
+      `;
+      msgContainer.appendChild(div);
+      requestAnimationFrame(() => div.classList.add('revealed'));
+
+      /* card click → restaurant page */
+      div.querySelectorAll('.chat-restaurant-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const slug = card.dataset.slug;
+          if (slug) window.location.href = `restaurant.html?id=${slug}`;
+        });
+      });
+
+      scrollBottom();
+    }
+
+    function restaurantCardHTML(r) {
+      const score    = r._score ? Math.round(r._score) : null;
+      const stars    = starsHTML(r.rating || 4.0);
+      const tagsHtml = (r.tags || []).slice(0, 2).map(t => `<span class="chat-tag">${t}</span>`).join('');
+      const img      = r.cover_image || r.cover || 'https://placehold.co/400x200/111/FFD000?text=🍽️';
+      return `
+        <div class="chat-restaurant-card" data-slug="${r.slug || r.id || ''}">
+          <img src="${escHtml(img)}" alt="${escHtml(r.name)}" loading="lazy" onerror="this.src='https://placehold.co/400x200/111/FFD000?text=🍽️'" />
+          <div class="p-3">
+            ${score ? `<div class="flex items-center gap-1 mb-1.5">
+              <div class="flex-1 bg-[#222] rounded-full h-0.5"><div class="score-bar-fill" style="width:${score}%"></div></div>
+              <span class="text-xs text-gray-500">${score}% match</span>
+            </div>` : ''}
+            <h3 class="font-bold text-sm text-white mb-0.5 truncate">${escHtml(r.name)}</h3>
+            <p class="text-xs text-gray-500 truncate mb-2">${escHtml(r.cuisine || '')} · ${escHtml(r.location || r.address || '')}</p>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1">
+                ${stars}
+                <span class="text-xs text-gray-500">${(r.rating || 4.0).toFixed(1)}</span>
+              </div>
+              <div class="flex gap-1">${tagsHtml}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function starsHTML(rating) {
+      const full = Math.floor(rating);
+      let html = '';
+      for (let i = 1; i <= 5; i++) {
+        html += `<span class="${i <= full ? 'star-fill' : 'star-empty'} text-xs">★</span>`;
+      }
+      return html;
+    }
+
+    function showSuggestions(chips) {
+      chipContainer.innerHTML = '';
+      chips.slice(0, 5).forEach(text => {
+        const btn = document.createElement('button');
+        btn.className = 'suggestion-chip';
+        btn.textContent = text;
+        btn.addEventListener('click', () => submitQuery(text));
+        chipContainer.appendChild(btn);
+      });
+      suggestionsBar.classList.remove('hidden');
+    }
+
+    function hideSuggestions() {
+      suggestionsBar.classList.add('hidden');
+    }
+
+    /* ════════════════════════════════════════
+       QUERY PIPELINE
+    ════════════════════════════════════════ */
+
+    async function submitQuery(rawQuery) {
+      const query = rawQuery.trim();
+      if (!query) return;
+
+      /* hide welcome state on first message */
+      if (!chatStarted) {
+        welcomeState.style.display = 'none';
+        chatStarted = true;
+      }
+
+      hideSuggestions();
+      chatInput.value = '';
+      sendBtn.disabled = true;
+
+      appendUserMessage(query);
+      const typingEl = appendTypingIndicator();
+
+      try {
+        /* ── run YAI ── */
+        const result = await YAI.query(query);
+        removeTypingIndicator();
+
+        /* opening text */
+        appendAIMessage(formatOpening(result), result.followUp || []);
+
+        /* restaurant cards */
+        if (result.restaurants && result.restaurants.length) {
+          appendRestaurantCards(result.restaurants);
+
+          /* closing text */
+          if (result.closing) {
+            setTimeout(() => appendAIMessage(result.closing), 300);
+          }
+        } else {
+          appendAIMessage('No matching restaurants found for that search — try a different vibe or location? 🤔');
+        }
+
+        /* track */
+        if (typeof YAn !== 'undefined') {
+          YAn.track('ai_search', { query, result_count: (result.restaurants || []).length });
+        }
+
+      } catch (err) {
+        removeTypingIndicator();
+        appendAIMessage('Hmm, something went wrong. Try again? 😅');
+        console.error('[YAI UI]', err);
+      }
+
+      sendBtn.disabled = false;
+      chatInput.focus();
+    }
+
+    function formatOpening(result) {
+      if (!result) return 'Here\'s what I found! 🍽️';
+      const opening = result.opening || result.message || '';
+      /* convert **bold** markdown to <strong> */
+      return opening
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+    }
+
+    /* ════════════════════════════════════════
+       INIT
+    ════════════════════════════════════════ */
+
+    function init() {
+      /* ── wire input ── */
+      chatInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          submitQuery(chatInput.value);
+        }
+      });
+      sendBtn.addEventListener('click', () => submitQuery(chatInput.value));
+
+      /* ── pre-load pool from discover.js data if available ── */
+      if (typeof RESTAURANTS !== 'undefined') {
+        YAI.setPool(RESTAURANTS);
+      }
+
+      /* ── wire query param (from discover page "Ask AI" button) ── */
+      const params = new URLSearchParams(window.location.search);
+      const preQuery = params.get('q');
+      if (preQuery) {
+        setTimeout(() => submitQuery(preQuery), 400);
+      }
+
+      /* ── focus ── */
+      chatInput.focus();
+    }
+
+    /* ── helpers ── */
+    function scrollBottom() {
+      setTimeout(() => chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' }), 50);
+    }
+
+    function escHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* run */
+    document.addEventListener('DOMContentLoaded', init);
+    if (document.readyState !== 'loading') init();
+
+  })();
+  </script>
+
+</body>
+</html>
