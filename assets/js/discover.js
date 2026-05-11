@@ -16,12 +16,15 @@ const ALL_RESTAURANTS = [
     name: "Maria's Kitchen",
     cuisine: 'Filipino',
     description: 'Authentic Filipino comfort food made with love. Famous for sinigang, crispy lechon, and kare-kare that tastes like home.',
+    ai_summary: 'Beloved local haunt serving authentic Filipino comfort food. A go-to for backpackers and families — the kind of place that feels like home.',
     location: 'El Nido, Palawan',
     rating: 4.8, reviews: 1238,
     badge: "Editor's Pick", badge_style: 'default',
     tags: ['Local Favorite', 'Family-Friendly', 'Budget-Friendly', 'Backpacker-Approved'],
     image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🍛',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000001',
+    website: null, maps: 'https://maps.google.com/?q=El+Nido+Palawan',
     created_at: '2024-01-10',
   },
   {
@@ -29,12 +32,15 @@ const ALL_RESTAURANTS = [
     name: 'Sunset Grill',
     cuisine: 'Seafood',
     description: 'Perched above the water with jaw-dropping sunsets. The freshest grilled seafood and the coldest beers in Coron.',
+    ai_summary: 'Perched above the water with jaw-dropping sunset views. A must-visit for couples and travelers chasing golden-hour magic over grilled seafood.',
     location: 'Coron, Palawan',
     rating: 4.9, reviews: 874,
     badge: '🔥 Trending', badge_style: 'dark',
     tags: ['Romantic', 'Scenic View', 'Beach Dining', 'Date Spot'],
     image: 'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🌅',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000002',
+    website: 'https://sunsetgrill.ph', maps: 'https://maps.google.com/?q=Coron+Palawan',
     created_at: '2024-02-14',
   },
   {
@@ -42,12 +48,15 @@ const ALL_RESTAURANTS = [
     name: 'Brew & Bite',
     cuisine: 'Café',
     description: 'A cozy café with specialty single-origin coffee and incredible brunch plates. The WiFi is solid, the vibes even better.',
+    ai_summary: 'Specialty single-origin coffee meets incredible all-day brunch. Solid WiFi, even better vibes — popular with digital nomads and slow-morning travelers.',
     location: 'BGC, Taguig',
     rating: 4.7, reviews: 2104,
     badge: 'Best Café', badge_style: 'default',
     tags: ['WiFi-Friendly', 'Instagrammable', 'Backpacker-Approved', 'Hidden Gem'],
     image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '☕',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000003',
+    website: 'https://brewandbite.ph', maps: 'https://maps.google.com/?q=BGC+Taguig',
     created_at: '2024-01-28',
   },
   {
@@ -55,12 +64,15 @@ const ALL_RESTAURANTS = [
     name: 'Ramen Tori',
     cuisine: 'Japanese',
     description: 'Rich, deep broths simmered 18 hours. The kind of ramen that ruins all other ramen for you — permanently.',
+    ai_summary: 'Rich, 18-hour broths that ruin all other ramen permanently. Consistently ranked Makati\'s top Japanese spot — expect queues, they\'re worth it.',
     location: 'Makati, Metro Manila',
     rating: 4.8, reviews: 3891,
     badge: 'Most Loved', badge_style: 'default',
     tags: ['Late Night', 'Date Spot', 'Must Try', 'Local Favorite'],
     image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🍜',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000004',
+    website: 'https://ramentori.ph', maps: 'https://maps.google.com/?q=Makati+Metro+Manila',
     created_at: '2023-11-05',
   },
   {
@@ -68,12 +80,15 @@ const ALL_RESTAURANTS = [
     name: 'La Mesa Verde',
     cuisine: 'Vegan',
     description: 'Creative plant-based cuisine that makes going green feel like an indulgence. Every plate is a work of art.',
+    ai_summary: 'Creative plant-based cuisine that makes going green feel like an indulgence. Every plate is a work of art — popular with health-conscious travelers.',
     location: 'Poblacion, Makati',
     rating: 4.6, reviews: 542,
     badge: '🌿 Healthy', badge_style: 'default',
     tags: ['Vegan', 'Healthy', 'Instagrammable', 'Scenic View'],
     image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🥗',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000005',
+    website: null, maps: 'https://maps.google.com/?q=Poblacion+Makati',
     created_at: '2024-03-01',
   },
   {
@@ -81,12 +96,15 @@ const ALL_RESTAURANTS = [
     name: 'The Smokehouse',
     cuisine: 'BBQ',
     description: 'Low and slow. Tender, fall-off-the-bone ribs and smoked brisket that dreams are made of. Full racks on weekends.',
+    ai_summary: 'Low and slow is the only way here. Tender smoked brisket and fall-off-the-bone ribs that draw crowds from across the city every weekend.',
     location: 'Cebu City',
     rating: 4.7, reviews: 1566,
     badge: 'Top Rated', badge_style: 'default',
     tags: ['Group-Friendly', 'Budget-Friendly', 'Local Favorite', 'Family-Friendly'],
     image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🔥',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000006',
+    website: 'https://thesmokehouse.ph', maps: 'https://maps.google.com/?q=Cebu+City',
     created_at: '2023-12-12',
   },
   {
@@ -94,12 +112,15 @@ const ALL_RESTAURANTS = [
     name: 'Izakaya Nori',
     cuisine: 'Japanese',
     description: 'Vibey Japanese izakaya energy — skewers, sake, and sashimi until 2am. A backpacker rite of passage in QC.',
+    ai_summary: 'Vibey izakaya with skewers, sake, and sashimi until 2am. A backpacker rite of passage in Quezon City.',
     location: 'Quezon City',
     rating: 4.9, reviews: 2210,
     badge: '#1 This Week', badge_style: 'dark',
     tags: ['Late Night', 'Backpacker-Approved', 'Hidden Gem', 'Instagrammable'],
     image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🍶',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000007',
+    website: null, maps: 'https://maps.google.com/?q=Quezon+City',
     created_at: '2024-04-02',
   },
   {
@@ -107,12 +128,15 @@ const ALL_RESTAURANTS = [
     name: 'Paluto Na!',
     cuisine: 'Filipino',
     description: 'Pick your fresh catch from the market and they cook it however you want. The most authentic island dining experience.',
+    ai_summary: 'Pick your fresh catch, they cook it your way. The most authentic island dining experience in Boracay — a must for every first-time visitor.',
     location: 'Boracay Island',
     rating: 4.7, reviews: 988,
     badge: '🏝️ Island Life', badge_style: 'default',
     tags: ['Beach Dining', 'Local Favorite', 'Budget-Friendly', 'Backpacker-Approved'],
     image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🐟',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000008',
+    website: null, maps: 'https://maps.google.com/?q=Boracay+Island',
     created_at: '2024-01-18',
   },
   {
@@ -120,12 +144,15 @@ const ALL_RESTAURANTS = [
     name: 'Siargao Surf Kitchen',
     cuisine: 'Café',
     description: 'Acai bowls, fresh smoothies, and all-day brunch for surfers and sun-chasers. Right next to Cloud 9.',
+    ai_summary: 'Acai bowls and all-day brunch right next to Cloud 9. The ultimate surf-town café — popular with every backpacker passing through Siargao.',
     location: 'General Luna, Siargao',
     rating: 4.8, reviews: 743,
     badge: '🏄 Surf Town', badge_style: 'dark',
     tags: ['Beach Dining', 'Healthy', 'Backpacker-Approved', 'Instagrammable'],
     image: 'https://images.unsplash.com/photo-1537047902294-62a40c20a6ae?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🌊',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000009',
+    website: 'https://siargaosurfkitchen.ph', maps: 'https://maps.google.com/?q=General+Luna+Siargao',
     created_at: '2024-03-20',
   },
   {
@@ -133,12 +160,15 @@ const ALL_RESTAURANTS = [
     name: 'K-Grill House',
     cuisine: 'Korean',
     description: 'All-you-can-eat Korean BBQ with unlimited samgyupsal and banchan. The go-to for group nights out.',
+    ai_summary: 'Unlimited samgyupsal and banchan for groups. The undisputed go-to for late-night Korean BBQ in Manila.',
     location: 'Malate, Manila',
     rating: 4.5, reviews: 1890,
     badge: 'Group Favorite', badge_style: 'default',
     tags: ['Group-Friendly', 'Budget-Friendly', 'Late Night', 'Family-Friendly'],
     image: 'https://images.unsplash.com/photo-1583032015879-e5022cb87c3b?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🥩',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000010',
+    website: null, maps: 'https://maps.google.com/?q=Malate+Manila',
     created_at: '2023-10-30',
   },
   {
@@ -146,12 +176,15 @@ const ALL_RESTAURANTS = [
     name: 'Bohol Bites',
     cuisine: 'Filipino',
     description: 'Tiny warung-style spot famous for their chocolate hills tsokolate and crispy batchoy. A hidden gem.',
+    ai_summary: 'Tiny warung-style spot famous for chocolate hills tsokolate and crispy batchoy. A true hidden gem that locals guard fiercely.',
     location: 'Tagbilaran, Bohol',
     rating: 4.6, reviews: 328,
     badge: '💎 Hidden Gem', badge_style: 'dark',
     tags: ['Hidden Gem', 'Budget-Friendly', 'Local Favorite', 'Backpacker-Approved'],
     image: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🫙',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000011',
+    website: null, maps: 'https://maps.google.com/?q=Tagbilaran+Bohol',
     created_at: '2024-02-08',
   },
   {
@@ -159,12 +192,15 @@ const ALL_RESTAURANTS = [
     name: 'Pizzeria Roma',
     cuisine: 'Italian',
     description: 'Wood-fired Neapolitan pizza with imported 00 flour and San Marzano tomatoes. Closest thing to Italy in Manila.',
+    ai_summary: 'Wood-fired Neapolitan pizza with imported ingredients — the closest thing to Italy in Metro Manila. Perfect for date nights.',
     location: 'Salcedo Village, Makati',
     rating: 4.7, reviews: 1104,
     badge: 'Most Popular', badge_style: 'default',
     tags: ['Date Spot', 'Romantic', 'Instagrammable', 'Family-Friendly'],
     image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🍕',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000012',
+    website: 'https://pizzeriaroma.ph', maps: 'https://maps.google.com/?q=Salcedo+Village+Makati',
     created_at: '2023-09-15',
   },
   {
@@ -172,12 +208,15 @@ const ALL_RESTAURANTS = [
     name: 'El Pescador',
     cuisine: 'Seafood',
     description: 'Fishermen dock directly at the restaurant every morning. If it swam yesterday, it is on the menu today.',
+    ai_summary: 'Fishermen dock directly here every morning. If it swam yesterday, it\'s on today\'s menu — as fresh as seafood gets in El Nido.',
     location: 'El Nido, Palawan',
     rating: 4.8, reviews: 612,
     badge: '🎣 Super Fresh', badge_style: 'dark',
     tags: ['Beach Dining', 'Local Favorite', 'Hidden Gem', 'Scenic View'],
     image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🎣',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000013',
+    website: null, maps: 'https://maps.google.com/?q=El+Nido+Palawan',
     created_at: '2024-04-10',
   },
   {
@@ -185,12 +224,15 @@ const ALL_RESTAURANTS = [
     name: 'Burger Republic',
     cuisine: 'Burgers',
     description: 'Smash burgers with wagyu beef, house sauces, and a lineup of milkshakes that breaks the internet weekly.',
+    ai_summary: 'Wagyu smash burgers and internet-breaking milkshakes. Budget-friendly, late-night, and consistently packed with regulars.',
     location: 'Kapitolyo, Pasig',
     rating: 4.6, reviews: 2340,
     badge: '🍔 Fan Fave', badge_style: 'default',
     tags: ['Budget-Friendly', 'Late Night', 'Backpacker-Approved', 'Group-Friendly'],
     image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🍔',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000014',
+    website: 'https://burgerrepublic.ph', maps: 'https://maps.google.com/?q=Kapitolyo+Pasig',
     created_at: '2024-01-02',
   },
   {
@@ -198,12 +240,15 @@ const ALL_RESTAURANTS = [
     name: 'Tacos del Sol',
     cuisine: 'Mexican',
     description: 'Authentic birria tacos, street-style quesadillas, and horchata that will make you forget you are not in Mexico.',
+    ai_summary: 'Authentic birria tacos and street-style quesadillas. The horchata alone is worth the trip — a Poblacion staple for late-night cravings.',
     location: 'Poblacion, Makati',
     rating: 4.5, reviews: 876,
     badge: '🌮 Street Vibes', badge_style: 'default',
     tags: ['Late Night', 'Budget-Friendly', 'Backpacker-Approved', 'Instagrammable'],
     image: 'https://images.unsplash.com/photo-1613514785940-daed07799d9b?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🌮',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000015',
+    website: null, maps: 'https://maps.google.com/?q=Poblacion+Makati',
     created_at: '2024-03-11',
   },
   {
@@ -211,12 +256,15 @@ const ALL_RESTAURANTS = [
     name: 'Halo-Halo ni Lola',
     cuisine: 'Desserts',
     description: 'The most legendary halo-halo in the Philippines. Three generations deep, zero compromise on quality.',
+    ai_summary: 'Three generations deep, zero compromise. The most legendary halo-halo in the Philippines — every traveler should make the pilgrimage to Iloilo for this.',
     location: 'Iloilo City',
     rating: 4.9, reviews: 4102,
     badge: '🍨 Legendary', badge_style: 'dark',
     tags: ['Local Favorite', 'Budget-Friendly', 'Family-Friendly', 'Backpacker-Approved'],
     image: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🍧',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000016',
+    website: null, maps: 'https://maps.google.com/?q=Iloilo+City',
     created_at: '2023-08-01',
   },
   {
@@ -224,12 +272,15 @@ const ALL_RESTAURANTS = [
     name: 'Canton Empire',
     cuisine: 'Chinese',
     description: 'Dim sum carts rolling from 6am and a roast duck that has a cult following. Weekend queues are long — and worth it.',
+    ai_summary: 'Dim sum carts rolling from 6am in the heart of Binondo. The roast duck has a cult following — weekend queues are long and completely worth it.',
     location: 'Binondo, Manila',
     rating: 4.6, reviews: 3200,
     badge: '🥟 Binondo Classic', badge_style: 'default',
     tags: ['Family-Friendly', 'Local Favorite', 'Budget-Friendly', 'Group-Friendly'],
     image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🥢',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000017',
+    website: null, maps: 'https://maps.google.com/?q=Binondo+Manila',
     created_at: '2023-07-22',
   },
   {
@@ -237,12 +288,15 @@ const ALL_RESTAURANTS = [
     name: "Fisherman's Wharf",
     cuisine: 'Seafood',
     description: 'Bonfires on the beach, barbecued squid, and cold beers. The quintessential island night-out experience.',
+    ai_summary: 'Bonfires on the beach, barbecued squid, and cold beers under the stars. The quintessential island night-out — romantic, raw, unforgettable.',
     location: 'Puerto Galera',
     rating: 4.8, reviews: 821,
     badge: '🏖️ Beach Bonfires', badge_style: 'dark',
     tags: ['Beach Dining', 'Late Night', 'Romantic', 'Scenic View'],
     image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '⚓',
+    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000018',
+    website: null, maps: 'https://maps.google.com/?q=Puerto+Galera',
     created_at: '2024-02-22',
   },
 ];
@@ -453,11 +507,11 @@ function gridCard(r, idx) {
         <div class="card-rating">
           <span class="stars">${starString(r.rating)}</span>
           <span class="score">${r.rating}</span>
-          <span class="count">(${r.reviews.toLocaleString()} reviews)</span>
+          <span class="count">(${r.reviews.toLocaleString()} Google reviews)</span>
         </div>
         <h3 class="card-name">${r.name}</h3>
         <p class="card-cuisine">${r.cuisine}</p>
-        <p class="card-desc">${r.description}</p>
+        <p class="card-ai-summary">${r.ai_summary || r.description}</p>
         <div class="card-location">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -466,13 +520,21 @@ function gridCard(r, idx) {
           ${r.location}
         </div>
         <div class="card-tags">${tagsHTML}</div>
+        <div class="card-actions" onclick="event.stopPropagation()">
+          ${r.instagram ? `<a href="${r.instagram}" target="_blank" rel="noopener" class="card-social-btn" title="Instagram" onclick="trackCardSocial('instagram','${r.slug}')">${dIconInstagram()}</a>` : ''}
+          ${r.whatsapp  ? `<a href="${r.whatsapp}"  target="_blank" rel="noopener" class="card-social-btn" title="WhatsApp" onclick="trackCardSocial('whatsapp','${r.slug}')">${dIconWhatsApp()}</a>` : ''}
+          ${r.maps      ? `<a href="${r.maps}"      target="_blank" rel="noopener" class="card-social-btn" title="Google Maps" onclick="trackCardSocial('maps','${r.slug}')">${dIconMaps()}</a>` : ''}
+          ${r.website
+            ? `<a href="${r.website}" target="_blank" rel="noopener" class="card-social-btn card-social-btn--website" onclick="trackCardSocial('website','${r.slug}')">Visit Website ${dIconArrow()}</a>`
+            : `<a href="admin/index.html?ref=get-website" class="card-social-btn card-social-btn--claim">Get a Website</a>`}
+        </div>
       </div>
     </article>
   `;
 }
 
 function listCard(r, idx) {
-  const tagsHTML = r.tags.slice(0, 4).map(t =>
+  const tagsHTML = r.tags.slice(0, 3).map(t =>
     `<span class="card-tag">${tagEmoji(t)}${t}</span>`
   ).join('');
 
@@ -484,7 +546,8 @@ function listCard(r, idx) {
       aria-label="View ${r.name}"
     >
       <div class="list-card-image">
-        <img src="${r.image}" alt="${r.name}" loading="${idx < 4 ? 'eager' : 'lazy'}" />
+        <img src="${r.image}" alt="${r.name}" loading="${idx < 4 ? 'eager' : 'lazy'}"
+          onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&auto=format&fit=crop&q=75'" />
       </div>
       <div class="list-card-body">
         <div>
@@ -498,9 +561,9 @@ function listCard(r, idx) {
           <div class="card-rating mb-2">
             <span class="stars">${starString(r.rating)}</span>
             <span class="score">${r.rating}</span>
-            <span class="count">(${r.reviews.toLocaleString()})</span>
+            <span class="count">(${r.reviews.toLocaleString()} Google reviews)</span>
           </div>
-          <p class="card-desc text-sm line-clamp-2 mb-3">${r.description}</p>
+          <p class="card-ai-summary text-sm line-clamp-2 mb-3">${r.ai_summary || r.description}</p>
         </div>
         <div>
           <div class="card-location mb-2">
@@ -509,7 +572,15 @@ function listCard(r, idx) {
             </svg>
             ${r.location}
           </div>
-          <div class="card-tags">${tagsHTML}</div>
+          <div class="card-tags mb-3">${tagsHTML}</div>
+          <div class="card-actions" onclick="event.stopPropagation()">
+            ${r.instagram ? `<a href="${r.instagram}" target="_blank" rel="noopener" class="card-social-btn" title="Instagram" onclick="trackCardSocial('instagram','${r.slug}')">${dIconInstagram()}</a>` : ''}
+            ${r.whatsapp  ? `<a href="${r.whatsapp}"  target="_blank" rel="noopener" class="card-social-btn" title="WhatsApp" onclick="trackCardSocial('whatsapp','${r.slug}')">${dIconWhatsApp()}</a>` : ''}
+            ${r.maps      ? `<a href="${r.maps}"      target="_blank" rel="noopener" class="card-social-btn" title="Google Maps" onclick="trackCardSocial('maps','${r.slug}')">${dIconMaps()}</a>` : ''}
+            ${r.website
+              ? `<a href="${r.website}" target="_blank" rel="noopener" class="card-social-btn card-social-btn--website" onclick="trackCardSocial('website','${r.slug}')">Visit Website ${dIconArrow()}</a>`
+              : `<a href="admin/index.html?ref=get-website" class="card-social-btn card-social-btn--claim">Get a Website</a>`}
+          </div>
         </div>
       </div>
     </article>
@@ -833,9 +904,29 @@ function tagEmoji(tag) {
 }
 
 
+/* ── SOCIAL ICON HELPERS (discover page copies, prefixed d to avoid collision) ── */
+function dIconInstagram() {
+  return `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>`;
+}
+function dIconWhatsApp() {
+  return `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
+}
+function dIconMaps() {
+  return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+}
+function dIconArrow() {
+  return `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg>`;
+}
+
 /* ══════════════════════════════════════════════════════════
    ANALYTICS
 ══════════════════════════════════════════════════════════ */
 function trackDiscoveryEvent(type, slug) {
   window.db?.trackAnalyticsEvent(type, null, { slug, source: 'discover' });
+}
+
+function trackCardSocial(type, slug) {
+  if (typeof YAn !== 'undefined') {
+    YAn.track('social_click', { type, restaurant_slug: slug, source: 'discover' });
+  }
 }
