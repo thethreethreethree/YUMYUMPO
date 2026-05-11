@@ -23,8 +23,7 @@ const ALL_RESTAURANTS = [
     tags: ['Local Favorite', 'Family-Friendly', 'Budget-Friendly', 'Backpacker-Approved'],
     image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🍛',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000001',
-    website: null, maps: 'https://maps.google.com/?q=El+Nido+Palawan',
+    has_yumyumpo_site: true, website: null,
     created_at: '2024-01-10',
   },
   {
@@ -39,8 +38,7 @@ const ALL_RESTAURANTS = [
     tags: ['Romantic', 'Scenic View', 'Beach Dining', 'Date Spot'],
     image: 'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🌅',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000002',
-    website: 'https://sunsetgrill.ph', maps: 'https://maps.google.com/?q=Coron+Palawan',
+    has_yumyumpo_site: false, website: 'https://sunsetgrill.ph',
     created_at: '2024-02-14',
   },
   {
@@ -55,8 +53,7 @@ const ALL_RESTAURANTS = [
     tags: ['WiFi-Friendly', 'Instagrammable', 'Backpacker-Approved', 'Hidden Gem'],
     image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '☕',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000003',
-    website: 'https://brewandbite.ph', maps: 'https://maps.google.com/?q=BGC+Taguig',
+    has_yumyumpo_site: true, website: null,
     created_at: '2024-01-28',
   },
   {
@@ -71,8 +68,7 @@ const ALL_RESTAURANTS = [
     tags: ['Late Night', 'Date Spot', 'Must Try', 'Local Favorite'],
     image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🍜',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000004',
-    website: 'https://ramentori.ph', maps: 'https://maps.google.com/?q=Makati+Metro+Manila',
+    has_yumyumpo_site: false, website: 'https://ramentori.ph',
     created_at: '2023-11-05',
   },
   {
@@ -87,8 +83,7 @@ const ALL_RESTAURANTS = [
     tags: ['Vegan', 'Healthy', 'Instagrammable', 'Scenic View'],
     image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🥗',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000005',
-    website: null, maps: 'https://maps.google.com/?q=Poblacion+Makati',
+    has_yumyumpo_site: false, website: null,
     created_at: '2024-03-01',
   },
   {
@@ -103,8 +98,7 @@ const ALL_RESTAURANTS = [
     tags: ['Group-Friendly', 'Budget-Friendly', 'Local Favorite', 'Family-Friendly'],
     image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🔥',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000006',
-    website: 'https://thesmokehouse.ph', maps: 'https://maps.google.com/?q=Cebu+City',
+    has_yumyumpo_site: true, website: null,
     created_at: '2023-12-12',
   },
   {
@@ -119,8 +113,7 @@ const ALL_RESTAURANTS = [
     tags: ['Late Night', 'Backpacker-Approved', 'Hidden Gem', 'Instagrammable'],
     image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🍶',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000007',
-    website: null, maps: 'https://maps.google.com/?q=Quezon+City',
+    has_yumyumpo_site: true, website: null,
     created_at: '2024-04-02',
   },
   {
@@ -135,8 +128,7 @@ const ALL_RESTAURANTS = [
     tags: ['Beach Dining', 'Local Favorite', 'Budget-Friendly', 'Backpacker-Approved'],
     image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🐟',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000008',
-    website: null, maps: 'https://maps.google.com/?q=Boracay+Island',
+    has_yumyumpo_site: false, website: null,
     created_at: '2024-01-18',
   },
   {
@@ -151,8 +143,7 @@ const ALL_RESTAURANTS = [
     tags: ['Beach Dining', 'Healthy', 'Backpacker-Approved', 'Instagrammable'],
     image: 'https://images.unsplash.com/photo-1537047902294-62a40c20a6ae?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🌊',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000009',
-    website: 'https://siargaosurfkitchen.ph', maps: 'https://maps.google.com/?q=General+Luna+Siargao',
+    has_yumyumpo_site: true, website: null,
     created_at: '2024-03-20',
   },
   {
@@ -167,8 +158,7 @@ const ALL_RESTAURANTS = [
     tags: ['Group-Friendly', 'Budget-Friendly', 'Late Night', 'Family-Friendly'],
     image: 'https://images.unsplash.com/photo-1583032015879-e5022cb87c3b?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🥩',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000010',
-    website: null, maps: 'https://maps.google.com/?q=Malate+Manila',
+    has_yumyumpo_site: false, website: null,
     created_at: '2023-10-30',
   },
   {
@@ -183,8 +173,7 @@ const ALL_RESTAURANTS = [
     tags: ['Hidden Gem', 'Budget-Friendly', 'Local Favorite', 'Backpacker-Approved'],
     image: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🫙',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000011',
-    website: null, maps: 'https://maps.google.com/?q=Tagbilaran+Bohol',
+    has_yumyumpo_site: false, website: null,
     created_at: '2024-02-08',
   },
   {
@@ -199,8 +188,7 @@ const ALL_RESTAURANTS = [
     tags: ['Date Spot', 'Romantic', 'Instagrammable', 'Family-Friendly'],
     image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🍕',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000012',
-    website: 'https://pizzeriaroma.ph', maps: 'https://maps.google.com/?q=Salcedo+Village+Makati',
+    has_yumyumpo_site: true, website: null,
     created_at: '2023-09-15',
   },
   {
@@ -215,8 +203,7 @@ const ALL_RESTAURANTS = [
     tags: ['Beach Dining', 'Local Favorite', 'Hidden Gem', 'Scenic View'],
     image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🎣',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000013',
-    website: null, maps: 'https://maps.google.com/?q=El+Nido+Palawan',
+    has_yumyumpo_site: false, website: null,
     created_at: '2024-04-10',
   },
   {
@@ -231,8 +218,7 @@ const ALL_RESTAURANTS = [
     tags: ['Budget-Friendly', 'Late Night', 'Backpacker-Approved', 'Group-Friendly'],
     image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🍔',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000014',
-    website: 'https://burgerrepublic.ph', maps: 'https://maps.google.com/?q=Kapitolyo+Pasig',
+    has_yumyumpo_site: false, website: 'https://burgerrepublic.ph',
     created_at: '2024-01-02',
   },
   {
@@ -247,8 +233,7 @@ const ALL_RESTAURANTS = [
     tags: ['Late Night', 'Budget-Friendly', 'Backpacker-Approved', 'Instagrammable'],
     image: 'https://images.unsplash.com/photo-1613514785940-daed07799d9b?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🌮',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000015',
-    website: null, maps: 'https://maps.google.com/?q=Poblacion+Makati',
+    has_yumyumpo_site: false, website: null,
     created_at: '2024-03-11',
   },
   {
@@ -263,8 +248,7 @@ const ALL_RESTAURANTS = [
     tags: ['Local Favorite', 'Budget-Friendly', 'Family-Friendly', 'Backpacker-Approved'],
     image: 'https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🍧',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000016',
-    website: null, maps: 'https://maps.google.com/?q=Iloilo+City',
+    has_yumyumpo_site: true, website: null,
     created_at: '2023-08-01',
   },
   {
@@ -279,8 +263,7 @@ const ALL_RESTAURANTS = [
     tags: ['Family-Friendly', 'Local Favorite', 'Budget-Friendly', 'Group-Friendly'],
     image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '🥢',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000017',
-    website: null, maps: 'https://maps.google.com/?q=Binondo+Manila',
+    has_yumyumpo_site: false, website: null,
     created_at: '2023-07-22',
   },
   {
@@ -295,8 +278,7 @@ const ALL_RESTAURANTS = [
     tags: ['Beach Dining', 'Late Night', 'Romantic', 'Scenic View'],
     image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=700&auto=format&fit=crop&q=75',
     logo_emoji: '⚓',
-    instagram: 'https://instagram.com', whatsapp: 'https://wa.me/639000000018',
-    website: null, maps: 'https://maps.google.com/?q=Puerto+Galera',
+    has_yumyumpo_site: true, website: null,
     created_at: '2024-02-22',
   },
 ];
@@ -490,6 +472,7 @@ function gridCard(r, idx) {
           onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&auto=format&fit=crop&q=75'"
         />
         <span class="${badgeCls}">${r.badge}</span>
+        ${r.has_yumyumpo_site ? `<span class="card-hosted-badge" title="Powered by YUMYUMPO">⚡ On YUMYUMPO</span>` : ''}
         <button
           class="card-save-btn"
           onclick="event.stopPropagation(); toggleSave('${r.slug}', this)"
@@ -521,12 +504,7 @@ function gridCard(r, idx) {
         </div>
         <div class="card-tags">${tagsHTML}</div>
         <div class="card-actions" onclick="event.stopPropagation()">
-          ${r.instagram ? `<a href="${r.instagram}" target="_blank" rel="noopener" class="card-social-btn" title="Instagram" onclick="trackCardSocial('instagram','${r.slug}')">${dIconInstagram()}</a>` : ''}
-          ${r.whatsapp  ? `<a href="${r.whatsapp}"  target="_blank" rel="noopener" class="card-social-btn" title="WhatsApp" onclick="trackCardSocial('whatsapp','${r.slug}')">${dIconWhatsApp()}</a>` : ''}
-          ${r.maps      ? `<a href="${r.maps}"      target="_blank" rel="noopener" class="card-social-btn" title="Google Maps" onclick="trackCardSocial('maps','${r.slug}')">${dIconMaps()}</a>` : ''}
-          ${r.website
-            ? `<a href="${r.website}" target="_blank" rel="noopener" class="card-social-btn card-social-btn--website" onclick="trackCardSocial('website','${r.slug}')">Visit Website ${dIconArrow()}</a>`
-            : `<a href="admin/index.html?ref=get-website" class="card-social-btn card-social-btn--claim">Get a Website</a>`}
+          ${dCardCTA(r)}
         </div>
       </div>
     </article>
@@ -574,12 +552,7 @@ function listCard(r, idx) {
           </div>
           <div class="card-tags mb-3">${tagsHTML}</div>
           <div class="card-actions" onclick="event.stopPropagation()">
-            ${r.instagram ? `<a href="${r.instagram}" target="_blank" rel="noopener" class="card-social-btn" title="Instagram" onclick="trackCardSocial('instagram','${r.slug}')">${dIconInstagram()}</a>` : ''}
-            ${r.whatsapp  ? `<a href="${r.whatsapp}"  target="_blank" rel="noopener" class="card-social-btn" title="WhatsApp" onclick="trackCardSocial('whatsapp','${r.slug}')">${dIconWhatsApp()}</a>` : ''}
-            ${r.maps      ? `<a href="${r.maps}"      target="_blank" rel="noopener" class="card-social-btn" title="Google Maps" onclick="trackCardSocial('maps','${r.slug}')">${dIconMaps()}</a>` : ''}
-            ${r.website
-              ? `<a href="${r.website}" target="_blank" rel="noopener" class="card-social-btn card-social-btn--website" onclick="trackCardSocial('website','${r.slug}')">Visit Website ${dIconArrow()}</a>`
-              : `<a href="admin/index.html?ref=get-website" class="card-social-btn card-social-btn--claim">Get a Website</a>`}
+            ${dCardCTA(r)}
           </div>
         </div>
       </div>
@@ -904,18 +877,15 @@ function tagEmoji(tag) {
 }
 
 
-/* ── SOCIAL ICON HELPERS (discover page copies, prefixed d to avoid collision) ── */
-function dIconInstagram() {
-  return `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>`;
-}
-function dIconWhatsApp() {
-  return `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
-}
-function dIconMaps() {
-  return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
-}
-function dIconArrow() {
-  return `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg>`;
+/* ── CARD CTA (discover page — mirrors main.js cardCTA logic) ── */
+function dCardCTA(r) {
+  if (r.has_yumyumpo_site) {
+    return `<a href="restaurant.html?id=${r.slug}" class="card-cta card-cta--profile" onclick="event.stopPropagation(); if(typeof trackWebsiteClick==='function') trackWebsiteClick('profile','${r.slug}')">View Full Profile <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>`;
+  }
+  if (r.website) {
+    return `<a href="${r.website}" target="_blank" rel="noopener noreferrer" class="card-cta card-cta--external" onclick="event.stopPropagation(); if(typeof trackWebsiteClick==='function') trackWebsiteClick('external','${r.slug}')">Visit Website <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg></a>`;
+  }
+  return `<a href="admin/index.html?ref=get-listed&restaurant=${encodeURIComponent(r.name)}" class="card-cta card-cta--funnel" onclick="event.stopPropagation()">Get Listed on YUMYUMPO</a>`;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -925,8 +895,4 @@ function trackDiscoveryEvent(type, slug) {
   window.db?.trackAnalyticsEvent(type, null, { slug, source: 'discover' });
 }
 
-function trackCardSocial(type, slug) {
-  if (typeof YAn !== 'undefined') {
-    YAn.track('social_click', { type, restaurant_slug: slug, source: 'discover' });
-  }
-}
+/* trackWebsiteClick is defined globally in main.js — available on all pages */

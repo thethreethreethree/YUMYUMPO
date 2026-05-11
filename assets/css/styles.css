@@ -458,73 +458,81 @@ button, [role="button"] { cursor: pointer; }
   font-style: italic;
 }
 
-/* ── Social action bar ── */
+/* ── Card action bar ── */
 .card-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--gray-100);
-  flex-wrap: wrap;
 }
 
-.card-social-btn {
+/* ── Single primary CTA button ── */
+.card-cta {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 32px; height: 32px;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 8px 16px;
   border-radius: var(--radius-full);
-  background: var(--gray-100);
-  color: var(--gray-600);
-  border: none;
   text-decoration: none;
   transition: all 0.18s ease;
-  flex-shrink: 0;
-}
-.card-social-btn:hover {
-  background: var(--yellow);
-  color: var(--black);
-  transform: translateY(-2px);
+  width: 100%;
+  justify-content: center;
 }
 
-/* Website redirect button */
-.card-social-btn--website {
-  width: auto;
-  padding: 0 12px;
-  gap: 5px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  margin-left: auto;
+/* YUMYUMPO hosted profile — solid black pill */
+.card-cta--profile {
   background: var(--black);
   color: var(--white);
-  border-radius: var(--radius-full);
 }
-.card-social-btn--website:hover {
+.card-cta--profile:hover {
   background: var(--yellow);
   color: var(--black);
   transform: translateY(-2px);
 }
 
-/* "Get a Website" funnel button */
-.card-social-btn--claim {
-  width: auto;
-  padding: 0 12px;
-  gap: 5px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  margin-left: auto;
+/* External website — outlined pill */
+.card-cta--external {
+  background: transparent;
+  color: var(--gray-800);
+  border: 1.5px solid var(--gray-200);
+}
+.card-cta--external:hover {
+  background: var(--black);
+  color: var(--white);
+  border-color: var(--black);
+  transform: translateY(-2px);
+}
+
+/* Get Listed funnel — dashed yellow */
+.card-cta--funnel {
   background: var(--yellow-light);
   color: var(--black);
-  border: 1px dashed rgba(255,208,0,0.6);
-  border-radius: var(--radius-full);
-  text-decoration: none;
-  transition: all 0.18s ease;
+  border: 1.5px dashed rgba(255,208,0,0.7);
+  font-size: 0.75rem;
 }
-.card-social-btn--claim:hover {
+.card-cta--funnel:hover {
   background: var(--yellow);
   border-color: var(--yellow);
   transform: translateY(-2px);
+}
+
+/* ── Hosted badge (top-right of image, opposite of save btn) ── */
+.card-hosted-badge {
+  position: absolute;
+  bottom: 12px; left: 12px;
+  background: var(--black);
+  color: var(--yellow);
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  pointer-events: none;
 }
 
 /* Trending card AI summary */
