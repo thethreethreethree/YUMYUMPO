@@ -6,11 +6,25 @@
 
 /* ── RESET & BASE ── */
 *, *::before, *::after { box-sizing: border-box; }
-html { font-size: 16px; scroll-behavior: smooth; }
+html {
+  font-size: 16px; scroll-behavior: smooth;
+  /* Prevent iOS Safari from auto-zooming text on landscape rotation */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Stop horizontal overflow from any rogue child element */
+  overflow-x: hidden;
+}
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  /* Kill double-tap-to-zoom on the page; pinch-to-zoom still works
+     for accessibility. Most "accidental zoom stuck" cases are from
+     double-taps on text, not pinch gestures. */
+  touch-action: manipulation;
 }
+/* Form inputs at 16px+ prevent iOS Safari's "zoom into input" behavior */
+input, select, textarea { font-size: 16px; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 button, [role="button"] { cursor: pointer; }
