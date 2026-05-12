@@ -237,11 +237,46 @@
     try { if (sessionStorage.getItem('yyp_install_dismissed') === '1') return; } catch {}
     const btn = ensureInstallButton();
     requestAnimationFrame(() => btn.classList.add('is-in'));
+    armScrollHide(btn);
   }
 
   function hideInstallButton() {
     if (!installBtn) return;
     installBtn.classList.remove('is-in');
+  }
+
+  /* ── Auto-hide on scroll ─────────────────────────────────────
+     Once the user scrolls past ~120px we fade the install pill out.
+     If they scroll back to the very top, we bring it back — but only
+     until they actively dismiss it (× button) or install it. */
+  function armScrollHide(btn) {
+    const TRIGGER = 120;
+    let scheduled = false;
+    let dismissed = false;
+
+    const onScroll = () => {
+      if (scheduled || dismissed) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        const y = window.scrollY || document.documentElement.scrollTop || 0;
+        if (y > TRIGGER) btn.classList.remove('is-in');
+        else             btn.classList.add('is-in');
+      });
+    };
+
+    /* Passive scroll listener — never blocks scrolling itself. */
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    /* If the user clicks dismiss, kill the scroll listener so it stays hidden */
+    btn.querySelector('[data-action="dismiss"]')?.addEventListener('click', () => {
+      dismissed = true;
+      window.removeEventListener('scroll', onScroll);
+    });
+    btn.querySelector('[data-action="install"]')?.addEventListener('click', () => {
+      dismissed = true;
+      window.removeEventListener('scroll', onScroll);
+    });
   }
 
   async function triggerInstall() {
@@ -328,6 +363,27 @@
 
       document.body.appendChild(tip);
       requestAnimationFrame(() => tip.classList.add('is-in'));
+
+      /* Auto-hide on scroll — same UX as the Android install pill. */
+      let iosScheduled = false;
+      let iosDismissed = false;
+      const onIosScroll = () => {
+        if (iosScheduled || iosDismissed) return;
+        iosScheduled = true;
+        requestAnimationFrame(() => {
+          iosScheduled = false;
+          const y = window.scrollY || document.documentElement.scrollTop || 0;
+          if (y > 120) tip.classList.remove('is-in');
+          else         tip.classList.add('is-in');
+        });
+      };
+      window.addEventListener('scroll', onIosScroll, { passive: true });
+      const killScroll = () => {
+        iosDismissed = true;
+        window.removeEventListener('scroll', onIosScroll);
+      };
+      tip.querySelector('.yyp-ios-tip-close').addEventListener('click', killScroll);
+      tip.querySelector('[data-action="copy"]')?.addEventListener('click', killScroll);
 
       const copyBtn = tip.querySelector('[data-action="copy"]');
       if (copyBtn) {

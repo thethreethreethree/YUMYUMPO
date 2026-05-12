@@ -208,10 +208,13 @@
 
     </div>
 
-    <!-- Scroll indicator -->
-    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 fade-in-up" style="animation-delay: 0.8s">
-      <span class="text-white/60 text-xs font-medium tracking-widest uppercase">Explore</span>
-      <div class="scroll-indicator"></div>
+    <!-- Scroll indicator — outer div handles centering (no animation),
+         inner div handles fade-in animation (no positioning conflict). -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2">
+      <div class="flex flex-col items-center gap-2 fade-in-up" style="animation-delay: 0.8s">
+        <span class="text-white/60 text-xs font-medium tracking-widest uppercase">Explore</span>
+        <div class="scroll-indicator"></div>
+      </div>
     </div>
 
   </section>
