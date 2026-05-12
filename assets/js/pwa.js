@@ -133,42 +133,57 @@
           body.yyp-has-install-banner { padding-top: 60px; }
         }
 
-        /* ── iOS install tip (slide-up sheet) ── */
+        /* ── iOS install banner — matches Android, pinned to top ── */
         .yyp-ios-tip {
           position: fixed;
           z-index: 9989;
-          left: 14px; right: 14px;
-          bottom: calc(env(safe-area-inset-bottom, 0) + 90px);
-          background: rgba(20, 20, 20, .96);
-          backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-          color: #fff;
-          border-radius: 20px;
-          padding: 14px 16px;
+          top: 0; left: 0; right: 0;
+          background: linear-gradient(180deg, #FFD000 0%, #F5C800 100%);
+          color: #111;
+          padding: 10px 14px;
+          padding-top: calc(10px + env(safe-area-inset-top, 0));
           display: flex; align-items: center; gap: 12px;
           font-family: 'Space Grotesk', system-ui, sans-serif;
-          font-size: .8125rem;
-          box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
-          opacity: 0; transform: translateY(20px);
-          transition: all .4s cubic-bezier(.34, 1.4, .64, 1);
+          font-size: .875rem;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, .12), 0 0 0 1px rgba(0, 0, 0, .05);
+          transform: translateY(-110%);
+          transition: transform .45s cubic-bezier(.34, 1.4, .64, 1);
           pointer-events: none;
         }
-        .yyp-ios-tip.is-in { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .yyp-ios-tip.is-in { transform: translateY(0); pointer-events: auto; }
         .yyp-ios-tip-icon {
           flex-shrink: 0;
           width: 36px; height: 36px;
-          background: #FFD000; color: #111;
-          border-radius: 12px;
+          background: #111; color: #FFD000;
+          border-radius: 10px;
           display: inline-flex; align-items: center; justify-content: center;
           font-size: 1.1rem;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
         }
-        .yyp-ios-tip-body  { flex: 1; min-width: 0; }
-        .yyp-ios-tip-title { font-weight: 800; color: #FFD000; letter-spacing: -.01em; }
-        .yyp-ios-tip-sub   { color: rgba(255,255,255,.7); font-size: .75rem; margin-top: 1px; }
+        .yyp-ios-tip-body  { flex: 1; min-width: 0; line-height: 1.3; }
+        .yyp-ios-tip-title { font-weight: 900; color: #111; letter-spacing: -.01em; font-size: .9rem; display: block; }
+        .yyp-ios-tip-sub   { color: rgba(17, 17, 17, .68); font-size: .75rem; font-weight: 600; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+        .yyp-ios-tip-sub svg { width: 14px; height: 14px; }
         .yyp-ios-tip-close {
-          background: none; border: none; color: rgba(255,255,255,.5);
-          font-size: 18px; cursor: pointer; padding: 4px 6px;
+          background: rgba(17,17,17,.08); border: none; color: #111;
+          width: 30px; height: 30px;
+          border-radius: 50%;
+          display: inline-flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          font-size: 18px; line-height: 1;
+          flex-shrink: 0;
+          transition: background .15s;
         }
-        .yyp-ios-tip-close:hover { color: #fff; }
+        .yyp-ios-tip-close:hover { background: rgba(17,17,17,.18); }
+        @media (max-width: 480px) {
+          .yyp-ios-tip-sub { font-size: .7rem; }
+          .yyp-ios-tip { padding-left: 10px; padding-right: 10px; gap: 8px; }
+          .yyp-ios-tip-icon { width: 32px; height: 32px; }
+        }
+        body.yyp-has-ios-tip { padding-top: 70px; transition: padding-top .35s ease; }
+        @media (max-width: 480px) {
+          body.yyp-has-ios-tip { padding-top: 64px; }
+        }
 
         /* ── App-feel polish — only tap-highlight; nothing that could
               affect scrolling on any device ── */
@@ -180,7 +195,8 @@
         /* When running as installed PWA, hide the install banner + tip */
         @media (display-mode: standalone) {
           .yyp-install-banner, .yyp-ios-tip { display: none !important; }
-          body.yyp-has-install-banner { padding-top: 0 !important; }
+          body.yyp-has-install-banner,
+          body.yyp-has-ios-tip { padding-top: 0 !important; }
         }
       `;
       document.head.appendChild(style);
@@ -274,30 +290,35 @@
     setTimeout(() => {
       const tip = document.createElement('div');
       tip.className = 'yyp-ios-tip';
+      tip.setAttribute('role', 'region');
+      tip.setAttribute('aria-label', 'Install YUMYUMPO on iPhone');
+      /* Inline SVG for the iOS Share icon so the instructions are visual */
       tip.innerHTML = `
         <div class="yyp-ios-tip-icon">🍽️</div>
         <div class="yyp-ios-tip-body">
-          <p class="yyp-ios-tip-title">Install YUMYUMPO</p>
-          <p class="yyp-ios-tip-sub">Tap <strong>Share</strong> → <strong>Add to Home Screen</strong></p>
+          <strong class="yyp-ios-tip-title">Install the YUMYUMPO app</strong>
+          <span class="yyp-ios-tip-sub">
+            Tap
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="M7 7l5-5 5 5"/><rect x="4" y="13" width="16" height="8" rx="2"/></svg>
+            <strong>Share</strong> → <strong>Add to Home Screen</strong>
+          </span>
         </div>
         <button class="yyp-ios-tip-close" aria-label="Dismiss">×</button>
       `;
       document.body.appendChild(tip);
-      requestAnimationFrame(() => tip.classList.add('is-in'));
+      requestAnimationFrame(() => {
+        tip.classList.add('is-in');
+        document.body.classList.add('yyp-has-ios-tip');
+      });
 
       tip.querySelector('.yyp-ios-tip-close').addEventListener('click', () => {
         tip.classList.remove('is-in');
+        document.body.classList.remove('yyp-has-ios-tip');
         setTimeout(() => tip.remove(), 400);
         try { localStorage.setItem(LS_IOS_DISMISSED, '1'); } catch {}
       });
-
-      /* Auto-dismiss after 15s — don't be annoying */
-      setTimeout(() => {
-        if (!document.body.contains(tip)) return;
-        tip.classList.remove('is-in');
-        setTimeout(() => tip.remove(), 400);
-      }, 15000);
-    }, 2200);
+      /* Don't auto-dismiss — user has to actively dismiss the banner */
+    }, 1500);
   }
 
   if (document.readyState === 'loading') {
