@@ -849,6 +849,12 @@ window.closeFilterDrawer = function() {
 ══════════════════════════════════════════════════════════ */
 window.openRestaurant = function(slug) {
   trackDiscoveryEvent('card_click', slug);
+  const r = DATASET.find(x => x.slug === slug);
+  const url = r && (r.website || r.website_url);
+  if (url) {
+    window.open(url, '_blank', 'noopener,noreferrer');
+    return;
+  }
   window.location.href = `restaurant.html?slug=${slug}`;
 };
 
@@ -918,11 +924,14 @@ function tagEmoji(tag) {
 
 /* ── CARD CTA (discover page — mirrors main.js cardCTA logic) ── */
 function dCardCTA(r) {
+  const url = r.website || r.website_url;
+  if (url) {
+    const label = r.has_yumyumpo_site ? 'Visit YUMYUMPO Site' : 'Visit Website';
+    const kind  = r.has_yumyumpo_site ? 'yumyumpo' : 'external';
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="card-cta card-cta--external" onclick="event.stopPropagation(); if(typeof trackWebsiteClick==='function') trackWebsiteClick('${kind}','${r.slug}')">${label} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg></a>`;
+  }
   if (r.has_yumyumpo_site) {
     return `<a href="restaurant.html?slug=${r.slug}" class="card-cta card-cta--profile" onclick="event.stopPropagation(); if(typeof trackWebsiteClick==='function') trackWebsiteClick('profile','${r.slug}')">View Full Profile <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>`;
-  }
-  if (r.website) {
-    return `<a href="${r.website}" target="_blank" rel="noopener noreferrer" class="card-cta card-cta--external" onclick="event.stopPropagation(); if(typeof trackWebsiteClick==='function') trackWebsiteClick('external','${r.slug}')">Visit Website <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg></a>`;
   }
   return `<a href="admin/apply.html?ref=get-listed&restaurant=${encodeURIComponent(r.name)}" class="card-cta card-cta--funnel" onclick="event.stopPropagation()">Get Listed on YUMYUMPO</a>`;
 }
