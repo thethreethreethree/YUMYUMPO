@@ -200,7 +200,20 @@
       badge_style:        row.rank_label ? 'dark' : 'default',
       tags:               Array.isArray(row.tags) ? row.tags : [],
       created_at:         row.created_at,
+      buzz:               computeBuzz(row),
     };
+  }
+
+  /* Buzz tier — temporary heuristic based on review_count.
+     Replace with restaurant_buzz_tiers() RPC once migration-005-buzz.sql
+     is applied and real engagement signals are flowing. */
+  function computeBuzz(row) {
+    const reviews = Number(row.review_count) || 0;
+    const rating  = Number(row.google_rating) || 0;
+    if (reviews >= 2000 && rating >= 4.7) return 'hot';
+    if (reviews >= 800  && rating >= 4.6) return 'trending';
+    if (row.is_featured && rating >= 4.7) return 'hot';
+    return null;
   }
 
   /* Public helpers */
