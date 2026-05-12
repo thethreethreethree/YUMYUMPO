@@ -13,7 +13,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 -- SEARCH QUERIES — log every AI search for analytics
 -- ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS ai_search_queries (
-  id              BIGSERIAL PRIMARY KEY,
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   session_id      TEXT,
   raw_query       TEXT NOT NULL,
   parsed_cuisines TEXT[],
@@ -36,8 +36,8 @@ CREATE INDEX IF NOT EXISTS ai_search_queries_query_trgm  ON ai_search_queries US
 -- RESTAURANT AI TAGS — semantic tags for vector search
 -- ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS restaurant_ai_tags (
-  id            BIGSERIAL PRIMARY KEY,
-  restaurant_id BIGINT REFERENCES restaurants(id) ON DELETE CASCADE,
+  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  restaurant_id UUID REFERENCES restaurants(id) ON DELETE CASCADE,
   tag           TEXT NOT NULL,
   category      TEXT CHECK (category IN ('vibe','cuisine','feature','diet','location','meal','occasion')),
   weight        NUMERIC(3,2) DEFAULT 1.0,       -- importance weight 0–1
@@ -54,7 +54,7 @@ CREATE INDEX IF NOT EXISTS restaurant_ai_tags_category_idx   ON restaurant_ai_ta
 -- MOOD COLLECTIONS — curated mood→restaurant mappings
 -- ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS mood_collections (
-  id          BIGSERIAL PRIMARY KEY,
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   slug        TEXT UNIQUE NOT NULL,
   name        TEXT NOT NULL,
   emoji       TEXT,
@@ -70,7 +70,7 @@ INSERT INTO mood_collections (slug, name, emoji, description, tags, sort_order) 
   ('backpacker',     'Backpacker Picks',   '🎒', 'Wallet-friendly spots travelers actually love',     ARRAY['budget-friendly','backpacker','local-favorite'], 2),
   ('instagrammable', 'Gram-Worthy',        '📸', 'Beautiful spaces that look great on the feed',      ARRAY['instagrammable','aesthetic','rooftop','view'],   3),
   ('beach-vibes',    'Beach & Surf',       '🌊', 'Oceanfront and island dining experiences',          ARRAY['beachfront','island','ocean-view','sunset'],     4),
-  ('hidden-gems',    'Hidden Gems',        '💎', 'Local secrets the tourists haven\'t found yet',     ARRAY['hidden-gem','local-secret','authentic'],         5),
+  ('hidden-gems',    'Hidden Gems',        '💎', 'Local secrets the tourists havent found yet',       ARRAY['hidden-gem','local-secret','authentic'],         5),
   ('late-night',     'Late Night Cravings','🌙', 'Places still serving when hunger strikes at midnight', ARRAY['late-night','24-hours','after-hours'],        6),
   ('family',         'Family Friendly',    '👨‍👩‍👧', 'Welcoming spots the whole family will enjoy',     ARRAY['family-friendly','kids','wholesome'],            7),
   ('coffee-crawl',   'Coffee & Brunch',    '☕', 'Specialty coffee and all-day breakfast spots',      ARRAY['café','coffee','brunch','specialty-coffee'],    8),
@@ -81,7 +81,7 @@ ON CONFLICT (slug) DO NOTHING;
 -- CUISINE INTELLIGENCE — keyword→cuisine mappings for AI
 -- ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS cuisine_keywords (
-  id          BIGSERIAL PRIMARY KEY,
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   cuisine     TEXT NOT NULL,
   keyword     TEXT NOT NULL,
   weight      NUMERIC(3,2) DEFAULT 1.0,
@@ -96,7 +96,7 @@ CREATE INDEX IF NOT EXISTS cuisine_keywords_kw_trgm ON cuisine_keywords USING gi
 -- ────────────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION search_restaurants_fts(query_text TEXT, result_limit INTEGER DEFAULT 20)
 RETURNS TABLE (
-  id            BIGINT,
+  id            UUID,
   name          TEXT,
   slug          TEXT,
   cuisine       TEXT,
@@ -114,8 +114,8 @@ BEGIN
     r.slug,
     r.cuisine_type AS cuisine,
     r.location,
-    r.rating,
-    r.cover_image,
+    r.google_rating AS rating,
+    r.cover_image_url AS cover_image,
     r.description,
     ts_rank(
       to_tsvector('english', COALESCE(r.name,'') || ' ' || COALESCE(r.description,'') || ' ' || COALESCE(r.cuisine_type,'') || ' ' || COALESCE(r.location,'')),
@@ -136,7 +136,7 @@ $$ LANGUAGE plpgsql STABLE;
 -- ────────────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION get_similar_restaurants(target_slug TEXT, result_limit INTEGER DEFAULT 4)
 RETURNS TABLE (
-  id          BIGINT,
+  id          UUID,
   name        TEXT,
   slug        TEXT,
   cuisine     TEXT,
@@ -159,8 +159,8 @@ BEGIN
     r.slug,
     r.cuisine_type AS cuisine,
     r.location,
-    r.rating,
-    r.cover_image,
+    r.google_rating AS rating,
+    r.cover_image_url AS cover_image,
     (
       CASE WHEN r.cuisine_type = target_cuisine THEN 0.6 ELSE 0.0 END +
       CASE WHEN r.location     = target_location THEN 0.4 ELSE 0.0 END
@@ -169,7 +169,7 @@ BEGIN
   WHERE r.slug != target_slug
     AND r.is_active = TRUE
     AND (r.cuisine_type = target_cuisine OR r.location = target_location)
-  ORDER BY similarity DESC, r.rating DESC
+  ORDER BY similarity DESC, r.google_rating DESC
   LIMIT result_limit;
 END;
 $$ LANGUAGE plpgsql STABLE;

@@ -29,8 +29,8 @@ ALTER TABLE analytics_events
   ADD COLUMN IF NOT EXISTS path        TEXT,
   ADD COLUMN IF NOT EXISTS referrer    TEXT;
 
-CREATE INDEX IF NOT EXISTS analytics_events_session_idx  ON analytics_events(session_id);
-CREATE INDEX IF NOT EXISTS analytics_events_created_date ON analytics_events((created_at::date));
+CREATE INDEX IF NOT EXISTS analytics_events_session_idx ON analytics_events(session_id);
+CREATE INDEX IF NOT EXISTS analytics_events_created_idx ON analytics_events(created_at DESC);
 
 -- Full-text index on metadata for query searches
 CREATE INDEX IF NOT EXISTS analytics_events_metadata_idx ON analytics_events USING GIN(metadata);
