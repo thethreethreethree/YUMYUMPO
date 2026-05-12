@@ -183,14 +183,74 @@ const TOURISM_RESTAURANTS = [
 /* ── DOM READY ── */
 document.addEventListener('DOMContentLoaded', () => {
   initNavbar();
-  renderFeaturedRestaurants();
-  renderTrendingRestaurants();
-  renderTourismRestaurants();
   initRevealAnimations();
-  initStatsCounter();
   initSearchPlaceholderRotation();
   initMobileMenu();
+
+  /* Skeletons immediately, then real or fallback data once ready */
+  showSkeletons();
+
+  if (window.YYP?.ready) bootData();
+  else document.addEventListener('yyp:ready', bootData, { once: true });
 });
+
+function showSkeletons() {
+  ['featured-grid','trending-grid','tourism-grid'].forEach(id => {
+    const grid = document.getElementById(id);
+    if (!grid) return;
+    const count = id === 'featured-grid' ? 6 : id === 'trending-grid' ? 4 : 3;
+    grid.innerHTML = Array(count).fill(0).map(() =>
+      skeletonCard(id === 'trending-grid' ? 'trending' : 'featured')
+    ).join('');
+  });
+}
+
+async function bootData() {
+  /* Try Supabase first; fall back to static seed data on any failure */
+  let featured = null, trending = null;
+
+  if (window.db?.getHomepagePicks) {
+    try {
+      const [feat, rank] = await Promise.all([
+        window.db.getHomepagePicks({ featured: true,  limit: 6, order: 'rating' }),
+        window.db.getHomepagePicks({ ranked:   true,  limit: 4, order: 'rank' }),
+      ]);
+      if (feat?.length) featured = feat;
+      if (rank?.length) trending = rank;
+    } catch (err) {
+      console.warn('[YUMYUMPO] homepage load failed, using static fallback:', err);
+    }
+  }
+
+  renderFeaturedRestaurants(featured || FEATURED_RESTAURANTS);
+  renderTrendingRestaurants(trending || TRENDING_RESTAURANTS);
+  renderTourismRestaurants(TOURISM_RESTAURANTS);
+  initStatsCounter();
+  loadRealStats();
+}
+
+async function loadRealStats() {
+  if (!window.db?.getHomepageStats) return;
+  try {
+    const s = await window.db.getHomepageStats();
+    if (!s) return;
+    const map = {
+      'stat-restaurants':  s.active_restaurants,
+      'stat-cities':       s.total_cities,
+      'stat-discoveries':  s.total_discoveries_30d,
+      'stat-applications': s.total_applications,
+    };
+    for (const [id, value] of Object.entries(map)) {
+      const el = document.getElementById(id);
+      if (el && typeof value === 'number') {
+        el.dataset.target = value;
+        el.textContent    = value.toLocaleString();
+      }
+    }
+  } catch (err) {
+    console.warn('[YUMYUMPO] stats load failed:', err);
+  }
+}
 
 
 /* ── NAVBAR ── */
@@ -218,51 +278,40 @@ window.toggleMobileMenu = function() {
 
 
 /* ── RENDER CARDS ── */
-function renderFeaturedRestaurants() {
+function renderFeaturedRestaurants(data) {
   const grid = document.getElementById('featured-grid');
-  if (!grid) return;
-
-  // Show skeletons while "loading"
-  grid.innerHTML = Array(6).fill(0).map(skeletonCard).join('');
-
-  setTimeout(() => {
-    grid.innerHTML = FEATURED_RESTAURANTS.map(r => featuredCard(r)).join('');
-    grid.querySelectorAll('.restaurant-card').forEach((card, i) => {
-      card.classList.add('reveal');
-      card.style.transitionDelay = `${i * 0.07}s`;
-      requestAnimationFrame(() => card.classList.add('visible'));
-    });
-  }, 600);
+  if (!grid || !data?.length) return;
+  grid.innerHTML = data.map(r => featuredCard(r)).join('');
+  grid.querySelectorAll('.restaurant-card').forEach((card, i) => {
+    card.classList.add('reveal');
+    card.style.transitionDelay = `${i * 0.07}s`;
+    requestAnimationFrame(() => card.classList.add('visible'));
+  });
 }
 
-function renderTrendingRestaurants() {
+function renderTrendingRestaurants(data) {
   const grid = document.getElementById('trending-grid');
-  if (!grid) return;
-
-  grid.innerHTML = Array(4).fill(0).map(() => skeletonCard('trending')).join('');
-
-  setTimeout(() => {
-    grid.innerHTML = TRENDING_RESTAURANTS.map(r => trendingCard(r)).join('');
-    grid.querySelectorAll('.trending-card').forEach((card, i) => {
-      card.classList.add('reveal');
-      card.style.transitionDelay = `${i * 0.08}s`;
-      requestAnimationFrame(() => card.classList.add('visible'));
-    });
-  }, 700);
+  if (!grid || !data?.length) return;
+  /* Trending rows from Supabase may not have an explicit `rank` field
+     filled in for legacy data; synthesize one from index. */
+  data.forEach((r, i) => { if (!r.rank) r.rank = `#${i + 1} This Week`; });
+  grid.innerHTML = data.map(r => trendingCard(r)).join('');
+  grid.querySelectorAll('.trending-card').forEach((card, i) => {
+    card.classList.add('reveal');
+    card.style.transitionDelay = `${i * 0.08}s`;
+    requestAnimationFrame(() => card.classList.add('visible'));
+  });
 }
 
-function renderTourismRestaurants() {
+function renderTourismRestaurants(data) {
   const grid = document.getElementById('tourism-grid');
-  if (!grid) return;
-
-  setTimeout(() => {
-    grid.innerHTML = TOURISM_RESTAURANTS.map(r => tourismCard(r)).join('');
-    grid.querySelectorAll('.tourism-card').forEach((card, i) => {
-      card.classList.add('reveal');
-      card.style.transitionDelay = `${i * 0.1}s`;
-      requestAnimationFrame(() => card.classList.add('visible'));
-    });
-  }, 500);
+  if (!grid || !data?.length) return;
+  grid.innerHTML = data.map(r => tourismCard(r)).join('');
+  grid.querySelectorAll('.tourism-card').forEach((card, i) => {
+    card.classList.add('reveal');
+    card.style.transitionDelay = `${i * 0.1}s`;
+    requestAnimationFrame(() => card.classList.add('visible'));
+  });
 }
 
 
@@ -416,7 +465,7 @@ function cardCTA(r) {
   if (r.has_yumyumpo_site) {
     return `
       <a
-        href="restaurant.html?id=${r.slug}"
+        href="restaurant.html?slug=${r.slug}"
         class="card-cta card-cta--profile"
         onclick="event.stopPropagation(); trackWebsiteClick('profile','${r.slug}')"
       >
@@ -467,21 +516,38 @@ function tagEmoji(tag) {
 }
 
 
-/* ── SAVE TOGGLE (homepage cards) ── */
-window.toggleHomeSave = function(slug, btn) {
-  const saved = JSON.parse(localStorage.getItem('yumyumpo_saved') || '[]');
-  const idx   = saved.indexOf(slug);
-  if (idx === -1) {
-    saved.push(slug);
-    btn.style.background = 'var(--yellow, #FFD000)';
-    btn.title = 'Saved!';
-  } else {
-    saved.splice(idx, 1);
-    btn.style.background = '';
-    btn.title = 'Save to favourites';
-  }
-  localStorage.setItem('yumyumpo_saved', JSON.stringify(saved));
+/* ── SAVE TOGGLE — uses window.YYP.account if signed in,
+   otherwise opens auth modal with intent. ── */
+window.toggleHomeSave = async function(slug, btn) {
+  const acc = window.YYP?.account;
+  if (!acc) return; /* account.js not yet loaded */
+
+  /* Trigger pulse animation regardless of outcome */
+  btn.classList.add('just-saved');
+  setTimeout(() => btn.classList.remove('just-saved'), 600);
+
+  const result = await acc.toggleSaved(slug);
+  /* result === true means "now saved"; false means "now unsaved" */
+  btn.classList.toggle('is-saved', !!result);
+  btn.title = result ? 'Saved to favourites' : 'Save to favourites';
 };
+
+/* Re-render save state when account state changes */
+document.addEventListener('yyp:account-ready', refreshSaveButtons);
+document.addEventListener('yyp:saved-changed', refreshSaveButtons);
+
+function refreshSaveButtons() {
+  const acc = window.YYP?.account;
+  if (!acc) return;
+  document.querySelectorAll('.card-save-btn').forEach(btn => {
+    const card = btn.closest('[onclick*="goToRestaurant"], [onclick*="openRestaurant"]');
+    if (!card) return;
+    const match = card.getAttribute('onclick')?.match(/['"]([\w-]+)['"]/);
+    const slug = match?.[1];
+    if (slug && acc.isSaved(slug)) btn.classList.add('is-saved');
+    else                           btn.classList.remove('is-saved');
+  });
+}
 
 
 /* ── NAVIGATION ── */

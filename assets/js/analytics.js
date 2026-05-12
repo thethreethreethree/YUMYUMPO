@@ -132,7 +132,7 @@ const YAn = (() => {
     if (isDev()) console.log('[YAn]', event.event_type, event.metadata);
 
     // Attempt immediate Supabase push for high-value events
-    const highValue = ['whatsapp_click','website_click','messenger_click','call_click'];
+    const highValue = ['website_click','card_click','fred_search'];
     if (highValue.includes(eventType)) flushNow();
 
     return event;
@@ -272,20 +272,18 @@ const YAn = (() => {
         days.push({ date: key, count: stats.daily?.[key] || 0, label: d.toLocaleDateString('en-US', { weekday: 'short' }) });
       }
 
-      // Conversion rate: contacts / views
+      // Conversion rate: external website clicks ÷ profile views
       const views    = stats.by_type?.['profile_view']   || 0;
-      const contacts = (stats.by_type?.['whatsapp_click'] || 0)
-                     + (stats.by_type?.['website_click']  || 0)
-                     + (stats.by_type?.['call_click']     || 0)
-                     + (stats.by_type?.['messenger_click']|| 0);
-      const ctr = views > 0 ? ((contacts / views) * 100).toFixed(1) : '0.0';
+      const websites = stats.by_type?.['website_click']  || 0;
+      const cards    = stats.by_type?.['card_click']     || 0;
+      const ctr = views > 0 ? ((websites / views) * 100).toFixed(1) : '0.0';
 
       return {
         total_events:    stats.total || 0,
         unique_sessions: Object.keys(stats.sessions || {}).length,
         profile_views:   views,
-        whatsapp_clicks: stats.by_type?.['whatsapp_click'] || 0,
-        website_clicks:  stats.by_type?.['website_click']  || 0,
+        card_clicks:     cards,
+        website_clicks:  websites,
         search_events:   stats.by_type?.['search']         || 0,
         ctr_percent:     parseFloat(ctr),
         by_type:         stats.by_type || {},
@@ -340,20 +338,16 @@ const YAn = (() => {
     });
     window.addEventListener('beforeunload', reportTime);
 
-    // 4. Outbound link tracking
+    /* 4. Outbound link tracking — only fires for real external website
+       clicks (not social profiles, since cards no longer link to those). */
     document.addEventListener('click', e => {
       const link = e.target.closest('a[href]');
       if (!link) return;
       const href = link.href;
       if (!href || href.startsWith(location.origin)) return;
-
-      if (href.includes('wa.me') || href.includes('whatsapp')) {
-        track(EVENT_TYPES.WHATSAPP_CLICK, extractRestaurantMeta(link));
-      } else if (href.includes('instagram.com')) {
-        track(EVENT_TYPES.INSTAGRAM_CLICK, extractRestaurantMeta(link));
-      } else if (href.includes('facebook.com') || href.includes('fb.com') || href.includes('m.me')) {
-        track(EVENT_TYPES.FACEBOOK_CLICK, extractRestaurantMeta(link));
-      }
+      /* Skip mailto/tel/javascript — only http(s) destinations matter */
+      if (!/^https?:/i.test(href)) return;
+      track(EVENT_TYPES.WEBSITE_CLICK, extractRestaurantMeta(link));
     }, { passive: true });
 
     // 5. Section visibility (menu, map, hours) using IntersectionObserver

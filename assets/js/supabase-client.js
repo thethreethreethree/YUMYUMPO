@@ -97,14 +97,21 @@
       .select(`
         *,
         restaurant_tags ( tag_name ),
+        operating_hours ( day_of_week, opens_at, closes_at, is_closed ),
         menu_categories (
           id, name, sort_order,
           menu_items ( id, name, description, price, image_url, is_available, tags )
         )
       `)
       .eq('slug', slug)
-      .single();
+      .maybeSingle();
     if (error) { console.error('[YUMYUMPO] getRestaurantBySlug:', error); return null; }
+    if (!data) return null;
+
+    /* Shape-adapter — make Supabase columns match the static template's field names */
+    if (data.gallery_urls && !data.gallery)   data.gallery = data.gallery_urls;
+    if (Array.isArray(data.restaurant_tags))  data.tags    = data.restaurant_tags.map(t => t.tag_name);
+    if (Array.isArray(data.operating_hours))  data.hours   = data.operating_hours;
     return data;
   }
 
@@ -121,7 +128,89 @@
     if (error) console.warn('[YUMYUMPO] trackAnalyticsEvent:', error);
   }
 
+  /* ════════════════════════════════════════════════════════
+     HOMEPAGE PICKS — reads from the homepage_picks view
+     created by migration-001. Tags are pre-joined.
+  ════════════════════════════════════════════════════════ */
+  async function getHomepagePicks(opts = {}) {
+    const c = sb();
+    if (!c) return null;
+    const {
+      featured = null,    // true → featured only; false → non-featured; null → all
+      ranked   = null,    // true → only rows with rank_label
+      cuisine  = null,
+      limit    = 50,
+      order    = 'rating' // 'rating' | 'created' | 'rank'
+    } = opts;
+
+    let q = c.from('homepage_picks').select('*').limit(limit);
+    if (featured === true)  q = q.eq('is_featured', true);
+    if (featured === false) q = q.eq('is_featured', false);
+    if (ranked   === true)  q = q.not('rank_label', 'is', null);
+    if (cuisine)            q = q.eq('cuisine_type', cuisine);
+
+    if      (order === 'rating')  q = q.order('google_rating', { ascending: false });
+    else if (order === 'created') q = q.order('created_at',    { ascending: false });
+    else if (order === 'rank')    q = q.order('rank_label',    { ascending: true });
+
+    const { data, error } = await q;
+    if (error) { console.error('[YUMYUMPO] getHomepagePicks:', error); return null; }
+    return (data || []).map(normalizeRestaurant);
+  }
+
+  async function getHomepageStats() {
+    const c = sb();
+    if (!c) return null;
+    const { data, error } = await c.rpc('get_homepage_stats');
+    if (error) { console.error('[YUMYUMPO] getHomepageStats:', error); return null; }
+    return Array.isArray(data) ? data[0] : data;
+  }
+
+  /* ════════════════════════════════════════════════════════
+     NORMALIZER — Supabase row → card template shape
+     Card templates expect:  cuisine, rating, reviews, image, cover,
+       tags, ai_summary, has_yumyumpo_site, website, slug, name,
+       location, rank, badge.
+  ════════════════════════════════════════════════════════ */
+  function normalizeRestaurant(row) {
+    if (!row) return null;
+    return {
+      id:                 row.id,
+      slug:               row.slug,
+      name:               row.name,
+      cuisine:            row.cuisine_type,
+      cuisine_type:       row.cuisine_type,
+      description:        row.description,
+      ai_summary:         row.ai_summary || row.description || '',
+      location:           row.location,
+      address:            row.address,
+      rating:             Number(row.google_rating) || 0,
+      reviews:            row.review_count || 0,
+      image:              row.cover_image_url,
+      cover:              row.cover_image_url,
+      cover_image_url:    row.cover_image_url,
+      logo_image_url:     row.logo_image_url,
+      website:            row.website_url,
+      website_url:        row.website_url,
+      has_yumyumpo_site:  !!row.has_yumyumpo_site,
+      is_featured:        !!row.is_featured,
+      rank:               row.rank_label || null,
+      rank_label:         row.rank_label || null,
+      badge:              row.rank_label || (row.is_featured ? 'Featured' : ''),
+      badge_style:        row.rank_label ? 'dark' : 'default',
+      tags:               Array.isArray(row.tags) ? row.tags : [],
+      created_at:         row.created_at,
+    };
+  }
+
   /* Public helpers */
-  window.db = { getRestaurants, getRestaurantBySlug, trackAnalyticsEvent };
+  window.db = {
+    getRestaurants,
+    getRestaurantBySlug,
+    trackAnalyticsEvent,
+    getHomepagePicks,
+    getHomepageStats,
+    normalizeRestaurant,
+  };
 
 })();

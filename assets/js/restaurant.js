@@ -543,6 +543,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   initReveal();
   initParallax();
   trackPageView(r);
+
+  /* Record into user's discovery history (no-op if signed out) */
+  if (window.YYP?.account?.isSignedIn) {
+    window.YYP.account.recordView(r.slug);
+  } else {
+    document.addEventListener('yyp:account-ready', () => {
+      if (window.YYP?.account?.isSignedIn) window.YYP.account.recordView(r.slug);
+    }, { once: true });
+  }
 });
 
 

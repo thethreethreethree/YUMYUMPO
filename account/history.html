@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Discovery History — YUMYUMPO</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="../assets/images/YUMYUMPO.svg" type="image/svg+xml" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="../assets/css/account.css" />
+
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { 'brand-yellow':'#FFD000','brand-black':'#111111','yellow-light':'#FFF9D6','gray-50':'#F9F9F9','gray-100':'#F3F3F3','gray-200':'#E8E8E8','gray-400':'#ABABAB','gray-600':'#6B6B6B' },
+      fontFamily: { display:['"Space Grotesk"','Inter','system-ui','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+    }}}
+  </script>
+
+  <style>
+    .timeline-day {
+      position: relative; padding-left: 22px;
+    }
+    .timeline-day::before {
+      content: ''; position: absolute;
+      left: 6px; top: 14px; bottom: -8px;
+      width: 2px; background: #E8E8E8;
+    }
+    .timeline-day:last-child::before { display: none; }
+    .timeline-dot {
+      position: absolute; left: 0; top: 6px;
+      width: 14px; height: 14px;
+      border-radius: 50%; background: #FFD000;
+      box-shadow: 0 0 0 3px #fff, 0 0 0 5px #FFF9D6;
+    }
+    .timeline-date {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800; font-size: .875rem;
+      color: #111; letter-spacing: -.01em;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body class="acct-page">
+
+<nav id="navbar" class="solid fixed top-0 left-0 right-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <a href="../index.html" class="flex items-center shrink-0">
+        <img src="../assets/images/YUMYUMPO.svg" alt="YUMYUMPO" class="nav-logo-img" />
+      </a>
+      <div class="hidden md:flex items-center gap-7">
+        <a href="../discover.html"  class="text-sm font-600 text-gray-600 hover:text-brand-black transition-colors">Discover</a>
+        <a href="../ai-search.html" class="text-sm font-600 text-gray-600 hover:text-brand-black transition-colors">Ask Fred</a>
+      </div>
+      <div class="flex items-center gap-3"></div>
+    </div>
+  </div>
+</nav>
+
+<div id="auth-gate" class="acct-container" style="display:none;padding-top:24px">
+  <div class="acct-empty" style="margin-top:40px">
+    <div class="acct-empty-emoji">🕓</div>
+    <h1 class="acct-empty-title">Sign in to see your history</h1>
+    <p class="acct-empty-text">Every restaurant you visit on YUMYUMPO appears here as a timeline.</p>
+    <button class="btn-primary" onclick="window.YYP.openAuthModal({intent:'Sign in to view your history'})">Sign In</button>
+  </div>
+</div>
+
+<main class="acct-container" id="main" style="display:none">
+
+  <div class="acct-header">
+    <div class="flex-1">
+      <h1 class="acct-name">Discovery History</h1>
+      <p class="acct-handle">A timeline of every place you've explored</p>
+    </div>
+  </div>
+
+  <div class="acct-tabs">
+    <a class="acct-tab"            href="index.html">Profile</a>
+    <a class="acct-tab"            href="saved.html">Saved Places</a>
+    <a class="acct-tab is-active"  href="history.html">Discovery History</a>
+  </div>
+
+  <!-- Smart summary card -->
+  <div class="bg-brand-black text-white rounded-3xl p-6 mb-8" id="summary-card">
+    <p class="text-xs font-black uppercase tracking-widest text-brand-yellow mb-2">This week's discovery</p>
+    <p class="text-lg font-display font-bold leading-snug" id="summary-text">Loading…</p>
+  </div>
+
+  <!-- Timeline -->
+  <div id="timeline" class="space-y-6"></div>
+
+  <!-- Empty -->
+  <div id="empty" class="acct-empty" style="display:none">
+    <div class="acct-empty-emoji">🗺️</div>
+    <p class="acct-empty-title">Your history is empty</p>
+    <p class="acct-empty-text">Once you start exploring restaurants, they'll show up here as a timeline.</p>
+    <a href="../discover.html" class="btn-primary inline-flex">Start exploring</a>
+  </div>
+
+</main>
+
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/analytics.js"></script>
+<script src="../assets/js/auth-modal.js"></script>
+<script src="../assets/js/account.js"></script>
+<script src="../assets/js/bottom-nav.js"></script>
+
+<script>
+'use strict';
+
+function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function showAuthGate(){
+  document.getElementById('auth-gate').style.display = '';
+  document.getElementById('main').style.display     = 'none';
+}
+
+async function hydrate() {
+  const acc = window.YYP.account;
+  if (!acc?.isSignedIn) { showAuthGate(); return; }
+
+  document.getElementById('auth-gate').style.display = 'none';
+  document.getElementById('main').style.display      = '';
+
+  const rows = await acc.listHistory(200);
+  renderSummary(rows);
+  renderTimeline(rows);
+}
+
+function renderSummary(rows) {
+  const el = document.getElementById('summary-text');
+  if (!rows.length) {
+    el.textContent = "You haven't explored any places yet — let's change that.";
+    return;
+  }
+  /* Find the dominant cuisine + location from the last 30 days */
+  const since = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const recent = rows.filter(r => new Date(r.viewed_at).getTime() >= since);
+  const cuisineFreq = {}, locationFreq = {};
+  recent.forEach(r => {
+    const c = r.restaurants?.cuisine_type;
+    const l = r.restaurants?.location;
+    if (c) cuisineFreq[c] = (cuisineFreq[c] || 0) + 1;
+    if (l) locationFreq[l] = (locationFreq[l] || 0) + 1;
+  });
+  const topCuisine  = Object.entries(cuisineFreq).sort((a,b)=>b[1]-a[1])[0]?.[0];
+  const topLocation = Object.entries(locationFreq).sort((a,b)=>b[1]-a[1])[0]?.[0];
+
+  let parts = [];
+  if (rows.length > 1)  parts.push(`Explored ${rows.length} places`);
+  if (topCuisine)       parts.push(`mostly ${topCuisine.toLowerCase()}`);
+  if (topLocation)      parts.push(`around ${topLocation}`);
+  el.textContent = parts.length ? parts.join(' · ') + '.' : 'Keep exploring to build your taste profile.';
+}
+
+function renderTimeline(rows) {
+  const wrap = document.getElementById('timeline');
+  const empty = document.getElementById('empty');
+  if (!rows.length) { wrap.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+
+  /* Group by day */
+  const groups = {};
+  rows.forEach(r => {
+    const d = new Date(r.viewed_at);
+    const key = d.toDateString();
+    (groups[key] = groups[key] || []).push(r);
+  });
+
+  const fmtDay = (d) => {
+    const today = new Date().toDateString();
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    if (d === today) return 'Today';
+    if (d === yesterday) return 'Yesterday';
+    return new Date(d).toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric' });
+  };
+
+  wrap.innerHTML = Object.entries(groups).map(([day, items]) => `
+    <div class="timeline-day">
+      <span class="timeline-dot"></span>
+      <p class="timeline-date">${esc(fmtDay(day))}</p>
+      <div class="space-y-2">
+        ${items.map(r => {
+          const v = r.restaurants;
+          if (!v) return '';
+          const time = new Date(r.viewed_at).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+          return `
+            <a href="../restaurant.html?slug=${esc(v.slug)}" class="acct-saved-card" style="text-decoration:none">
+              <img src="${esc(v.cover_image_url||'')}" alt="${esc(v.name)}" class="acct-saved-card-img"
+                   onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=75'"/>
+              <div class="acct-saved-card-body">
+                <p class="acct-saved-card-name">${esc(v.name)}</p>
+                <p class="acct-saved-card-meta">${esc(v.cuisine_type||'')} · ${esc(v.location||'')}</p>
+                <p class="text-xs text-gray-400 mt-1">${esc(time)}</p>
+              </div>
+            </a>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+document.addEventListener('yyp:account-ready', hydrate);
+document.addEventListener('yyp:account-signed-out', showAuthGate);
+if (window.YYP?.account?.isSignedIn) hydrate();
+else if (window.YYP?.account && !window.YYP.account.isSignedIn) showAuthGate();
+</script>
+
+</body>
+</html>

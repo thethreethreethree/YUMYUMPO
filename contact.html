@@ -202,16 +202,22 @@
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth-modal.js"></script>
+  <script src="assets/js/account.js"></script>
+  <script src="assets/js/bottom-nav.js"></script>
 <script>
 'use strict';
 
 const msgField = document.getElementById('message');
 const msgCount = document.getElementById('msg-count');
-msgField.addEventListener('input', () => {
-  msgCount.textContent = 2000 - msgField.value.length;
-});
+if (msgField && msgCount) {
+  msgField.addEventListener('input', () => {
+    msgCount.textContent = 2000 - msgField.value.length;
+  });
+}
 
-document.getElementById('year').textContent = new Date().getFullYear();
+const yearEl = document.getElementById('year');
+if (yearEl) yearEl.textContent = new Date().getFullYear();
 
 async function handleSubmit(e) {
   e.preventDefault();

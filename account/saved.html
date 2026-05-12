@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saved Places — YUMYUMPO</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="../assets/images/YUMYUMPO.svg" type="image/svg+xml" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="../assets/css/account.css" />
+
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { 'brand-yellow':'#FFD000','brand-black':'#111111','yellow-light':'#FFF9D6','gray-50':'#F9F9F9','gray-100':'#F3F3F3','gray-200':'#E8E8E8','gray-400':'#ABABAB','gray-600':'#6B6B6B' },
+      fontFamily: { display:['"Space Grotesk"','Inter','system-ui','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+    }}}
+  </script>
+</head>
+
+<body class="acct-page">
+
+<nav id="navbar" class="solid fixed top-0 left-0 right-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <a href="../index.html" class="flex items-center shrink-0">
+        <img src="../assets/images/YUMYUMPO.svg" alt="YUMYUMPO" class="nav-logo-img" />
+      </a>
+      <div class="hidden md:flex items-center gap-7">
+        <a href="../discover.html"  class="text-sm font-600 text-gray-600 hover:text-brand-black transition-colors">Discover</a>
+        <a href="../ai-search.html" class="text-sm font-600 text-gray-600 hover:text-brand-black transition-colors">Ask Fred</a>
+      </div>
+      <div class="flex items-center gap-3"></div>
+    </div>
+  </div>
+</nav>
+
+<!-- Auth gate -->
+<div id="auth-gate" class="acct-container" style="display:none;padding-top:24px">
+  <div class="acct-empty" style="margin-top:40px">
+    <div class="acct-empty-emoji">❤️</div>
+    <h1 class="acct-empty-title">Sign in to see your saved places</h1>
+    <p class="acct-empty-text">Save spots from anywhere on YUMYUMPO and find them all here.</p>
+    <button class="btn-primary" onclick="window.YYP.openAuthModal({intent:'Sign in to view saved places'})">Sign In</button>
+  </div>
+</div>
+
+<main class="acct-container" id="main" style="display:none">
+
+  <!-- Header -->
+  <div class="acct-header">
+    <div class="flex-1">
+      <h1 class="acct-name">Saved Places</h1>
+      <p class="acct-handle"><span id="saved-count">0</span> places · organize them into lists below</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="acct-tabs">
+    <a class="acct-tab"            href="index.html">Profile</a>
+    <a class="acct-tab is-active"  href="saved.html">Saved Places</a>
+    <a class="acct-tab"            href="history.html">Discovery History</a>
+  </div>
+
+  <!-- Filter chips (lists) -->
+  <div id="list-filters" class="flex gap-2 flex-wrap mb-6"></div>
+
+  <!-- Sort + count -->
+  <div class="flex items-center justify-between mb-4">
+    <p class="text-sm text-gray-600"><span id="visible-count">0</span> places</p>
+    <select id="sort" class="acct-input" style="width:auto;padding:8px 14px;font-size:.875rem">
+      <option value="recent">Most recent</option>
+      <option value="rating">Highest rated</option>
+      <option value="name">Name (A-Z)</option>
+    </select>
+  </div>
+
+  <!-- Grid -->
+  <div id="saved-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+
+  <!-- Empty state -->
+  <div id="saved-empty" class="acct-empty" style="display:none">
+    <div class="acct-empty-emoji">💛</div>
+    <p class="acct-empty-title">No saved places yet</p>
+    <p class="acct-empty-text">Tap the heart on any restaurant to save it here. Build collections like "Date Night" or "Cheap Eats" — they sync across your devices.</p>
+    <a href="../discover.html" class="btn-primary inline-flex">Start exploring</a>
+  </div>
+</main>
+
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/analytics.js"></script>
+<script src="../assets/js/auth-modal.js"></script>
+<script src="../assets/js/account.js"></script>
+<script src="../assets/js/bottom-nav.js"></script>
+
+<script>
+'use strict';
+
+let allSaved = [];
+let currentList = 'all';
+let currentSort = 'recent';
+
+function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function showAuthGate(){
+  document.getElementById('auth-gate').style.display = '';
+  document.getElementById('main').style.display     = 'none';
+}
+
+async function hydrate() {
+  const acc = window.YYP.account;
+  if (!acc?.isSignedIn) { showAuthGate(); return; }
+
+  document.getElementById('auth-gate').style.display = 'none';
+  document.getElementById('main').style.display      = '';
+
+  allSaved = await acc.loadSaved();
+  document.getElementById('saved-count').textContent = allSaved.length;
+
+  renderListFilters();
+  renderGrid();
+}
+
+function renderListFilters() {
+  const lists = new Set(['Favorites']);
+  allSaved.forEach(s => { if (s.list_name) lists.add(s.list_name); });
+  const wrap = document.getElementById('list-filters');
+  const arr = ['all', ...[...lists]];
+  wrap.innerHTML = arr.map(l => `
+    <button class="acct-tag ${l === currentList ? 'is-on' : 'acct-tag-off'}" data-list="${esc(l)}">
+      ${l === 'all' ? 'All' : esc(l)}
+    </button>
+  `).join('');
+  wrap.querySelectorAll('[data-list]').forEach(b => {
+    b.addEventListener('click', () => { currentList = b.dataset.list; renderListFilters(); renderGrid(); });
+  });
+}
+
+function renderGrid() {
+  let list = currentList === 'all' ? allSaved : allSaved.filter(s => s.list_name === currentList);
+
+  /* Sort */
+  if (currentSort === 'recent')  list = [...list].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+  else if (currentSort === 'rating') list = [...list].sort((a,b) => (b.restaurants?.google_rating||0) - (a.restaurants?.google_rating||0));
+  else if (currentSort === 'name')   list = [...list].sort((a,b) => (a.restaurants?.name||'').localeCompare(b.restaurants?.name||''));
+
+  document.getElementById('visible-count').textContent = list.length;
+
+  const grid = document.getElementById('saved-grid');
+  const empty = document.getElementById('saved-empty');
+
+  if (!list.length) {
+    grid.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = list.map(s => {
+    const r = s.restaurants;
+    if (!r) return '';
+    return `
+      <div class="acct-saved-card" data-slug="${esc(r.slug)}">
+        <img src="${esc(r.cover_image_url || '')}" alt="${esc(r.name)}" class="acct-saved-card-img"
+             onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=75'"/>
+        <div class="acct-saved-card-body">
+          <p class="acct-saved-card-name">${esc(r.name)}</p>
+          <p class="acct-saved-card-meta">${esc(r.cuisine_type || '')} · ${esc(r.location || '')}</p>
+          <div class="flex items-center justify-between mt-2">
+            <span class="text-xs text-gray-500">★ ${r.google_rating || '—'}</span>
+            <button class="text-xs font-bold text-red-500 hover:text-red-700" data-unsave="${esc(r.slug)}">Remove</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  /* Card click → restaurant profile */
+  grid.querySelectorAll('.acct-saved-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.target.dataset.unsave) return;
+      window.location.href = `../restaurant.html?slug=${card.dataset.slug}`;
+    });
+  });
+  /* Unsave */
+  grid.querySelectorAll('[data-unsave]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const slug = btn.dataset.unsave;
+      if (!confirm('Remove this place from your saved list?')) return;
+      await window.YYP.account.unsaveVenue(slug);
+      allSaved = allSaved.filter(s => s.restaurants?.slug !== slug);
+      document.getElementById('saved-count').textContent = allSaved.length;
+      renderGrid();
+    });
+  });
+}
+
+document.getElementById('sort').addEventListener('change', e => {
+  currentSort = e.target.value; renderGrid();
+});
+
+document.addEventListener('yyp:account-ready', hydrate);
+document.addEventListener('yyp:account-signed-out', showAuthGate);
+if (window.YYP?.account?.isSignedIn) hydrate();
+else if (window.YYP?.account && !window.YYP.account.isSignedIn) showAuthGate();
+</script>
+
+</body>
+</html>

@@ -8,7 +8,8 @@
 /* ══════════════════════════════════════════════════════════
    RESTAURANT DATASET
 ══════════════════════════════════════════════════════════ */
-const ADMIN_RESTAURANTS = [
+/* Static seed — replaced on load with real Supabase data. */
+let ADMIN_RESTAURANTS = [
   { id:1,  name:"Maria's Kitchen",       emoji:'🍛', cuisine:'Filipino',  location:'El Nido, Palawan',     rating:4.8, views:3847, whatsapp:312, website:88,  featured:true,  active:true,  slug:'marias-kitchen',       whatsapp_url:'https://wa.me/639123456789', website_url:null,        instagram_url:'https://instagram.com',    facebook_url:'https://facebook.com',    phone:'+63 912 345 6789',  cover:'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format&fit=crop&q=80', description:"Maria's Kitchen has been serving the El Nido community for over 15 years.", address:'123 Corong-Corong Road, El Nido, Palawan 5313', tags:['Local Favorite','Budget-Friendly','Family-Friendly'] },
   { id:2,  name:'Sunset Grill',          emoji:'🌅', cuisine:'Seafood',   location:'Coron, Palawan',       rating:4.9, views:2901, whatsapp:278, website:124, featured:true,  active:true,  slug:'sunset-grill',         whatsapp_url:'https://wa.me/639987654321', website_url:'https://example.com', instagram_url:'https://instagram.com', facebook_url:'https://facebook.com', phone:'+63 998 765 4321', cover:'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&auto=format&fit=crop&q=80', description:"Perched above the water with jaw-dropping sunsets.", address:'Waterfront Blvd, Coron, Palawan', tags:['Romantic','Scenic View','Beach Dining'] },
   { id:3,  name:'Brew & Bite',           emoji:'☕', cuisine:'Café',      location:'BGC, Taguig',          rating:4.7, views:5214, whatsapp:94,  website:441, featured:false, active:true,  slug:'brew-and-bite',        whatsapp_url:null,                         website_url:'https://example.com', instagram_url:'https://instagram.com', facebook_url:'https://facebook.com', phone:'+63 917 123 4567', cover:'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&auto=format&fit=crop&q=80', description:'Specialty coffee and incredible brunch plates.', address:'5th Avenue, BGC, Taguig', tags:['WiFi-Friendly','Instagrammable','Backpacker-Approved'] },
@@ -128,6 +129,8 @@ function checkAuth() {
 }
 
 function initDashboard() {
+  /* Render with seed data immediately so the UI feels instant.
+     Once Supabase is ready, swap in real data. */
   renderTopRestaurants();
   renderIntelligence();
   renderRestaurantList(ADMIN_RESTAURANTS);
@@ -136,6 +139,52 @@ function initDashboard() {
   renderTagsTab();
   renderTagSelector();
   updateStatTotal();
+
+  if (window.YYP?.ready) loadAdminFromSupabase();
+  else document.addEventListener('yyp:ready', loadAdminFromSupabase, { once: true });
+}
+
+async function loadAdminFromSupabase() {
+  if (!window.db?.getHomepagePicks) return;
+  try {
+    const data = await window.db.getHomepagePicks({ limit: 500, order: 'created' });
+    if (!data?.length) return;
+
+    /* Map Supabase rows → the shape the admin templates expect.
+       Real UUID `id` is preserved as a string. */
+    ADMIN_RESTAURANTS = data.map(r => ({
+      id:                r.id,                  // UUID string
+      slug:              r.slug,
+      name:              r.name,
+      cuisine:           r.cuisine,
+      location:          r.location,
+      address:           r.address || '',
+      description:       r.description || '',
+      tagline:           r.tagline || '',
+      rating:            r.rating,
+      review_count:      r.reviews,
+      cover:             r.cover,
+      emoji:             getCuisineEmoji(r.cuisine),
+      featured:          r.is_featured,
+      active:            true,    /* getHomepagePicks already filters by is_active */
+      website_url:       r.website_url,
+      has_yumyumpo_site: r.has_yumyumpo_site,
+      tags:              r.tags || [],
+      /* Analytics fields — will populate as real traffic flows */
+      views:             0,
+      whatsapp:          0,
+      website:           0,
+    }));
+
+    filteredRestaurants = [...ADMIN_RESTAURANTS];
+    renderTopRestaurants();
+    renderIntelligence();
+    renderRestaurantList(ADMIN_RESTAURANTS);
+    renderFeaturedList();
+    updateStatTotal();
+  } catch (err) {
+    console.warn('[Admin] Supabase load failed, using static seed:', err);
+  }
 }
 
 window.handleLogout = async function() {
@@ -243,8 +292,12 @@ function renderRestaurantList(list) {
   }
 
   container.innerHTML = list.map(r => {
-    const totalClicks = (r.whatsapp || 0) + (r.website || 0);
-    const ctr = r.views > 0 ? ((totalClicks / r.views) * 100).toFixed(1) : '0';
+    const views       = r.views || 0;
+    const websiteHits = r.website || 0;
+    const ctr         = views > 0 ? ((websiteHits / views) * 100).toFixed(1) + '%' : '—';
+    const viewsLabel  = views > 0 ? views.toLocaleString() : '—';
+    const clicksLabel = websiteHits > 0 ? websiteHits.toLocaleString() : '—';
+    const ytype       = r.has_yumyumpo_site ? 'On YUMYUMPO' : (r.website_url ? 'Has site' : 'No site');
     return `
       <div class="restaurant-row">
         <div class="w-10 h-10 rounded-xl bg-yellow-light flex items-center justify-center text-lg shrink-0">${r.emoji}</div>
@@ -253,29 +306,30 @@ function renderRestaurantList(list) {
             <p class="font-bold text-sm text-brand-black">${r.name}</p>
             ${r.featured ? '<span class="text-xs font-bold text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded-full">Featured</span>' : ''}
             ${!r.active ? '<span class="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">Inactive</span>' : ''}
+            <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">${ytype}</span>
           </div>
           <p class="text-xs text-gray-400">${r.cuisine} · ${r.location}</p>
         </div>
         <div class="hidden sm:flex items-center gap-5 text-xs text-gray-400">
-          <div class="text-center"><p class="font-black text-brand-black text-sm">${r.views.toLocaleString()}</p><p>views</p></div>
-          <div class="text-center"><p class="font-black text-green-600 text-sm">${(r.whatsapp||0)}</p><p>WhatsApp</p></div>
-          <div class="text-center"><p class="font-black text-blue-500 text-sm">${ctr}%</p><p>CTR</p></div>
-          <span class="text-yellow-400">★ ${r.rating}</span>
+          <div class="text-center"><p class="font-black text-brand-black text-sm">${viewsLabel}</p><p>views</p></div>
+          <div class="text-center"><p class="font-black text-blue-500 text-sm">${clicksLabel}</p><p>website clicks</p></div>
+          <div class="text-center"><p class="font-black text-green-600 text-sm">${ctr}</p><p>CTR</p></div>
+          <span class="text-yellow-400">★ ${r.rating || '—'}</span>
         </div>
         <div class="flex items-center gap-1 shrink-0">
-          <button onclick="openEditModal(${r.id})" class="p-2 rounded-lg hover:bg-yellow-50 text-gray-400 hover:text-yellow-600 transition-colors" title="Edit">
+          <button onclick="openEditModal('${r.id}')" class="p-2 rounded-lg hover:bg-yellow-50 text-gray-400 hover:text-yellow-600 transition-colors" title="Edit">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
           </button>
           <a href="../restaurant.html?slug=${r.slug}" target="_blank" class="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-brand-black transition-colors" title="View">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
           </a>
-          <button onclick="toggleFeatured(${r.id})" class="p-2 rounded-lg hover:bg-yellow-50 text-gray-400 hover:text-yellow-600 transition-colors" title="${r.featured?'Remove feature':'Feature'}">
+          <button onclick="toggleFeatured('${r.id}')" class="p-2 rounded-lg hover:bg-yellow-50 text-gray-400 hover:text-yellow-600 transition-colors" title="${r.featured?'Remove feature':'Feature'}">
             <svg class="w-4 h-4" fill="${r.featured?'currentColor':'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
           </button>
-          <button onclick="toggleActive(${r.id})" class="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-brand-black transition-colors" title="${r.active?'Deactivate':'Activate'}">
+          <button onclick="toggleActive('${r.id}')" class="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-brand-black transition-colors" title="${r.active?'Deactivate':'Activate'}">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${r.active?'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z':'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'}"/></svg>
           </button>
-          <button onclick="deleteRestaurant(${r.id})" class="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors" title="Delete">
+          <button onclick="deleteRestaurant('${r.id}')" class="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors" title="Delete">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
           </button>
         </div>
@@ -300,30 +354,56 @@ window.filterRestaurants = function() {
   renderRestaurantList(filteredRestaurants);
 };
 
-window.toggleFeatured = function(id) {
+window.toggleFeatured = async function(id) {
   const r = ADMIN_RESTAURANTS.find(x => x.id === id);
-  if (r) r.featured = !r.featured;
+  if (!r) return;
+  const newVal = !r.featured;
+
+  const client = window.YYP?.client;
+  if (client) {
+    const { error } = await client.from('restaurants').update({ is_featured: newVal }).eq('id', id);
+    if (error) { alert('Update failed: ' + error.message); return; }
+  }
+  r.featured = newVal;
   renderRestaurantList(filteredRestaurants);
   renderFeaturedList();
   renderTopRestaurants();
 };
 
-window.toggleActive = function(id) {
+window.toggleActive = async function(id) {
   const r = ADMIN_RESTAURANTS.find(x => x.id === id);
-  if (r) r.active = !r.active;
+  if (!r) return;
+  const newVal = !r.active;
+
+  const client = window.YYP?.client;
+  if (client) {
+    const { error } = await client.from('restaurants').update({ is_active: newVal }).eq('id', id);
+    if (error) { alert('Update failed: ' + error.message); return; }
+  }
+  r.active = newVal;
   renderRestaurantList(filteredRestaurants);
   updateStatTotal();
   renderIntelligence();
 };
 
-window.deleteRestaurant = function(id) {
-  if (!confirm('Delete this restaurant? This cannot be undone.')) return;
+window.deleteRestaurant = async function(id) {
+  const r = ADMIN_RESTAURANTS.find(x => x.id === id);
+  if (!r) return;
+  if (!confirm(`Delete "${r.name}"? This cannot be undone.`)) return;
+
+  const client = window.YYP?.client;
+  if (client) {
+    const { error } = await client.from('restaurants').delete().eq('id', id);
+    if (error) { alert('Delete failed: ' + error.message); return; }
+  }
   const idx = ADMIN_RESTAURANTS.findIndex(x => x.id === id);
   if (idx !== -1) ADMIN_RESTAURANTS.splice(idx, 1);
   filteredRestaurants = filteredRestaurants.filter(x => x.id !== id);
   renderRestaurantList(filteredRestaurants);
   updateStatTotal();
   renderIntelligence();
+  renderFeaturedList();
+  renderTopRestaurants();
 };
 
 
@@ -357,12 +437,15 @@ window.openEditModal = function(id) {
   setChecked('edit-featured', r.featured);
   setChecked('edit-active',   r.active);
 
-  // Reset image preview
-  document.getElementById('edit-preview-grid').innerHTML = '';
-  if (r.cover) addImagePreview('edit', r.cover, null);
+  // Reset image preview (null-safe)
+  const previewGrid = document.getElementById('edit-preview-grid');
+  if (previewGrid) {
+    previewGrid.innerHTML = '';
+    if (r.cover) addImagePreview('edit', r.cover, null);
+  }
 
-  document.getElementById('edit-message').classList.add('hidden');
-  document.getElementById('edit-modal').classList.add('open');
+  document.getElementById('edit-message')?.classList.add('hidden');
+  document.getElementById('edit-modal')?.classList.add('open');
   document.body.style.overflow = 'hidden';
 };
 
@@ -377,7 +460,7 @@ window.closeEditModalDirect = function() {
 
 window.saveEdit = function(e) {
   e.preventDefault();
-  const id = parseInt(document.getElementById('edit-restaurant-id').value);
+  const id = document.getElementById('edit-restaurant-id')?.value;   // UUID string
   const r  = ADMIN_RESTAURANTS.find(x => x.id === id);
   if (!r) return;
 
@@ -539,7 +622,7 @@ function renderFeaturedList() {
                   <p class="font-bold text-sm text-brand-black">${r.name}</p>
                   <p class="text-xs text-gray-400">${r.cuisine} · ${r.location} · ${r.views.toLocaleString()} views</p>
                 </div>
-                <button onclick="toggleFeatured(${r.id})" class="text-xs font-bold text-red-500 bg-white border border-red-100 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">Remove</button>
+                <button onclick="toggleFeatured('${r.id}')" class="text-xs font-bold text-red-500 bg-white border border-red-100 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">Remove</button>
               </div>`).join('')
           : '<p class="text-sm text-gray-400 text-center py-6 bg-gray-50 rounded-xl">No featured restaurants yet. Add one from the list below.</p>'
         }
@@ -555,7 +638,7 @@ function renderFeaturedList() {
               <p class="font-bold text-sm text-brand-black">${r.name}</p>
               <p class="text-xs text-gray-400">${r.cuisine} · ${r.views.toLocaleString()} views</p>
             </div>
-            <button onclick="toggleFeatured(${r.id})" ${featured.length >= 6 ? 'disabled' : ''}
+            <button onclick="toggleFeatured('${r.id}')" ${featured.length >= 6 ? 'disabled' : ''}
               class="text-xs font-bold text-brand-black bg-brand-yellow border border-yellow-300 px-3 py-1.5 rounded-lg hover:bg-yellow-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
               + Feature
             </button>
@@ -720,7 +803,11 @@ window.addTag = function() {
   renderTagsTab();
   renderTagSelector();
 
-  if (window.YYP?.client) {
+  /* NOTE: restaurant_tags is a junction table (restaurant ↔ tag).
+     There is no master "tags" table in the current schema, so the
+     admin tag taxonomy is kept in-memory only. Tags are persisted
+     when they're attached to a restaurant via the edit form. */
+  if (false && window.YYP?.client) {
     window.YYP.client.from('restaurant_tags').insert([{ tag_name: name }]).then(() => {});
   }
 };
@@ -781,41 +868,49 @@ window.submitRestaurant = async function(e) {
     if (firstPreview) data.cover_image_url = firstPreview.dataset.url || '';
   }
 
-  if (window.YYP?.client) {
-    const { error } = await window.YYP.client.from('restaurants').insert([{
-      name: data.name, slug: data.slug, description: data.description,
-      cuisine_type: data.cuisine_type, location: data.location, address: data.address || null,
-      google_rating: parseFloat(data.google_rating) || null,
-      review_count:  parseInt(data.review_count) || 0,
-      website_url:   data.website_url || null,
-      has_yumyumpo_site: !!data.has_yumyumpo_site,
-      cover_image_url: data.cover_image_url || null, tagline: data.tagline || null,
-      is_featured: !!data.is_featured, is_active: !!data.is_active,
-    }]);
-    if (error) { showMessage(message, 'error', `Error: ${error.message}`); return; }
-  } else {
-    ADMIN_RESTAURANTS.push({
-      id: Date.now(), emoji: getCuisineEmoji(data.cuisine_type),
-      name: data.name, slug: data.slug, cuisine: data.cuisine_type,
-      location: data.location, rating: parseFloat(data.google_rating) || 0,
-      views: 0, website: 0,
-      featured: !!data.is_featured, active: true,
-      cover: data.cover_image_url || '', tags: data.tags,
-      description: data.description, address: data.address,
-      website_url: data.website_url || null,
-      has_yumyumpo_site: !!data.has_yumyumpo_site,
-    });
+  if (!window.YYP?.client) {
+    showMessage(message, 'error', 'Database connection unavailable. Please try again later.');
+    return;
+  }
+
+  /* 1. Insert restaurant and get the new UUID back */
+  const { data: inserted, error } = await window.YYP.client.from('restaurants').insert([{
+    name:              data.name,
+    slug:              data.slug,
+    description:       data.description || null,
+    tagline:           data.tagline     || null,
+    cuisine_type:      data.cuisine_type,
+    location:          data.location    || null,
+    address:           data.address     || null,
+    google_rating:     parseFloat(data.google_rating) || null,
+    review_count:      parseInt(data.review_count)    || 0,
+    website_url:       data.website_url || null,
+    has_yumyumpo_site: !!data.has_yumyumpo_site,
+    cover_image_url:   data.cover_image_url || null,
+    is_featured:       !!data.is_featured,
+    is_active:         data.is_active === undefined ? true : !!data.is_active,
+  }]).select().single();
+
+  if (error) { showMessage(message, 'error', `Error: ${error.message}`); return; }
+
+  /* 2. Insert tags with the real restaurant_id */
+  if (inserted?.id && data.tags?.length) {
+    const tagRows = data.tags.map(tag_name => ({ restaurant_id: inserted.id, tag_name }));
+    const { error: tagErr } = await window.YYP.client.from('restaurant_tags').insert(tagRows);
+    if (tagErr) console.warn('[Admin] tag insert failed:', tagErr.message);
   }
 
   showMessage(message, 'success', `✓ "${data.name}" listed successfully!`);
   form.reset();
   selectedTags.clear();
-  document.getElementById('add-preview-grid').innerHTML = '';
+  const preview = document.getElementById('add-preview-grid');
+  if (preview) preview.innerHTML = '';
   renderTagSelector();
-  renderRestaurantList(ADMIN_RESTAURANTS);
-  updateStatTotal();
-  renderIntelligence();
-  if (window.YAn) YAn.track('restaurant_added', { name: data.name });
+
+  /* 3. Refresh from Supabase so the new row appears with its real UUID */
+  await loadAdminFromSupabase();
+
+  if (window.YAn) YAn.track('restaurant_added', { name: data.name, slug: data.slug });
   setTimeout(() => showTab('restaurants'), 1400);
 };
 

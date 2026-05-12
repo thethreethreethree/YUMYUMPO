@@ -12,6 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/styles.css" />
+  <link rel="stylesheet" href="assets/css/account.css" />
 
   <script>
     tailwind.config = {
@@ -599,6 +600,9 @@
   ════════════════════════════════════════════════ -->
   <script src="assets/js/config.js"></script>
   <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth-modal.js"></script>
+  <script src="assets/js/account.js"></script>
+  <script src="assets/js/bottom-nav.js"></script>
   <script src="assets/js/analytics.js"></script>
   <script src="assets/js/discover.js"></script>
   <script src="assets/js/ai-search.js"></script>
@@ -607,10 +611,18 @@
   (function () {
     'use strict';
 
-    /* Wire Fred's restaurant pool from the discover.js dataset */
-    if (typeof YAI !== 'undefined' && typeof ALL_RESTAURANTS !== 'undefined') {
-      YAI.setPool(ALL_RESTAURANTS);
+    /* Wire Fred's restaurant pool — Supabase if available, else discover.js seed */
+    function seedFred() {
+      if (typeof YAI === 'undefined') return;
+      if (typeof ALL_RESTAURANTS !== 'undefined') YAI.setPool(ALL_RESTAURANTS); // immediate fallback
+      if (window.db?.getHomepagePicks) {
+        window.db.getHomepagePicks({ limit: 200, order: 'rating' })
+          .then(data => { if (data?.length) YAI.setPool(data); })
+          .catch(err => console.warn('[Fred] supabase pool load failed:', err));
+      }
     }
+    if (window.YYP?.ready) seedFred();
+    else document.addEventListener('yyp:ready', seedFred, { once: true });
 
     const hero          = document.getElementById('fred-hero');
     const chatThread    = document.getElementById('chat-thread');
@@ -751,7 +763,7 @@
         card.addEventListener('click', () => {
           const slug = card.dataset.slug;
           if (typeof trackWebsiteClick === 'function') trackWebsiteClick('profile', slug);
-          window.location.href = `restaurant.html?id=${slug}`;
+          window.location.href = `restaurant.html?slug=${slug}`;
         });
       });
       scrollToBottom();
@@ -821,6 +833,8 @@
         if (typeof YAn !== 'undefined') {
           YAn.track('fred_search', { query, results: (result.restaurants || []).length });
         }
+        /* Save into user's search memory for personalisation (no-op if signed out) */
+        window.YYP?.account?.recordSearch?.(query, 'fred');
       } catch (err) {
         removeTyping();
         appendFred("Something went wrong on my end — give it another go? 😅");
@@ -859,14 +873,21 @@
       return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    /* Escape ALL HTML first, then re-introduce the only two
+       formatting affordances we want from Fred's text: **bold**
+       and newlines. This closes the XSS hole that would let a
+       compromised Claude response inject script tags. */
     function formatText(s) {
-      return String(s)
+      const escaped = esc(s);
+      return escaped
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/\n/g, '<br>');
     }
 
-    document.addEventListener('DOMContentLoaded', init);
-    if (document.readyState !== 'loading') init();
+    let _initialized = false;
+    function safeInit() { if (_initialized) return; _initialized = true; init(); }
+    document.addEventListener('DOMContentLoaded', safeInit);
+    if (document.readyState !== 'loading') safeInit();
 
   })();
   </script>

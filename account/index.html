@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile — YUMYUMPO</title>
+  <meta name="description" content="Your YUMYUMPO discovery profile — taste tags, saved places, and personalized recommendations." />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="../assets/images/YUMYUMPO.svg" type="image/svg+xml" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="../assets/css/account.css" />
+
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: { 'brand-yellow':'#FFD000','brand-black':'#111111','yellow-light':'#FFF9D6','gray-50':'#F9F9F9','gray-100':'#F3F3F3','gray-200':'#E8E8E8','gray-400':'#ABABAB','gray-600':'#6B6B6B' },
+        fontFamily: { display:['"Space Grotesk"','Inter','system-ui','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+      }}
+    }
+  </script>
+</head>
+
+<body class="acct-page">
+
+<!-- ── NAV ── -->
+<nav id="navbar" class="solid fixed top-0 left-0 right-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <a href="../index.html" class="flex items-center shrink-0">
+        <img src="../assets/images/YUMYUMPO.svg" alt="YUMYUMPO" class="nav-logo-img" />
+      </a>
+      <div class="hidden md:flex items-center gap-7">
+        <a href="../discover.html"  class="text-sm font-600 text-gray-600 hover:text-brand-black transition-colors">Discover</a>
+        <a href="../ai-search.html" class="text-sm font-600 text-gray-600 hover:text-brand-black transition-colors">Ask Fred</a>
+      </div>
+      <div class="flex items-center gap-3"></div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── AUTH GATE (shown while session loads / if signed out) ── -->
+<div id="auth-gate" class="acct-container" style="display:none;padding-top:24px">
+  <div class="acct-empty" style="margin-top:40px">
+    <div class="acct-empty-emoji">🔐</div>
+    <h1 class="acct-empty-title">Sign in to see your profile</h1>
+    <p class="acct-empty-text">Save your favorite places, build your taste, and unlock personalized recommendations.</p>
+    <button class="btn-primary" onclick="window.YYP.openAuthModal({intent:'Sign in to view your profile'})">Sign In</button>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<main class="acct-container" id="main" style="display:none">
+
+  <!-- HEADER -->
+  <div class="acct-header">
+    <div class="acct-avatar-lg" id="avatar-display">
+      <span id="avatar-initial">?</span>
+    </div>
+    <div class="flex-1 min-w-0">
+      <h1 class="acct-name" id="display-name">—</h1>
+      <p class="acct-handle"><span id="username-display"></span><span id="city-display"></span></p>
+      <p class="acct-bio" id="bio-display"></p>
+      <div class="acct-meta">
+        <span><strong id="meta-saved">0</strong> saved</span>
+        <span><strong id="meta-history">0</strong> discoveries</span>
+        <span><strong id="meta-tags">0</strong> taste tags</span>
+      </div>
+    </div>
+    <div class="shrink-0">
+      <button class="btn-primary text-sm py-2 px-4" id="edit-btn">Edit Profile</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="acct-tabs">
+    <a class="acct-tab is-active" href="index.html">Profile</a>
+    <a class="acct-tab"           href="saved.html">Saved Places</a>
+    <a class="acct-tab"           href="history.html">Discovery History</a>
+  </div>
+
+
+  <!-- PROFILE VIEW -->
+  <section id="profile-view">
+
+    <!-- Quick links -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+      <a href="saved.html"   class="acct-saved-card" style="cursor:pointer">
+        <div class="acct-saved-card-img flex items-center justify-center" style="background:#FFF9D6"><span style="font-size:2rem">❤️</span></div>
+        <div class="acct-saved-card-body"><p class="acct-saved-card-name">Saved Places</p><p class="acct-saved-card-meta"><span id="card-saved-count">0</span> places</p></div>
+      </a>
+      <a href="history.html" class="acct-saved-card" style="cursor:pointer">
+        <div class="acct-saved-card-img flex items-center justify-center" style="background:#FFF9D6"><span style="font-size:2rem">🕓</span></div>
+        <div class="acct-saved-card-body"><p class="acct-saved-card-name">Discovery History</p><p class="acct-saved-card-meta"><span id="card-history-count">0</span> venues explored</p></div>
+      </a>
+      <a href="../ai-search.html" class="acct-saved-card" style="cursor:pointer">
+        <div class="acct-saved-card-img flex items-center justify-center" style="background:#FFF9D6"><span style="font-size:2rem">🍽️</span></div>
+        <div class="acct-saved-card-body"><p class="acct-saved-card-name">Ask Fred</p><p class="acct-saved-card-meta">Personalized AI picks</p></div>
+      </a>
+    </div>
+
+    <!-- Taste tags -->
+    <div class="bg-white rounded-3xl border border-gray-100 p-6 mb-6">
+      <div class="flex items-end justify-between mb-3">
+        <h2 class="acct-section-title">Your taste</h2>
+        <p class="text-xs text-gray-400">Tap to toggle</p>
+      </div>
+      <p class="text-sm text-gray-600 mb-4">These shape what Fred recommends and which places we highlight just for you.</p>
+      <div class="flex flex-wrap gap-2" id="taste-grid"></div>
+    </div>
+
+    <!-- Smart summary -->
+    <div class="bg-brand-black text-white rounded-3xl p-6 mb-8" id="smart-summary">
+      <p class="text-xs font-black uppercase tracking-widest text-brand-yellow mb-2">Fred's read on you</p>
+      <p class="text-lg font-display font-bold leading-snug" id="smart-summary-text">
+        Save a few places and Fred will start picking up your vibe.
+      </p>
+    </div>
+  </section>
+
+
+  <!-- EDIT VIEW (hidden by default) -->
+  <section id="profile-edit" style="display:none">
+    <form id="edit-form" class="bg-white rounded-3xl border border-gray-100 p-6 space-y-5">
+      <div>
+        <label class="acct-label" for="edit-display-name">Display name</label>
+        <input id="edit-display-name" class="acct-input" maxlength="60" />
+      </div>
+      <div>
+        <label class="acct-label" for="edit-username">Username</label>
+        <input id="edit-username" class="acct-input" maxlength="30" placeholder="lowercase, no spaces" />
+      </div>
+      <div>
+        <label class="acct-label" for="edit-city">Current city</label>
+        <input id="edit-city" class="acct-input" maxlength="80" placeholder="e.g. Makati, Philippines" />
+      </div>
+      <div>
+        <label class="acct-label" for="edit-bio">Short bio</label>
+        <textarea id="edit-bio" class="acct-textarea" maxlength="280" placeholder="What you're about — food obsessions, travel style, etc."></textarea>
+      </div>
+      <div>
+        <label class="acct-label" for="edit-avatar">Avatar URL <span class="text-gray-400 font-normal">(optional)</span></label>
+        <input id="edit-avatar" class="acct-input" placeholder="https://..." />
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="btn-primary flex-1 justify-center">Save Changes</button>
+        <button type="button" id="cancel-btn" class="btn-dark flex-1 justify-center" style="background:#F3F3F3;color:#111">Cancel</button>
+      </div>
+      <p id="edit-error"   class="text-sm font-bold text-red-600 hidden"></p>
+      <p id="edit-success" class="text-sm font-bold text-green-600 hidden">✓ Profile updated</p>
+    </form>
+  </section>
+
+</main>
+
+
+<!-- ── Scripts ── -->
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/analytics.js"></script>
+<script src="../assets/js/auth-modal.js"></script>
+<script src="../assets/js/account.js"></script>
+<script src="../assets/js/bottom-nav.js"></script>
+
+<script>
+'use strict';
+
+const TASTE_TAGS = [
+  'Rooftop Bars','Craft Coffee','Live Music','Cheap Eats','Fine Dining',
+  'Beach Clubs','Cocktails','Vegan','Late Night','Hidden Gems',
+  'Date Spots','Brunch','BBQ','Ramen','Sushi','Filipino','Italian','Mexican',
+  'Instagrammable','Family-Friendly','Local Favorites','Tourist Favorites'
+];
+let selectedTags = new Set();
+
+function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function showAuthGate() {
+  document.getElementById('auth-gate').style.display = '';
+  document.getElementById('main').style.display     = 'none';
+}
+
+async function hydrate() {
+  const acc = window.YYP.account;
+  if (!acc?.isSignedIn) { showAuthGate(); return; }
+
+  document.getElementById('auth-gate').style.display = 'none';
+  document.getElementById('main').style.display      = '';
+
+  const p = acc.profile || {};
+  const name = p.display_name || p.username || acc.session.user.email?.split('@')[0] || 'You';
+  const initial = (name[0] || '?').toUpperCase();
+
+  /* Header */
+  const avatar = document.getElementById('avatar-display');
+  if (p.avatar_url) {
+    avatar.innerHTML = `<img src="${esc(p.avatar_url)}" alt="${esc(name)}" onerror="this.outerHTML='<span>${esc(initial)}</span>'" />`;
+  } else {
+    avatar.innerHTML = `<span>${esc(initial)}</span>`;
+  }
+  document.getElementById('display-name').textContent  = name;
+  document.getElementById('username-display').textContent = p.username ? `@${p.username}` : '';
+  document.getElementById('city-display').textContent     = p.city ? ` · 📍 ${p.city}` : '';
+  document.getElementById('bio-display').textContent      = p.bio || '';
+
+  /* Taste tags */
+  selectedTags = new Set(p.taste_tags || []);
+  const grid = document.getElementById('taste-grid');
+  grid.innerHTML = TASTE_TAGS.map(t => `
+    <button class="acct-tag ${selectedTags.has(t) ? 'is-on' : 'acct-tag-off'}" data-tag="${esc(t)}">${esc(t)}</button>
+  `).join('');
+  grid.querySelectorAll('[data-tag]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const t = btn.dataset.tag;
+      if (selectedTags.has(t)) selectedTags.delete(t); else selectedTags.add(t);
+      btn.classList.toggle('is-on');
+      btn.classList.toggle('acct-tag-off');
+      await acc.updateProfile({ taste_tags: [...selectedTags] });
+      document.getElementById('meta-tags').textContent = selectedTags.size;
+    });
+  });
+
+  /* Counts */
+  const saved   = await acc.loadSaved();
+  const history = await acc.listHistory(200);
+  document.getElementById('meta-saved').textContent     = saved.length;
+  document.getElementById('meta-history').textContent   = history.length;
+  document.getElementById('meta-tags').textContent      = selectedTags.size;
+  document.getElementById('card-saved-count').textContent   = saved.length;
+  document.getElementById('card-history-count').textContent = history.length;
+
+  /* Smart summary */
+  renderSmartSummary(saved, history);
+
+  /* Edit form prefill */
+  document.getElementById('edit-display-name').value = p.display_name || '';
+  document.getElementById('edit-username').value     = p.username || '';
+  document.getElementById('edit-city').value         = p.city || '';
+  document.getElementById('edit-bio').value          = p.bio || '';
+  document.getElementById('edit-avatar').value       = p.avatar_url || '';
+}
+
+function renderSmartSummary(saved, history) {
+  const el = document.getElementById('smart-summary-text');
+  const all = [...saved, ...history];
+  if (!all.length) {
+    el.textContent = "Save a few places and Fred will start picking up your vibe.";
+    return;
+  }
+  /* Build a frequency map of cuisine_type to surface the dominant pattern */
+  const freq = {};
+  all.forEach(row => {
+    const c = row.restaurants?.cuisine_type;
+    if (c) freq[c] = (freq[c] || 0) + 1;
+  });
+  const top = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([c])=>c);
+  if (!top.length) { el.textContent = "You're just getting started — explore a few places to build your taste."; return; }
+
+  const phrases = {
+    Filipino: 'authentic local Filipino food',
+    Japanese: 'Japanese spots',
+    Korean:   'Korean BBQ joints',
+    Café:     'cafés and slow-coffee spots',
+    Seafood:  'fresh seafood by the water',
+    BBQ:      'smoky BBQ and grill spots',
+    Italian:  'pizza and Italian classics',
+    Mexican:  'taco joints and street-style Mexican',
+    Vegan:    'plant-based and healthy places',
+    Burgers:  'burger spots',
+    Chinese:  'dim sum and Chinese kitchens',
+    Desserts: 'sweet spots and dessert bars',
+  };
+  const txt = top.map(c => phrases[c] || c.toLowerCase()).join(' and ');
+  el.textContent = `You seem to love ${txt}. Ask Fred for more like these →`;
+}
+
+
+/* Toggle edit / view */
+document.getElementById('edit-btn').addEventListener('click', () => {
+  document.getElementById('profile-view').style.display = 'none';
+  document.getElementById('profile-edit').style.display = '';
+});
+document.getElementById('cancel-btn').addEventListener('click', () => {
+  document.getElementById('profile-edit').style.display = 'none';
+  document.getElementById('profile-view').style.display = '';
+});
+
+document.getElementById('edit-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = document.getElementById('edit-error');
+  const ok  = document.getElementById('edit-success');
+  err.classList.add('hidden'); ok.classList.add('hidden');
+
+  const username = document.getElementById('edit-username').value.trim().toLowerCase();
+  if (username && !/^[a-z0-9_]+$/.test(username)) {
+    err.textContent = 'Username can only contain lowercase letters, numbers, and underscores.';
+    err.classList.remove('hidden');
+    return;
+  }
+
+  const result = await window.YYP.account.updateProfile({
+    display_name: document.getElementById('edit-display-name').value.trim() || null,
+    username:     username || null,
+    city:         document.getElementById('edit-city').value.trim() || null,
+    bio:          document.getElementById('edit-bio').value.trim() || null,
+    avatar_url:   document.getElementById('edit-avatar').value.trim() || null,
+  });
+
+  if (!result) {
+    err.textContent = 'Could not save. Username might be taken.';
+    err.classList.remove('hidden');
+    return;
+  }
+  ok.classList.remove('hidden');
+  await hydrate();
+  setTimeout(() => {
+    document.getElementById('profile-edit').style.display = 'none';
+    document.getElementById('profile-view').style.display = '';
+  }, 800);
+});
+
+
+/* Init when account state is ready */
+document.addEventListener('yyp:account-ready', hydrate);
+document.addEventListener('yyp:account-signed-out', showAuthGate);
+/* Already ready? */
+if (window.YYP?.account?.isSignedIn) hydrate();
+else if (window.YYP?.account && !window.YYP.account.isSignedIn) showAuthGate();
+</script>
+
+</body>
+</html>
