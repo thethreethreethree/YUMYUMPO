@@ -1,18 +1,23 @@
 /* ============================================================
    YUMYUMPO — Restaurant Owner Dashboard
-   Loads the restaurant owned by the signed-in user and lets
-   them edit basic info + upload gallery photos (max 6).
+   Loads the restaurant owned by the signed-in user (or, if admin,
+   any restaurant via ?slug=) and lets them edit every field shown
+   on the public profile page.
    ============================================================ */
 
 'use strict';
 
 const MAX_GALLERY = 6;
 const BUCKET = 'restaurant-photos';
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
-let restaurant = null;          // current row
-let originalSnapshot = null;    // for change detection / discard
-let pendingGallery = [];        // mirror of gallery_urls during edit
+let restaurant = null;
+let originalSnapshot = null;
+let pendingGallery = [];
+let hours = {};          // day_of_week -> { is_closed, open_time, close_time }
+let categories = [];     // [{id?, name, sort_order, items:[{id?, name, price, description, sort_order}]}]
 let dirty = false;
+let isAdminUser = false;
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -24,26 +29,46 @@ document.addEventListener('DOMContentLoaded', () => {
 async function init() {
   const c = window.YYP?.client;
   if (!c) return showGate();
-
   const { data: { user } } = await c.auth.getUser();
   if (!user) return showGate();
 
-  /* Fetch the user's restaurant via the helper RPC (RLS-safe). */
-  const { data, error } = await c.rpc('get_my_restaurant');
-  if (error) {
-    console.error('[Owner] get_my_restaurant:', error);
-    return showNoRestaurant();
+  /* Admin override: if ?slug= present AND user is admin, edit that restaurant. */
+  const params = new URLSearchParams(location.search);
+  const overrideSlug = params.get('slug');
+
+  isAdminUser = await checkIsAdmin(c);
+
+  let row = null;
+  if (overrideSlug && isAdminUser) {
+    const { data, error } = await c.from('restaurants').select('*').eq('slug', overrideSlug).maybeSingle();
+    if (error) { console.error('[Owner] override fetch:', error); }
+    row = data;
+  } else {
+    const { data, error } = await c.rpc('get_my_restaurant');
+    if (error) { console.error('[Owner] get_my_restaurant:', error); }
+    row = Array.isArray(data) ? data[0] : data;
   }
-  const row = Array.isArray(data) ? data[0] : data;
+
   if (!row) return showNoRestaurant();
 
   restaurant = row;
   originalSnapshot = JSON.stringify(row);
   pendingGallery = Array.isArray(row.gallery_urls) ? [...row.gallery_urls] : [];
 
+  await loadHours(c, row.id);
+  await loadMenu(c, row.id);
+
   populateForm();
   wireEvents();
   showMain();
+}
+
+
+async function checkIsAdmin(c) {
+  try {
+    const { data } = await c.rpc('is_admin');
+    return !!data;
+  } catch { return false; }
 }
 
 
@@ -53,7 +78,7 @@ function showNoRestaurant(){ document.getElementById('no-restaurant').style.disp
 function showMain()        { document.getElementById('main').style.display = 'block'; }
 
 
-/* ── Populate form from row ──────────────────────────────── */
+/* ── Populate form ───────────────────────────────────────── */
 function populateForm() {
   document.getElementById('rest-name').textContent = restaurant.name || 'Your restaurant';
   const publicLink = document.getElementById('public-link');
@@ -72,6 +97,8 @@ function populateForm() {
   renderCover();
   renderLogo();
   renderGallery();
+  renderHours();
+  renderMenu();
 }
 
 function renderCover() {
@@ -94,23 +121,137 @@ function renderGallery() {
       <button type="button" class="photo-remove" onclick="removeGalleryPhoto(${i})" aria-label="Remove">×</button>
     </div>
   `).join('');
-
   if (pendingGallery.length < MAX_GALLERY) {
     grid.insertAdjacentHTML('beforeend', `
       <div class="photo-add" onclick="document.getElementById('gallery-file').click()">
-        <span style="font-size:1.6rem;line-height:1">＋</span>
-        <span>Add photo</span>
-      </div>
-    `);
+        <span style="font-size:1.6rem;line-height:1">＋</span><span>Add photo</span>
+      </div>`);
   }
-
   document.getElementById('gallery-count').textContent = `${pendingGallery.length} / ${MAX_GALLERY} photos`;
 }
 
 
+/* ── Hours ───────────────────────────────────────────────── */
+async function loadHours(c, restaurantId) {
+  const { data } = await c.from('operating_hours')
+    .select('day_of_week, open_time, close_time, is_closed')
+    .eq('restaurant_id', restaurantId);
+  hours = {};
+  DAYS.forEach(d => { hours[d] = { day_of_week:d, open_time:'09:00', close_time:'21:00', is_closed:false }; });
+  (data || []).forEach(r => {
+    hours[r.day_of_week] = {
+      day_of_week: r.day_of_week,
+      open_time:   r.open_time  ? r.open_time.slice(0,5)  : '09:00',
+      close_time:  r.close_time ? r.close_time.slice(0,5) : '21:00',
+      is_closed:   !!r.is_closed,
+    };
+  });
+}
+
+function renderHours() {
+  const wrap = document.getElementById('hours-rows');
+  wrap.innerHTML = DAYS.map(d => {
+    const h = hours[d];
+    return `
+      <div class="hour-row ${h.is_closed ? 'closed' : ''}" data-day="${d}">
+        <div class="day">${d.slice(0,3)}</div>
+        <input type="time" value="${h.open_time}"  data-field="open_time"  ${h.is_closed?'disabled':''} />
+        <input type="time" value="${h.close_time}" data-field="close_time" ${h.is_closed?'disabled':''} />
+        <label class="flex items-center gap-1 text-xs font-semibold text-gray-600 cursor-pointer">
+          <input type="checkbox" data-field="is_closed" ${h.is_closed?'checked':''} class="accent-brand-yellow" />
+          Closed
+        </label>
+      </div>`;
+  }).join('');
+  wrap.querySelectorAll('.hour-row').forEach(row => {
+    const day = row.dataset.day;
+    row.querySelectorAll('input').forEach(input => {
+      input.addEventListener('change', () => {
+        const f = input.dataset.field;
+        hours[day][f] = (input.type === 'checkbox') ? input.checked : input.value;
+        if (f === 'is_closed') renderHours();
+        markDirty();
+      });
+    });
+  });
+}
+
+
+/* ── Menu ────────────────────────────────────────────────── */
+async function loadMenu(c, restaurantId) {
+  const { data: cats } = await c.from('menu_categories')
+    .select('id, name, sort_order')
+    .eq('restaurant_id', restaurantId)
+    .order('sort_order');
+  const { data: items } = await c.from('menu_items')
+    .select('id, menu_category_id, name, description, price, sort_order, is_available')
+    .eq('restaurant_id', restaurantId)
+    .order('sort_order');
+
+  categories = (cats || []).map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    sort_order: cat.sort_order || 0,
+    items: (items || [])
+      .filter(it => it.menu_category_id === cat.id)
+      .map(it => ({
+        id: it.id, name: it.name,
+        description: it.description || '',
+        price: it.price || '',
+        sort_order: it.sort_order || 0,
+        is_available: it.is_available !== false,
+      })),
+  }));
+}
+
+function renderMenu() {
+  const wrap = document.getElementById('menu-categories');
+  if (!categories.length) {
+    wrap.innerHTML = '<p class="text-sm text-gray-400 italic">No categories yet. Click "+ Add category" above.</p>';
+    return;
+  }
+  wrap.innerHTML = categories.map((cat, ci) => `
+    <div class="menu-cat" data-ci="${ci}">
+      <div class="menu-cat-head">
+        <input class="menu-cat-name" value="${escapeAttr(cat.name)}" placeholder="Category name (e.g., Drinks)" data-ci="${ci}" data-cat-field="name" />
+        <button type="button" class="btn-tiny" title="Delete category" onclick="deleteCategory(${ci})">🗑</button>
+      </div>
+      ${cat.items.map((it, ii) => `
+        <div class="menu-item">
+          <input value="${escapeAttr(it.name)}" placeholder="Item name" data-ci="${ci}" data-ii="${ii}" data-item-field="name" />
+          <input value="${escapeAttr(it.price)}" placeholder="₱180"   data-ci="${ci}" data-ii="${ii}" data-item-field="price" />
+          <button type="button" class="btn-tiny" title="Delete item" onclick="deleteItem(${ci},${ii})">×</button>
+        </div>
+      `).join('')}
+      <button type="button" class="text-xs font-bold text-yellow-600 underline mt-1" onclick="addItem(${ci})">+ Add item</button>
+    </div>
+  `).join('');
+
+  wrap.querySelectorAll('[data-cat-field]').forEach(el => {
+    el.addEventListener('input', () => {
+      categories[+el.dataset.ci].name = el.value;
+      markDirty();
+    });
+  });
+  wrap.querySelectorAll('[data-item-field]').forEach(el => {
+    el.addEventListener('input', () => {
+      const ci = +el.dataset.ci, ii = +el.dataset.ii;
+      categories[ci].items[ii][el.dataset.itemField] = el.value;
+      markDirty();
+    });
+  });
+}
+
+function escapeAttr(s) { return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+
 /* ── Wire events ─────────────────────────────────────────── */
 function wireEvents() {
-  document.getElementById('owner-form').addEventListener('input', markDirty);
+  document.getElementById('owner-form').addEventListener('input', e => {
+    if (e.target.closest('.menu-cat')) return; // menu inputs handle their own dirty
+    if (e.target.closest('.hour-row')) return;
+    markDirty();
+  });
 
   document.getElementById('cover-file').addEventListener('change', e => handleSingleUpload(e, 'cover'));
   document.getElementById('logo-file').addEventListener('change',  e => handleSingleUpload(e, 'logo'));
@@ -119,31 +260,42 @@ function wireEvents() {
   document.getElementById('save-btn').addEventListener('click', save);
   document.getElementById('discard-btn').addEventListener('click', discard);
 
+  document.getElementById('add-category-btn').addEventListener('click', () => {
+    categories.push({ name:'', sort_order: categories.length, items:[] });
+    renderMenu();
+    markDirty();
+  });
+
+  document.getElementById('hours-quickfill').addEventListener('click', () => {
+    const mon = hours.Monday;
+    ['Tuesday','Wednesday','Thursday','Friday'].forEach(d => {
+      hours[d] = { ...mon, day_of_week: d };
+    });
+    renderHours();
+    markDirty();
+  });
+
   window.removeGalleryPhoto = removeGalleryPhoto;
+  window.deleteCategory = i => { if (confirm('Delete this category and all its items?')) { categories.splice(i,1); renderMenu(); markDirty(); } };
+  window.deleteItem     = (ci,ii) => { categories[ci].items.splice(ii,1); renderMenu(); markDirty(); };
+  window.addItem        = ci => { categories[ci].items.push({ name:'', price:'', sort_order: categories[ci].items.length }); renderMenu(); markDirty(); };
 }
 
-function markDirty() {
-  dirty = true;
-  document.getElementById('save-bar').style.display = 'block';
-}
+function markDirty() { dirty = true; document.getElementById('save-bar').style.display = 'block'; }
 
 
 /* ── Photo upload ────────────────────────────────────────── */
 async function handleSingleUpload(e, kind) {
-  const file = e.target.files?.[0];
-  if (!file) return;
+  const file = e.target.files?.[0]; if (!file) return;
   if (file.size > 5 * 1024 * 1024) return toast('File too big — 5MB max.');
-  const url = await uploadToBucket(file);
-  if (!url) return;
+  const url = await uploadToBucket(file); if (!url) return;
   if (kind === 'cover') { restaurant.cover_image_url = url; renderCover(); }
   if (kind === 'logo')  { restaurant.logo_image_url  = url; renderLogo();  }
-  markDirty();
-  e.target.value = '';
+  markDirty(); e.target.value = '';
 }
 
 async function handleGalleryUpload(e) {
-  const files = [...(e.target.files || [])];
-  if (!files.length) return;
+  const files = [...(e.target.files || [])]; if (!files.length) return;
   const slotsLeft = MAX_GALLERY - pendingGallery.length;
   if (slotsLeft <= 0) return toast(`You already have ${MAX_GALLERY} photos.`);
   for (const file of files.slice(0, slotsLeft)) {
@@ -151,16 +303,10 @@ async function handleGalleryUpload(e) {
     const url = await uploadToBucket(file);
     if (url) pendingGallery.push(url);
   }
-  renderGallery();
-  markDirty();
-  e.target.value = '';
+  renderGallery(); markDirty(); e.target.value = '';
 }
 
-function removeGalleryPhoto(idx) {
-  pendingGallery.splice(idx, 1);
-  renderGallery();
-  markDirty();
-}
+function removeGalleryPhoto(idx) { pendingGallery.splice(idx,1); renderGallery(); markDirty(); }
 
 async function uploadToBucket(file) {
   const c = window.YYP.client;
@@ -198,11 +344,53 @@ async function save() {
 
   const btn = document.getElementById('save-btn');
   btn.disabled = true; btn.textContent = 'Saving…';
-  const { error } = await c.from('restaurants').update(payload).eq('id', restaurant.id);
+
+  /* 1. Restaurant fields */
+  const { error: e1 } = await c.from('restaurants').update(payload).eq('id', restaurant.id);
+  if (e1) { btn.disabled=false; btn.textContent='Save Changes'; return toast('Save failed: ' + e1.message); }
+
+  /* 2. Hours — wipe and re-insert (idempotent, small N=7) */
+  await c.from('operating_hours').delete().eq('restaurant_id', restaurant.id);
+  const hoursRows = DAYS.map(d => ({
+    restaurant_id: restaurant.id,
+    day_of_week:   d,
+    open_time:     hours[d].is_closed ? null : hours[d].open_time,
+    close_time:    hours[d].is_closed ? null : hours[d].close_time,
+    is_closed:     hours[d].is_closed,
+  }));
+  const { error: e2 } = await c.from('operating_hours').insert(hoursRows);
+  if (e2) console.warn('hours save:', e2.message);
+
+  /* 3. Menu — wipe and re-insert (items first cascade-delete, then categories) */
+  await c.from('menu_items').delete().eq('restaurant_id', restaurant.id);
+  await c.from('menu_categories').delete().eq('restaurant_id', restaurant.id);
+  for (let ci = 0; ci < categories.length; ci++) {
+    const cat = categories[ci];
+    if (!cat.name?.trim()) continue;
+    const { data: insertedCat, error: ec } = await c.from('menu_categories').insert({
+      restaurant_id: restaurant.id,
+      name: cat.name.trim(),
+      sort_order: ci,
+    }).select().single();
+    if (ec) { console.warn('cat save:', ec.message); continue; }
+    const itemRows = cat.items
+      .filter(it => it.name?.trim())
+      .map((it, ii) => ({
+        restaurant_id:    restaurant.id,
+        menu_category_id: insertedCat.id,
+        name:             it.name.trim(),
+        description:      it.description || null,
+        price:            it.price || null,
+        sort_order:       ii,
+        is_available:     it.is_available !== false,
+      }));
+    if (itemRows.length) {
+      const { error: ei } = await c.from('menu_items').insert(itemRows);
+      if (ei) console.warn('items save:', ei.message);
+    }
+  }
+
   btn.disabled = false; btn.textContent = 'Save Changes';
-
-  if (error) return toast('Save failed: ' + error.message);
-
   Object.assign(restaurant, payload);
   originalSnapshot = JSON.stringify(restaurant);
   dirty = false;
@@ -212,11 +400,7 @@ async function save() {
 
 function discard() {
   if (!confirm('Discard unsaved changes?')) return;
-  restaurant = JSON.parse(originalSnapshot);
-  pendingGallery = Array.isArray(restaurant.gallery_urls) ? [...restaurant.gallery_urls] : [];
-  dirty = false;
-  document.getElementById('save-bar').style.display = 'none';
-  populateForm();
+  location.reload();
 }
 
 
@@ -225,12 +409,7 @@ let toastTimer;
 function toast(msg) {
   clearTimeout(toastTimer);
   let t = document.querySelector('.toast');
-  if (!t) {
-    t = document.createElement('div');
-    t.className = 'toast';
-    document.body.appendChild(t);
-  }
-  t.textContent = msg;
-  t.style.opacity = '1';
-  toastTimer = setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2400);
+  if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.style.opacity = '1';
+  toastTimer = setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 2400);
 }
