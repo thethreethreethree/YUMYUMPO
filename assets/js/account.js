@@ -230,6 +230,43 @@
   }
 
 
+  /* ── avatar upload ───────────────────────────────────────
+     Uploads to the `avatars` storage bucket at `<user_id>/avatar.<ext>`
+     so the RLS policy restricting writes to your own folder works.
+     Returns the new public URL, or null on failure. */
+  async function uploadAvatar(file) {
+    if (!state.session) return null;
+    const c = client();
+    if (!c) return null;
+
+    if (!/^image\/(jpeg|png|webp|gif)$/i.test(file.type)) {
+      throw new Error('Please pick a JPG, PNG, WEBP, or GIF image.');
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      throw new Error('Image must be smaller than 2 MB.');
+    }
+
+    const ext  = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+    /* One canonical path per user — overwrite each upload. */
+    const path = `${state.session.user.id}/avatar.${ext}`;
+
+    const { error: upErr } = await c.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true, cacheControl: '3600', contentType: file.type });
+    if (upErr) {
+      console.warn('[account] avatar upload:', upErr.message);
+      throw new Error(upErr.message || 'Upload failed.');
+    }
+
+    /* Get the public URL + cache-bust so the new image shows immediately */
+    const { data: { publicUrl } } = c.storage.from('avatars').getPublicUrl(path);
+    const busted = `${publicUrl}?t=${Date.now()}`;
+
+    await updateProfile({ avatar_url: busted });
+    return busted;
+  }
+
+
   /* ── profile updates ────────────────────────────────────── */
   async function updateProfile(patch) {
     if (!state.session) return false;
@@ -396,6 +433,7 @@
     recordView,
     recordSearch,
     updateProfile,
+    uploadAvatar,
     signOut,
     injectNavUI,
   };

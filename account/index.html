@@ -58,8 +58,13 @@
 
   <!-- HEADER -->
   <div class="acct-header">
-    <div class="acct-avatar-lg" id="avatar-display">
-      <span id="avatar-initial">?</span>
+    <div class="acct-avatar-lg avatar-upload-wrap" id="avatar-display" title="Click to change avatar">
+      <div class="avatar-content" id="avatar-content"><span>?</span></div>
+      <div class="avatar-upload-overlay">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span>Change</span>
+      </div>
+      <input type="file" id="avatar-file-input" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" />
     </div>
     <div class="flex-1 min-w-0">
       <h1 class="acct-name" id="display-name">—</h1>
@@ -142,10 +147,7 @@
         <label class="acct-label" for="edit-bio">Short bio</label>
         <textarea id="edit-bio" class="acct-textarea" maxlength="280" placeholder="What you're about — food obsessions, travel style, etc."></textarea>
       </div>
-      <div>
-        <label class="acct-label" for="edit-avatar">Avatar URL <span class="text-gray-400 font-normal">(optional)</span></label>
-        <input id="edit-avatar" class="acct-input" placeholder="https://..." />
-      </div>
+      <p class="text-xs text-gray-500 -mt-1">To change your avatar, click your photo at the top of this page.</p>
       <div class="flex gap-3 pt-2">
         <button type="submit" class="btn-primary flex-1 justify-center">Save Changes</button>
         <button type="button" id="cancel-btn" class="btn-dark flex-1 justify-center" style="background:#F3F3F3;color:#111">Cancel</button>
@@ -195,12 +197,13 @@ async function hydrate() {
   const name = p.display_name || p.username || acc.session.user.email?.split('@')[0] || 'You';
   const initial = (name[0] || '?').toUpperCase();
 
-  /* Header */
-  const avatar = document.getElementById('avatar-display');
+  /* Header avatar — only replace the inner content div so we keep
+     the upload overlay + hidden file input intact. */
+  const avatarContent = document.getElementById('avatar-content');
   if (p.avatar_url) {
-    avatar.innerHTML = `<img src="${esc(p.avatar_url)}" alt="${esc(name)}" onerror="this.outerHTML='<span>${esc(initial)}</span>'" />`;
+    avatarContent.innerHTML = `<img src="${esc(p.avatar_url)}" alt="${esc(name)}" onerror="this.outerHTML='<span>${esc(initial)}</span>'" />`;
   } else {
-    avatar.innerHTML = `<span>${esc(initial)}</span>`;
+    avatarContent.innerHTML = `<span>${esc(initial)}</span>`;
   }
   document.getElementById('display-name').textContent  = name;
   document.getElementById('username-display').textContent = p.username ? `@${p.username}` : '';
@@ -241,8 +244,48 @@ async function hydrate() {
   document.getElementById('edit-username').value     = p.username || '';
   document.getElementById('edit-city').value         = p.city || '';
   document.getElementById('edit-bio').value          = p.bio || '';
-  document.getElementById('edit-avatar').value       = p.avatar_url || '';
 }
+
+
+/* ── Avatar upload ─────────────────────────────────────── */
+const avatarWrap = document.getElementById('avatar-display');
+const fileInput  = document.getElementById('avatar-file-input');
+
+avatarWrap.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const overlay = avatarWrap.querySelector('.avatar-upload-overlay');
+  const content = document.getElementById('avatar-content');
+
+  /* Show local preview immediately */
+  const reader = new FileReader();
+  reader.onload = ev => {
+    content.innerHTML = `<img src="${ev.target.result}" alt="Uploading…" />`;
+    overlay.classList.add('is-uploading');
+    overlay.innerHTML = `<div class="upload-spinner"></div><span>Uploading…</span>`;
+  };
+  reader.readAsDataURL(file);
+
+  try {
+    const newUrl = await window.YYP.account.uploadAvatar(file);
+    if (newUrl) {
+      window.YYP.account.injectNavUI();
+      hydrate();
+      /* Restore the "Change" overlay */
+      overlay.classList.remove('is-uploading');
+      overlay.innerHTML = `
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span>Change</span>`;
+    }
+  } catch (err) {
+    alert(err.message || 'Could not upload that image.');
+    hydrate();
+  }
+  fileInput.value = '';
+});
 
 function renderSmartSummary(saved, history) {
   const el = document.getElementById('smart-summary-text');
@@ -307,7 +350,6 @@ document.getElementById('edit-form').addEventListener('submit', async (e) => {
     username:     username || null,
     city:         document.getElementById('edit-city').value.trim() || null,
     bio:          document.getElementById('edit-bio').value.trim() || null,
-    avatar_url:   document.getElementById('edit-avatar').value.trim() || null,
   });
 
   if (!result) {
