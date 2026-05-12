@@ -50,42 +50,87 @@
       const style = document.createElement('style');
       style.id = 'yyp-pwa-styles';
       style.textContent = `
-        /* ── Install button — top-right, just under the nav ── */
-        .yyp-install-btn {
+        /* ── Install banner — full-width yellow strip pinned to top ── */
+        .yyp-install-banner {
           position: fixed;
           z-index: 9990;
-          top: calc(env(safe-area-inset-top, 0) + 76px);
-          right: 14px;
-          display: inline-flex; align-items: center; gap: 8px;
-          background: #FFD000; color: #111;
+          top: 0; left: 0; right: 0;
+          background: linear-gradient(180deg, #FFD000 0%, #F5C800 100%);
+          color: #111;
+          padding: 10px 14px calc(10px + env(safe-area-inset-top, 0));
+          padding-top: calc(10px + env(safe-area-inset-top, 0));
+          display: flex; align-items: center; gap: 12px;
           font-family: 'Space Grotesk', system-ui, sans-serif;
-          font-weight: 800; font-size: 0.8125rem;
-          letter-spacing: -0.01em;
-          padding: 9px 16px 9px 12px;
-          border: none; border-radius: 999px;
-          box-shadow:
-            0 8px 24px rgba(255, 208, 0, 0.45),
-            0 0 0 1px rgba(0, 0, 0, 0.05);
-          cursor: pointer;
-          opacity: 0; transform: translateY(-20px) scale(.94);
-          transition: all .4s cubic-bezier(.34, 1.4, .64, 1);
+          font-size: 0.875rem;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
+          transform: translateY(-110%);
+          transition: transform .45s cubic-bezier(.34, 1.4, .64, 1);
           pointer-events: none;
         }
-        .yyp-install-btn.is-in {
-          opacity: 1; transform: translateY(0) scale(1);
+        .yyp-install-banner.is-in {
+          transform: translateY(0);
           pointer-events: auto;
-          animation: yyp-install-pulse 2.4s ease-in-out 1s 2;
         }
-        @keyframes yyp-install-pulse {
-          0%, 100% { box-shadow: 0 8px 24px rgba(255,208,0,.45), 0 0 0 1px rgba(0,0,0,.05); }
-          50%      { box-shadow: 0 8px 24px rgba(255,208,0,.55), 0 0 0 6px rgba(255,208,0,.18); }
-        }
-        .yyp-install-btn:hover  { transform: translateY(2px) scale(1.03); }
-        .yyp-install-btn:active { transform: translateY(0) scale(.97); }
-        .yyp-install-btn svg    { flex-shrink: 0; }
 
-        @media (min-width: 768px) {
-          .yyp-install-btn { top: calc(env(safe-area-inset-top, 0) + 92px); right: 24px; }
+        .yyp-install-banner-icon {
+          width: 36px; height: 36px;
+          background: #111; color: #FFD000;
+          border-radius: 10px;
+          display: inline-flex; align-items: center; justify-content: center;
+          font-size: 1.1rem;
+          flex-shrink: 0;
+          box-shadow: 0 2px 6px rgba(0,0,0,.2);
+        }
+
+        .yyp-install-banner-text { flex: 1; min-width: 0; line-height: 1.3; }
+        .yyp-install-banner-text strong {
+          display: block;
+          font-weight: 900; letter-spacing: -.01em;
+          font-size: .9rem;
+        }
+        .yyp-install-banner-text span {
+          color: rgba(17, 17, 17, .65);
+          font-size: .75rem; font-weight: 600;
+        }
+
+        .yyp-install-banner-btn {
+          display: inline-flex; align-items: center; gap: 6px;
+          background: #111; color: #FFD000;
+          border: none; cursor: pointer;
+          font-family: inherit; font-weight: 800;
+          font-size: .8125rem; letter-spacing: -.01em;
+          padding: 9px 16px; border-radius: 999px;
+          flex-shrink: 0;
+          transition: transform .15s, box-shadow .15s;
+          box-shadow: 0 4px 12px rgba(0,0,0,.18);
+        }
+        .yyp-install-banner-btn:hover  { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,.28); }
+        .yyp-install-banner-btn:active { transform: translateY(0); }
+
+        .yyp-install-banner-close {
+          background: rgba(17,17,17,.08); border: none; color: #111;
+          width: 30px; height: 30px;
+          border-radius: 50%;
+          display: inline-flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          font-size: 18px; line-height: 1;
+          flex-shrink: 0;
+          transition: background .15s;
+        }
+        .yyp-install-banner-close:hover { background: rgba(17,17,17,.18); }
+
+        /* Hide the secondary install text on tiny screens to keep the bar slim */
+        @media (max-width: 480px) {
+          .yyp-install-banner-text span { display: none; }
+          .yyp-install-banner-text strong { font-size: .8125rem; }
+          .yyp-install-banner { padding-left: 10px; padding-right: 10px; gap: 8px; }
+          .yyp-install-banner-icon { width: 32px; height: 32px; }
+        }
+
+        /* Push the page down when the banner is showing so nothing's covered */
+        body.yyp-has-install-banner { padding-top: 64px; transition: padding-top .35s ease; }
+        @media (max-width: 480px) {
+          body.yyp-has-install-banner { padding-top: 60px; }
         }
 
         /* ── iOS install tip (slide-up sheet) ── */
@@ -132,37 +177,58 @@
           -webkit-tap-highlight-color: transparent;
         }
 
-        /* When running as installed PWA, hide the install button + tip */
+        /* When running as installed PWA, hide the install banner + tip */
         @media (display-mode: standalone) {
-          .yyp-install-btn, .yyp-ios-tip { display: none !important; }
+          .yyp-install-banner, .yyp-ios-tip { display: none !important; }
+          body.yyp-has-install-banner { padding-top: 0 !important; }
         }
       `;
       document.head.appendChild(style);
     }
 
-    installBtn = document.createElement('button');
-    installBtn.className = 'yyp-install-btn';
+    installBtn = document.createElement('div');
+    installBtn.className = 'yyp-install-banner';
+    installBtn.setAttribute('role', 'region');
     installBtn.setAttribute('aria-label', 'Install YUMYUMPO app');
     installBtn.innerHTML = `
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/>
-        <line x1="12" y1="15" x2="12" y2="3"/>
-      </svg>
-      <span>Install App</span>
+      <div class="yyp-install-banner-icon">🍽️</div>
+      <div class="yyp-install-banner-text">
+        <strong>Install the YUMYUMPO app</strong>
+        <span>Full-screen, faster, on your home screen</span>
+      </div>
+      <button class="yyp-install-banner-btn" type="button" data-action="install">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Install
+      </button>
+      <button class="yyp-install-banner-close" type="button" aria-label="Dismiss" data-action="dismiss">×</button>
     `;
-    installBtn.addEventListener('click', triggerInstall);
+    installBtn.querySelector('[data-action="install"]').addEventListener('click', triggerInstall);
+    installBtn.querySelector('[data-action="dismiss"]').addEventListener('click', () => {
+      hideInstallButton();
+      try { sessionStorage.setItem('yyp_install_dismissed', '1'); } catch {}
+    });
     document.body.appendChild(installBtn);
     return installBtn;
   }
 
   function showInstallButton() {
+    /* Respect a same-session dismiss so we don't nag */
+    try { if (sessionStorage.getItem('yyp_install_dismissed') === '1') return; } catch {}
     const btn = ensureInstallButton();
-    requestAnimationFrame(() => btn.classList.add('is-in'));
+    requestAnimationFrame(() => {
+      btn.classList.add('is-in');
+      document.body.classList.add('yyp-has-install-banner');
+    });
   }
 
   function hideInstallButton() {
-    if (installBtn) installBtn.classList.remove('is-in');
+    if (!installBtn) return;
+    installBtn.classList.remove('is-in');
+    document.body.classList.remove('yyp-has-install-banner');
   }
 
   async function triggerInstall() {
