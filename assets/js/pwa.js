@@ -50,88 +50,87 @@
       const style = document.createElement('style');
       style.id = 'yyp-pwa-styles';
       style.textContent = `
-        /* ── Install banner — full-width yellow strip pinned to top ── */
+        /* ── Install Now floating button — overlay, no layout shift ── */
         .yyp-install-banner {
           position: fixed;
           z-index: 9990;
-          top: 0; left: 0; right: 0;
-          background: linear-gradient(180deg, #FFD000 0%, #F5C800 100%);
-          color: #111;
-          padding: 10px 14px calc(10px + env(safe-area-inset-top, 0));
-          padding-top: calc(10px + env(safe-area-inset-top, 0));
-          display: flex; align-items: center; gap: 12px;
+          /* Sit centered at top, just under the nav. Width fits content. */
+          top: calc(env(safe-area-inset-top, 0) + 76px);
+          left: 50%;
+          transform: translateX(-50%) translateY(-10px) scale(.96);
+          display: inline-flex; align-items: center; gap: 10px;
+          background: #FFD000; color: #111;
           font-family: 'Space Grotesk', system-ui, sans-serif;
-          font-size: 0.875rem;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
-          transform: translateY(-110%);
-          transition: transform .45s cubic-bezier(.34, 1.4, .64, 1);
+          font-size: .8125rem; font-weight: 800;
+          padding: 9px 8px 9px 14px;
+          border-radius: 999px;
+          box-shadow:
+            0 10px 28px rgba(255, 208, 0, .50),
+            0 4px 12px rgba(0, 0, 0, .12),
+            0 0 0 1px rgba(0, 0, 0, .04);
+          opacity: 0;
+          transition: opacity .35s ease, transform .45s cubic-bezier(.34, 1.4, .64, 1);
           pointer-events: none;
+          white-space: nowrap;
+          max-width: calc(100vw - 24px);
         }
         .yyp-install-banner.is-in {
-          transform: translateY(0);
+          opacity: 1;
+          transform: translateX(-50%) translateY(0) scale(1);
           pointer-events: auto;
+          animation: yyp-install-glow 2.6s ease-in-out 1.2s 2;
+        }
+        @keyframes yyp-install-glow {
+          0%, 100% { box-shadow: 0 10px 28px rgba(255,208,0,.50), 0 4px 12px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.04); }
+          50%      { box-shadow: 0 10px 28px rgba(255,208,0,.62), 0 4px 12px rgba(0,0,0,.12), 0 0 0 6px rgba(255,208,0,.18); }
+        }
+        @media (min-width: 768px) {
+          .yyp-install-banner { top: calc(env(safe-area-inset-top, 0) + 92px); }
         }
 
         .yyp-install-banner-icon {
-          width: 36px; height: 36px;
+          width: 26px; height: 26px;
           background: #111; color: #FFD000;
-          border-radius: 10px;
+          border-radius: 50%;
           display: inline-flex; align-items: center; justify-content: center;
-          font-size: 1.1rem;
+          font-size: .8rem;
           flex-shrink: 0;
-          box-shadow: 0 2px 6px rgba(0,0,0,.2);
         }
 
-        .yyp-install-banner-text { flex: 1; min-width: 0; line-height: 1.3; }
+        /* Hide the long subtitle text from the floating button (we keep
+           only an accessible label inside it via aria attributes). */
         .yyp-install-banner-text strong {
-          display: block;
-          font-weight: 900; letter-spacing: -.01em;
-          font-size: .9rem;
+          font-weight: 800; letter-spacing: -.01em; font-size: .8125rem;
+          color: #111;
         }
-        .yyp-install-banner-text span {
-          color: rgba(17, 17, 17, .65);
-          font-size: .75rem; font-weight: 600;
-        }
+        .yyp-install-banner-text span { display: none; }
 
         .yyp-install-banner-btn {
-          display: inline-flex; align-items: center; gap: 6px;
+          display: inline-flex; align-items: center; gap: 5px;
           background: #111; color: #FFD000;
           border: none; cursor: pointer;
           font-family: inherit; font-weight: 800;
-          font-size: .8125rem; letter-spacing: -.01em;
-          padding: 9px 16px; border-radius: 999px;
+          font-size: .75rem; letter-spacing: .02em; text-transform: uppercase;
+          padding: 7px 12px; border-radius: 999px;
           flex-shrink: 0;
           transition: transform .15s, box-shadow .15s;
-          box-shadow: 0 4px 12px rgba(0,0,0,.18);
+          box-shadow: 0 2px 6px rgba(0,0,0,.2);
         }
-        .yyp-install-banner-btn:hover  { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,.28); }
+        .yyp-install-banner-btn:hover  { transform: translateY(-1px); }
         .yyp-install-banner-btn:active { transform: translateY(0); }
 
         .yyp-install-banner-close {
-          background: rgba(17,17,17,.08); border: none; color: #111;
-          width: 30px; height: 30px;
+          background: rgba(17,17,17,.10); border: none; color: #111;
+          width: 24px; height: 24px;
           border-radius: 50%;
           display: inline-flex; align-items: center; justify-content: center;
           cursor: pointer;
-          font-size: 18px; line-height: 1;
+          font-size: 14px; line-height: 1;
           flex-shrink: 0;
+          margin-right: 2px;
           transition: background .15s;
         }
-        .yyp-install-banner-close:hover { background: rgba(17,17,17,.18); }
-
-        /* Hide the secondary install text on tiny screens to keep the bar slim */
-        @media (max-width: 480px) {
-          .yyp-install-banner-text span { display: none; }
-          .yyp-install-banner-text strong { font-size: .8125rem; }
-          .yyp-install-banner { padding-left: 10px; padding-right: 10px; gap: 8px; }
-          .yyp-install-banner-icon { width: 32px; height: 32px; }
-        }
-
-        /* Push the page down when the banner is showing so nothing's covered */
-        body.yyp-has-install-banner { padding-top: 64px; transition: padding-top .35s ease; }
-        @media (max-width: 480px) {
-          body.yyp-has-install-banner { padding-top: 60px; }
-        }
+        .yyp-install-banner-close:hover { background: rgba(17,17,17,.20); }
 
         /* ── iOS install banner — matches Android, pinned to top ── */
         .yyp-ios-tip {
