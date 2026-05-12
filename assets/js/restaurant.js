@@ -692,6 +692,8 @@ function showNotFound(slug) {
    RENDER ORCHESTRATOR
 ══════════════════════════════════════════════════════════ */
 function renderPage(r) {
+  window.__yypRestaurant = r;
+  document.dispatchEvent(new CustomEvent('yyp:restaurant-loaded', { detail: r }));
   updateSEO(r);
   renderHero(r);
   renderGalleryMosaic(r);

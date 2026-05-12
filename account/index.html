@@ -94,7 +94,22 @@
     <a class="acct-tab is-active" href="index.html">Profile</a>
     <a class="acct-tab"           href="saved.html">Saved Places</a>
     <a class="acct-tab"           href="history.html">Discovery History</a>
+    <a class="acct-tab"           href="restaurant.html" id="my-restaurant-tab" style="display:none">My Restaurant</a>
   </div>
+  <script>
+    (function () {
+      function reveal() {
+        const c = window.YYP?.client;
+        if (!c) return;
+        c.rpc('get_my_restaurant').then(({ data }) => {
+          const row = Array.isArray(data) ? data[0] : data;
+          if (row) document.getElementById('my-restaurant-tab').style.display = '';
+        }).catch(() => {});
+      }
+      if (window.YYP?.ready) reveal();
+      else document.addEventListener('yyp:ready', reveal, { once: true });
+    })();
+  </script>
 
 
   <!-- PROFILE VIEW -->

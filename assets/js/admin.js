@@ -918,6 +918,7 @@ window.submitRestaurant = async function(e) {
     cover_image_url:   data.cover_image_url || null,
     is_featured:       !!data.is_featured,
     is_active:         data.is_active === undefined ? true : !!data.is_active,
+    owner_email:       data.owner_email?.trim().toLowerCase() || null,
   }]).select().single();
 
   if (error) { showMessage(message, 'error', `Error: ${error.message}`); return; }

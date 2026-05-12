@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#FFD54F" />
+  <link rel="apple-touch-icon" href="../icons/icon-180.png" />
+  <link rel="icon" href="../assets/images/YUMYUMPO.svg" type="image/svg+xml" />
+  <title>My Restaurant — YUMYUMPO</title>
+  <meta name="robots" content="noindex" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="../assets/css/account.css" />
+
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: { 'brand-yellow':'#FFD000','brand-black':'#111111','yellow-light':'#FFF9D6','gray-50':'#F9F9F9','gray-100':'#F3F3F3','gray-200':'#E8E8E8','gray-400':'#ABABAB','gray-600':'#6B6B6B' },
+        fontFamily: { display:['"Space Grotesk"','Inter','system-ui','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+      }}
+    }
+  </script>
+
+  <style>
+    .form-input { width:100%; padding:0.65rem 0.85rem; border:1.5px solid #E8E8E8; border-radius:12px; font-size:0.9rem; transition: border-color 0.15s, box-shadow 0.15s; background:#fff; }
+    .form-input:focus { outline:none; border-color:#FFD000; box-shadow:0 0 0 4px rgba(255,208,0,0.15); }
+    .form-label { display:block; font-size:0.8rem; font-weight:700; color:#111; margin-bottom:6px; }
+    .form-help  { font-size:0.7rem; color:#ABABAB; margin-top:4px; }
+    .section-card { background:#fff; border-radius:20px; border:1.5px solid #F3F3F3; padding:1.5rem; }
+    .photo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; margin-top:12px; }
+    .photo-tile { position:relative; aspect-ratio:1/1; border-radius:12px; overflow:hidden; background:#F3F3F3; }
+    .photo-tile img { width:100%; height:100%; object-fit:cover; }
+    .photo-tile .photo-remove {
+      position:absolute; top:6px; right:6px; width:26px; height:26px;
+      background:rgba(0,0,0,0.8); color:#fff; border:none; border-radius:50%;
+      cursor:pointer; font-size:14px; font-weight:700; line-height:1;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .photo-add {
+      aspect-ratio:1/1; border:2px dashed #E8E8E8; border-radius:12px;
+      display:flex; align-items:center; justify-content:center; flex-direction:column; gap:4px;
+      cursor:pointer; transition: all 0.15s; color:#ABABAB; font-size:0.7rem; font-weight:600;
+    }
+    .photo-add:hover { border-color:#FFD000; color:#111; background:#FFFDF2; }
+    .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#111; color:#fff; padding:12px 20px; border-radius:14px; font-weight:600; font-size:0.85rem; z-index:9999; box-shadow:0 8px 24px rgba(0,0,0,0.2); }
+  </style>
+</head>
+
+<body class="acct-page">
+
+<!-- NAV -->
+<nav id="navbar" class="solid fixed top-0 left-0 right-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <a href="../index.html" class="flex items-center shrink-0">
+        <img src="../assets/images/YUMYUMPO.svg" alt="YUMYUMPO" class="nav-logo-img" />
+      </a>
+      <div class="hidden md:flex items-center gap-7">
+        <a href="../discover.html"  class="text-sm font-600 text-gray-600 hover:text-brand-black">Discover</a>
+        <a href="index.html"        class="text-sm font-600 text-gray-600 hover:text-brand-black">My Profile</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- AUTH GATE -->
+<div id="auth-gate" class="acct-container" style="display:none;padding-top:24px">
+  <div class="acct-empty" style="margin-top:40px">
+    <div class="acct-empty-emoji">🔐</div>
+    <h1 class="acct-empty-title">Sign in to manage your restaurant</h1>
+    <p class="acct-empty-text">Log in with the email your YUMYUMPO listing was assigned to.</p>
+    <button class="btn-primary" onclick="window.YYP.openAuthModal({intent:'Sign in to manage your restaurant'})">Sign In</button>
+  </div>
+</div>
+
+<!-- NO RESTAURANT -->
+<div id="no-restaurant" class="acct-container" style="display:none;padding-top:24px">
+  <div class="acct-empty" style="margin-top:40px">
+    <div class="acct-empty-emoji">🍽️</div>
+    <h1 class="acct-empty-title">No restaurant linked to this account yet</h1>
+    <p class="acct-empty-text">Your YUMYUMPO listing will appear here once an admin assigns it to your email. Reach out if you think this is a mistake.</p>
+    <a href="mailto:hello@yumyumpo.com" class="btn-primary">Contact support</a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="acct-container" id="main" style="display:none">
+
+  <header class="mb-6">
+    <h1 class="font-display font-black text-3xl text-brand-black" id="rest-name">—</h1>
+    <p class="text-gray-400 text-sm mt-1">Edit your public listing. Changes go live immediately.</p>
+    <p class="text-xs text-gray-400 mt-1">Public page: <a id="public-link" href="#" target="_blank" class="text-yellow-600 underline">View →</a></p>
+  </header>
+
+  <form id="owner-form" class="space-y-6 pb-24">
+
+    <!-- COVER + LOGO -->
+    <div class="section-card space-y-4">
+      <h2 class="font-display font-black text-lg">Cover & Logo</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="sm:col-span-2">
+          <label class="form-label">Cover image</label>
+          <div id="cover-preview" class="photo-tile" style="aspect-ratio:16/9"></div>
+          <input type="file" id="cover-file" accept="image/*" class="hidden" />
+          <button type="button" class="btn-secondary mt-2" onclick="document.getElementById('cover-file').click()">Upload new cover</button>
+        </div>
+        <div>
+          <label class="form-label">Logo</label>
+          <div id="logo-preview" class="photo-tile"></div>
+          <input type="file" id="logo-file" accept="image/*" class="hidden" />
+          <button type="button" class="btn-secondary mt-2" onclick="document.getElementById('logo-file').click()">Upload logo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BASICS -->
+    <div class="section-card space-y-4">
+      <h2 class="font-display font-black text-lg">About</h2>
+      <div>
+        <label class="form-label">Tagline</label>
+        <input type="text" name="tagline" class="form-input" placeholder="Short one-liner customers see first." maxlength="120" />
+        <p class="form-help">120 characters max.</p>
+      </div>
+      <div>
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-input" rows="5" placeholder="Tell your story…" maxlength="800"></textarea>
+        <p class="form-help">800 characters max.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">Location / City</label>
+          <input type="text" name="location" class="form-input" />
+        </div>
+        <div>
+          <label class="form-label">Full Address</label>
+          <input type="text" name="address" class="form-input" />
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT + SOCIAL -->
+    <div class="section-card space-y-4">
+      <h2 class="font-display font-black text-lg">Contact & Social</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">Phone</label>
+          <input type="tel" name="phone" class="form-input" placeholder="+63 912 345 6789" />
+        </div>
+        <div>
+          <label class="form-label">Website URL</label>
+          <input type="url" name="website_url" class="form-input" placeholder="https://yoursite.com" />
+        </div>
+        <div>
+          <label class="form-label">WhatsApp link</label>
+          <input type="url" name="whatsapp_url" class="form-input" placeholder="https://wa.me/639XXXXXXXXX" />
+          <p class="form-help">Generates a floating WhatsApp button on your page.</p>
+        </div>
+        <div>
+          <label class="form-label">Instagram URL</label>
+          <input type="url" name="instagram_url" class="form-input" placeholder="https://instagram.com/yourhandle" />
+        </div>
+        <div>
+          <label class="form-label">Facebook URL</label>
+          <input type="url" name="facebook_url" class="form-input" placeholder="https://facebook.com/yourpage" />
+        </div>
+        <div>
+          <label class="form-label">Messenger URL</label>
+          <input type="url" name="messenger_url" class="form-input" placeholder="https://m.me/yourpage" />
+        </div>
+      </div>
+    </div>
+
+    <!-- GALLERY -->
+    <div class="section-card space-y-3">
+      <div class="flex items-end justify-between">
+        <h2 class="font-display font-black text-lg">Gallery</h2>
+        <p class="text-xs text-gray-400" id="gallery-count">0 / 6 photos</p>
+      </div>
+      <p class="text-sm text-gray-400">Up to 6 photos showcasing your food, space, or vibe. JPG/PNG/WebP, max 5MB each.</p>
+      <div class="photo-grid" id="gallery-grid"></div>
+      <input type="file" id="gallery-file" accept="image/*" multiple class="hidden" />
+    </div>
+
+    <!-- READ-ONLY INFO -->
+    <div class="section-card space-y-2">
+      <h2 class="font-display font-black text-lg">Listing Info</h2>
+      <p class="text-sm text-gray-400">Need to change these? <a href="mailto:hello@yumyumpo.com" class="underline">Contact YUMYUMPO</a>.</p>
+      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mt-2">
+        <div><dt class="text-gray-400 text-xs">Cuisine</dt><dd class="font-semibold" id="ro-cuisine">—</dd></div>
+        <div><dt class="text-gray-400 text-xs">Slug</dt><dd class="font-semibold" id="ro-slug">—</dd></div>
+      </dl>
+    </div>
+
+  </form>
+</main>
+
+<!-- STICKY SAVE BAR -->
+<div id="save-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1.5px solid #F3F3F3;padding:14px 20px;z-index:100;box-shadow:0 -6px 18px rgba(0,0,0,0.06)">
+  <div class="max-w-3xl mx-auto flex items-center justify-between gap-3">
+    <span class="text-sm font-semibold text-gray-600">You have unsaved changes</span>
+    <div class="flex gap-2">
+      <button type="button" id="discard-btn" class="btn-secondary">Discard</button>
+      <button type="button" id="save-btn"    class="btn-yellow">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js?v=owner1"></script>
+<script src="../assets/js/main.js"></script>
+<script src="../assets/js/account-restaurant.js?v=owner1"></script>
+<script src="../assets/js/pwa.js"></script>
+</body>
+</html>

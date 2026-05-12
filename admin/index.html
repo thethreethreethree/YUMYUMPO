@@ -557,6 +557,19 @@
         </div>
 
         <div class="section-card space-y-4">
+          <h2 class="font-display font-black text-lg text-brand-black">Owner Account</h2>
+          <p class="text-gray-400 text-sm">
+            Pre-assign this listing to a future owner. When they sign up with this email,
+            they'll automatically be linked and can manage the listing themselves.
+          </p>
+          <div>
+            <label class="form-label">Owner email</label>
+            <input type="email" name="owner_email" class="form-input" placeholder="owner@theirrestaurant.com" />
+            <p class="text-xs text-gray-400 mt-1">Optional. Leave blank if you'll manage this listing yourself.</p>
+          </div>
+        </div>
+
+        <div class="section-card space-y-4">
           <h2 class="font-display font-black text-lg text-brand-black">AI Tags</h2>
           <p class="text-gray-400 text-sm">Select all that apply — used by the AI discovery engine.</p>
           <div class="flex flex-wrap gap-2" id="tag-selector"></div>
@@ -854,9 +867,9 @@
 
 
 <script src="../assets/js/config.js"></script>
-<script src="../assets/js/supabase-client.js?v=mode2"></script>
+<script src="../assets/js/supabase-client.js?v=owner1"></script>
 <script src="../assets/js/analytics.js"></script>
-<script src="../assets/js/admin.js?v=mode2"></script>
+<script src="../assets/js/admin.js?v=owner1"></script>
 <script src="../assets/js/admin-applications.js"></script>
 <script src="../assets/js/admin-announcements.js"></script>
   <script src="../assets/js/pwa.js"></script>
