@@ -689,4 +689,5 @@ const YAI = (() => {
 
 })();
 
-window.YAI = YAI;
+window.YAI  = YAI;
+window.Fred = YAI;   // brand alias — Fred is YUMYUMPO's Food & Restaurant Experience Discovery AI

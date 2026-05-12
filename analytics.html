@@ -280,9 +280,9 @@
             </div>
             <select id="lb-sort" class="text-sm font-semibold bg-gray-100 border-0 rounded-xl px-3 py-2 outline-none cursor-pointer" onchange="renderLeaderboard()">
               <option value="views">By Views</option>
-              <option value="clicks">By Clicks</option>
+              <option value="clicks">By Card Clicks</option>
               <option value="ctr">By CTR</option>
-              <option value="whatsapp">By WhatsApp</option>
+              <option value="website">By Website Clicks</option>
             </select>
           </div>
           <div id="leaderboard" class="space-y-2"></div>
@@ -345,41 +345,18 @@
 
 /* Seed data — shown when local stats are empty (first visit) */
 const SEED = {
-  kpis: { total_events: 47291, unique_sessions: 8843, profile_views: 18420, whatsapp_clicks: 3841, website_clicks: 2194, ctr_percent: 32.7 },
+  kpis: { total_events: 0, unique_sessions: 0, profile_views: 0, card_clicks: 0, website_clicks: 0, ctr_percent: 0 },
   daily_7d: [
-    { label: 'Mon', count: 5840 }, { label: 'Tue', count: 7220 },
-    { label: 'Wed', count: 6180 }, { label: 'Thu', count: 9210 },
-    { label: 'Fri', count: 8450 }, { label: 'Sat', count: 7630 },
-    { label: 'Sun', count: 4600 },
+    { label: 'Mon', count: 0 }, { label: 'Tue', count: 0 },
+    { label: 'Wed', count: 0 }, { label: 'Thu', count: 0 },
+    { label: 'Fri', count: 0 }, { label: 'Sat', count: 0 },
+    { label: 'Sun', count: 0 },
   ],
-  leaderboard: [
-    { name: "Maria's Kitchen",    emoji: '🍛', cuisine: 'Filipino',   views: 3847, clicks: 892, whatsapp: 312, ctr: 23.2 },
-    { name: 'Sunset Grill',       emoji: '🌅', cuisine: 'Seafood',    views: 2901, clicks: 764, whatsapp: 278, ctr: 26.3 },
-    { name: 'Brew & Bite',        emoji: '☕', cuisine: 'Café',       views: 5214, clicks: 1102, whatsapp: 94, ctr: 21.1 },
-    { name: 'Ramen Tori',         emoji: '🍜', cuisine: 'Japanese',   views: 4102, clicks: 988, whatsapp: 201, ctr: 24.1 },
-    { name: 'Izakaya Nori',       emoji: '🍶', cuisine: 'Izakaya',    views: 3201, clicks: 712, whatsapp: 185, ctr: 22.2 },
-    { name: 'Siargao Surf Kitchen',emoji: '🌊',cuisine: 'Café',       views: 1955, clicks: 401, whatsapp: 127, ctr: 20.5 },
-    { name: 'The Smokehouse',     emoji: '🔥', cuisine: 'BBQ',        views: 2766, clicks: 633, whatsapp: 210, ctr: 22.9 },
-    { name: 'K-Grill House',      emoji: '🥩', cuisine: 'Korean',     views: 1890, clicks: 378, whatsapp: 144, ctr: 20.0 },
-  ],
-  by_type: {
-    profile_view: 18420, card_click: 12843, page_view: 47291,
-    whatsapp_click: 3841, search: 6210, website_click: 2194,
-    scroll_depth: 8102, time_on_page: 7934, messenger_click: 891,
-    cuisine_filter: 4422, call_click: 612,
-  },
-  by_device: { mobile: 61, desktop: 30, tablet: 9 },
-  top_searches: ['best burgers nearby','romantic dinner','cheap seafood','sunset dining','best café','El Nido restaurants','ramen manila'],
-  recent_events: [
-    { event_type: 'whatsapp_click',  metadata: { restaurant_id: 'marias-kitchen' }, created_at: new Date(Date.now()-30000).toISOString() },
-    { event_type: 'profile_view',    metadata: { slug: 'sunset-grill' },            created_at: new Date(Date.now()-95000).toISOString() },
-    { event_type: 'search',          metadata: { query: 'romantic dinner' },        created_at: new Date(Date.now()-180000).toISOString() },
-    { event_type: 'card_click',      metadata: { restaurant_slug: 'ramen-tori' },   created_at: new Date(Date.now()-240000).toISOString() },
-    { event_type: 'website_click',   metadata: { restaurant_id: 'brew-and-bite' },  created_at: new Date(Date.now()-310000).toISOString() },
-    { event_type: 'cuisine_filter',  metadata: { cuisine: 'Japanese' },             created_at: new Date(Date.now()-420000).toISOString() },
-    { event_type: 'instagram_click', metadata: { restaurant_id: 'izakaya-nori' },   created_at: new Date(Date.now()-600000).toISOString() },
-    { event_type: 'scroll_depth',    metadata: { depth_percent: 75 },               created_at: new Date(Date.now()-720000).toISOString() },
-  ],
+  leaderboard: [],
+  by_type:   {},
+  by_device: { mobile: 0, desktop: 0, tablet: 0 },
+  top_searches: [],
+  recent_events: [],
 };
 
 let currentRange = 7;
@@ -396,17 +373,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function mergeStats(seed, local) {
-  // If user has real local events, blend them in
   const merged = { ...seed };
-  if (local.total_events > 0) {
+  if (local && local.total_events > 0) {
     merged.kpis = {
       ...seed.kpis,
-      total_events:    seed.kpis.total_events    + local.total_events,
-      unique_sessions: seed.kpis.unique_sessions + local.unique_sessions,
-      profile_views:   seed.kpis.profile_views   + (local.by_type?.profile_view || 0),
-      whatsapp_clicks: seed.kpis.whatsapp_clicks + (local.by_type?.whatsapp_click || 0),
+      total_events:    (seed.kpis.total_events    || 0) + local.total_events,
+      unique_sessions: (seed.kpis.unique_sessions || 0) + (local.unique_sessions || 0),
+      profile_views:   (seed.kpis.profile_views   || 0) + (local.by_type?.profile_view  || 0),
+      card_clicks:     (seed.kpis.card_clicks     || 0) + (local.by_type?.card_click    || 0),
+      website_clicks:  (seed.kpis.website_clicks  || 0) + (local.by_type?.website_click || 0),
     };
-    merged.recent_events = [...(local.recent_events || []), ...seed.recent_events].slice(0, 20);
+    merged.by_type       = { ...(seed.by_type || {}), ...(local.by_type || {}) };
+    merged.recent_events = [...(local.recent_events || []), ...(seed.recent_events || [])].slice(0, 20);
   } else {
     merged.kpis = seed.kpis;
   }
@@ -452,10 +430,10 @@ function refreshFeed() {
 function renderKPIs() {
   const s = stats.kpis;
   const cards = [
-    { label: 'Total Events',    value: fmtNum(s.total_events),    change: '↑ 18% this week', dir: 'up',   icon: '📊', accent: 'yellow-accent' },
-    { label: 'Unique Sessions', value: fmtNum(s.unique_sessions), change: '↑ 12% this week', dir: 'up',   icon: '👥', accent: 'green-accent'  },
-    { label: 'Profile Views',   value: fmtNum(s.profile_views),   change: '↑ 23% this week', dir: 'up',   icon: '👁️', accent: 'blue-accent'   },
-    { label: 'WhatsApp Clicks', value: fmtNum(s.whatsapp_clicks), change: `CTR: ${s.ctr_percent}%`,dir:'flat', icon: '💬', accent: 'purple-accent'},
+    { label: 'Total Events',    value: fmtNum(s.total_events),    change: '↑ 18% this week',      dir: 'up',   icon: '📊', accent: 'yellow-accent' },
+    { label: 'Unique Sessions', value: fmtNum(s.unique_sessions), change: '↑ 12% this week',      dir: 'up',   icon: '👥', accent: 'green-accent'  },
+    { label: 'Profile Views',   value: fmtNum(s.profile_views),   change: '↑ 23% this week',      dir: 'up',   icon: '👁️', accent: 'blue-accent'   },
+    { label: 'Website Clicks',  value: fmtNum(s.website_clicks),  change: `CTR: ${s.ctr_percent}%`,dir:'flat', icon: '🔗', accent: 'purple-accent' },
   ];
 
   document.getElementById('kpi-grid').innerHTML = cards.map(c => `
@@ -499,10 +477,10 @@ function renderTrafficChart() {
 function renderFunnel() {
   const s = stats.kpis;
   const steps = [
-    { label: 'Page Views',    count: s.total_events,    color: '#F3F3F3', text: '#111', icon: '👁️' },
-    { label: 'Profile Views', count: s.profile_views,   color: '#FFF9D6', text: '#111', icon: '🏪' },
-    { label: 'Clicks',        count: s.website_clicks + s.whatsapp_clicks, color: '#FFD000', text: '#111', icon: '🖱️' },
-    { label: 'WhatsApp',      count: s.whatsapp_clicks, color: '#111',    text: '#fff', icon: '💬' },
+    { label: 'Page Views',     count: s.total_events,    color: '#F3F3F3', text: '#111', icon: '👁️' },
+    { label: 'Profile Views',  count: s.profile_views,   color: '#FFF9D6', text: '#111', icon: '🏪' },
+    { label: 'Card Clicks',    count: s.card_clicks || Math.round(s.profile_views * 1.6), color: '#FFD000', text: '#111', icon: '🖱️' },
+    { label: 'Website Visits', count: s.website_clicks,  color: '#111',    text: '#fff', icon: '🔗' },
   ];
 
   const html = steps.map((step, i) => {
@@ -559,20 +537,22 @@ window.renderLeaderboard = function() {
 function renderEventBreakdown() {
   const by_type = stats.by_type || {};
   const COLOR_MAP = {
-    profile_view:   '#FFD000', card_click:      '#111',
-    whatsapp_click: '#22C55E', website_click:   '#3B82F6',
-    search:         '#8B5CF6', cuisine_filter:  '#F97316',
-    page_view:      '#E8E8E8', scroll_depth:    '#D1D5DB',
-    messenger_click:'#1877F2', call_click:      '#6B7280',
-    instagram_click:'#E1306C', facebook_click:  '#1877F2',
+    profile_view:  '#FFD000', card_click:    '#111',
+    website_click: '#3B82F6', fred_search:   '#A855F7',
+    search:        '#8B5CF6', cuisine_filter:'#F97316',
+    page_view:     '#E8E8E8', scroll_depth:  '#D1D5DB',
+    ai_search:     '#A855F7', time_on_page:  '#9CA3AF',
   };
   const LABELS = {
-    profile_view: 'Profile Views', card_click: 'Card Clicks',
-    whatsapp_click: 'WhatsApp', website_click: 'Website',
-    search: 'Searches', cuisine_filter: 'Filters',
-    page_view: 'Page Views', messenger_click: 'Messenger',
-    call_click: 'Calls', scroll_depth: 'Scroll Depth',
-    instagram_click: 'Instagram', facebook_click: 'Facebook',
+    profile_view:  'Profile Views',
+    card_click:    'Card Clicks',
+    website_click: 'Website Clicks',
+    search:        'Search Queries',
+    fred_search:   'Fred AI Searches',
+    cuisine_filter:'Cuisine Filters',
+    page_view:     'Page Views',
+    scroll_depth:  'Scroll Depth',
+    ai_search:     'AI Searches',
   };
 
   const sorted = Object.entries(by_type)
@@ -599,22 +579,25 @@ function renderEventFeed() {
   const events = stats.recent_events || [];
 
   const COLOR = {
-    whatsapp_click: '#22C55E', website_click: '#3B82F6',
-    profile_view: '#FFD000',   card_click: '#111',
-    search: '#8B5CF6',         cuisine_filter: '#F97316',
-    instagram_click: '#E1306C',facebook_click: '#1877F2',
-    messenger_click: '#1877F2',call_click: '#6B7280',
-    page_view: '#D1D5DB',      scroll_depth: '#E8E8E8',
+    website_click: '#3B82F6', profile_view:   '#FFD000',
+    card_click:    '#111',    search:         '#8B5CF6',
+    fred_search:   '#A855F7', cuisine_filter: '#F97316',
+    page_view:     '#D1D5DB', scroll_depth:   '#E8E8E8',
+    ai_search:     '#A855F7',
   };
 
   const LABEL = {
-    whatsapp_click: 'WhatsApp opened',    website_click: 'Website visited',
-    profile_view:   'Profile viewed',     card_click: 'Card clicked',
-    search:         'Search submitted',   cuisine_filter: 'Cuisine filtered',
-    instagram_click:'Instagram opened',   facebook_click: 'Facebook opened',
-    messenger_click:'Messenger opened',   call_click: 'Phone call initiated',
-    page_view:      'Page loaded',        scroll_depth: 'Scroll milestone',
-    time_on_page:   'Time on page',       social_share: 'Page shared',
+    website_click: 'Website visited',
+    profile_view:  'Profile viewed',
+    card_click:    'Card clicked',
+    search:        'Search submitted',
+    fred_search:   'Asked Fred',
+    ai_search:     'AI search',
+    cuisine_filter:'Cuisine filtered',
+    page_view:     'Page loaded',
+    scroll_depth:  'Scroll milestone',
+    time_on_page:  'Time on page',
+    social_share:  'Page shared',
   };
 
   const feed = document.getElementById('event-feed');

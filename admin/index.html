@@ -228,12 +228,17 @@
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div><label class="form-label">WhatsApp URL</label><input type="url" name="whatsapp_url" id="edit-whatsapp" class="form-input" placeholder="https://wa.me/639…" /></div>
-        <div><label class="form-label">Website URL</label><input type="url" name="website_url" id="edit-website" class="form-input" /></div>
-        <div><label class="form-label">Instagram</label><input type="url" name="instagram_url" id="edit-instagram" class="form-input" /></div>
-        <div><label class="form-label">Facebook</label><input type="url" name="facebook_url" id="edit-facebook" class="form-input" /></div>
-        <div><label class="form-label">Phone</label><input type="tel" name="phone" id="edit-phone" class="form-input" /></div>
-        <div><label class="form-label">Messenger</label><input type="url" name="messenger_url" id="edit-messenger" class="form-input" /></div>
+        <div>
+          <label class="form-label">Website URL <span class="text-gray-400 font-normal">(or leave blank to use YUMYUMPO hosting)</span></label>
+          <input type="url" name="website_url" id="edit-website" class="form-input" placeholder="https://restaurant.com" />
+        </div>
+        <div>
+          <label class="form-label">Hosted on YUMYUMPO?</label>
+          <label class="flex items-center gap-2 cursor-pointer mt-2.5">
+            <input type="checkbox" id="edit-has-yumyumpo-site" class="accent-brand-yellow w-4 h-4" />
+            <span class="text-sm font-semibold">Use YUMYUMPO premium website</span>
+          </label>
+        </div>
       </div>
 
       <div class="flex gap-4">
@@ -475,14 +480,25 @@
         </div>
 
         <div class="section-card space-y-4">
-          <h2 class="font-display font-black text-lg text-brand-black">Contact &amp; Links</h2>
+          <h2 class="font-display font-black text-lg text-brand-black">Website &amp; Hosting</h2>
+          <p class="text-gray-400 text-sm">
+            Every restaurant on YUMYUMPO needs a digital destination. Either paste their existing website,
+            or enable YUMYUMPO premium hosting and we'll build one.
+          </p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div><label class="form-label">Phone</label><input type="tel" name="phone" class="form-input" placeholder="+63 912 345 6789" /></div>
-            <div><label class="form-label">Website URL</label><input type="url" name="website_url" class="form-input" placeholder="https://yourrestaurant.com" /></div>
-            <div><label class="form-label">WhatsApp URL</label><input type="url" name="whatsapp_url" class="form-input" placeholder="https://wa.me/639…" /></div>
-            <div><label class="form-label">Messenger URL</label><input type="url" name="messenger_url" class="form-input" placeholder="https://m.me/…" /></div>
-            <div><label class="form-label">Instagram URL</label><input type="url" name="instagram_url" class="form-input" placeholder="https://instagram.com/…" /></div>
-            <div><label class="form-label">Facebook URL</label><input type="url" name="facebook_url" class="form-input" placeholder="https://facebook.com/…" /></div>
+            <div>
+              <label class="form-label">Website URL</label>
+              <input type="url" name="website_url" class="form-input" placeholder="https://yourrestaurant.com" />
+              <p class="text-xs text-gray-400 mt-1">Leave blank if using YUMYUMPO premium hosting.</p>
+            </div>
+            <div>
+              <label class="form-label">Hosted on YUMYUMPO?</label>
+              <label class="flex items-center gap-2 cursor-pointer mt-2.5">
+                <input type="checkbox" name="has_yumyumpo_site" class="accent-brand-yellow w-4 h-4" />
+                <span class="text-sm font-semibold">Use YUMYUMPO premium website</span>
+              </label>
+              <p class="text-xs text-gray-400 mt-1">Shows the "On YUMYUMPO" badge on cards.</p>
+            </div>
           </div>
         </div>
 

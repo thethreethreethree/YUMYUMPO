@@ -334,26 +334,28 @@ window.openEditModal = function(id) {
   const r = ADMIN_RESTAURANTS.find(x => x.id === id);
   if (!r) return;
 
-  document.getElementById('edit-restaurant-id').value = id;
-  document.getElementById('modal-title').textContent  = `Edit — ${r.name}`;
-  document.getElementById('edit-name').value          = r.name          || '';
-  document.getElementById('edit-slug').value          = r.slug          || '';
-  document.getElementById('edit-tagline').value       = r.tagline       || '';
-  document.getElementById('edit-description').value   = r.description   || '';
-  document.getElementById('edit-cuisine').value       = r.cuisine       || '';
-  document.getElementById('edit-location').value      = r.location      || '';
-  document.getElementById('edit-address').value       = r.address       || '';
-  document.getElementById('edit-rating').value        = r.rating        || '';
-  document.getElementById('edit-reviews').value       = r.review_count  || '';
-  document.getElementById('edit-cover').value         = r.cover         || '';
-  document.getElementById('edit-whatsapp').value      = r.whatsapp_url  || '';
-  document.getElementById('edit-website').value       = r.website_url   || '';
-  document.getElementById('edit-instagram').value     = r.instagram_url || '';
-  document.getElementById('edit-facebook').value      = r.facebook_url  || '';
-  document.getElementById('edit-phone').value         = r.phone         || '';
-  document.getElementById('edit-messenger').value     = r.messenger_url || '';
-  document.getElementById('edit-featured').checked   = r.featured;
-  document.getElementById('edit-active').checked     = r.active;
+  /* Field setters are null-safe — modal HTML may evolve over time. */
+  const setVal     = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ''; };
+  const setChecked = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
+
+  setVal('edit-restaurant-id', id);
+  const modalTitle = document.getElementById('modal-title');
+  if (modalTitle) modalTitle.textContent = `Edit — ${r.name}`;
+
+  setVal('edit-name',         r.name);
+  setVal('edit-slug',         r.slug);
+  setVal('edit-tagline',      r.tagline);
+  setVal('edit-description',  r.description);
+  setVal('edit-cuisine',      r.cuisine);
+  setVal('edit-location',     r.location);
+  setVal('edit-address',      r.address);
+  setVal('edit-rating',       r.rating);
+  setVal('edit-reviews',      r.review_count);
+  setVal('edit-cover',        r.cover);
+  setVal('edit-website',      r.website_url);
+  setChecked('edit-has-yumyumpo-site', r.has_yumyumpo_site);
+  setChecked('edit-featured', r.featured);
+  setChecked('edit-active',   r.active);
 
   // Reset image preview
   document.getElementById('edit-preview-grid').innerHTML = '';
@@ -379,25 +381,24 @@ window.saveEdit = function(e) {
   const r  = ADMIN_RESTAURANTS.find(x => x.id === id);
   if (!r) return;
 
-  r.name          = document.getElementById('edit-name').value;
-  r.slug          = document.getElementById('edit-slug').value;
-  r.tagline       = document.getElementById('edit-tagline').value;
-  r.description   = document.getElementById('edit-description').value;
-  r.cuisine       = document.getElementById('edit-cuisine').value;
-  r.location      = document.getElementById('edit-location').value;
-  r.address       = document.getElementById('edit-address').value;
-  r.rating        = parseFloat(document.getElementById('edit-rating').value) || r.rating;
-  r.review_count  = parseInt(document.getElementById('edit-reviews').value) || 0;
-  r.cover         = document.getElementById('edit-cover').value || r.cover;
-  r.whatsapp_url  = document.getElementById('edit-whatsapp').value || null;
-  r.website_url   = document.getElementById('edit-website').value || null;
-  r.instagram_url = document.getElementById('edit-instagram').value || null;
-  r.facebook_url  = document.getElementById('edit-facebook').value || null;
-  r.phone         = document.getElementById('edit-phone').value || null;
-  r.messenger_url = document.getElementById('edit-messenger').value || null;
-  r.featured      = document.getElementById('edit-featured').checked;
-  r.active        = document.getElementById('edit-active').checked;
-  r.emoji         = getCuisineEmoji(r.cuisine);
+  const getVal = id => document.getElementById(id)?.value ?? '';
+  const isChecked = id => !!document.getElementById(id)?.checked;
+
+  r.name              = getVal('edit-name');
+  r.slug              = getVal('edit-slug');
+  r.tagline           = getVal('edit-tagline');
+  r.description       = getVal('edit-description');
+  r.cuisine           = getVal('edit-cuisine');
+  r.location          = getVal('edit-location');
+  r.address           = getVal('edit-address');
+  r.rating            = parseFloat(getVal('edit-rating')) || r.rating;
+  r.review_count      = parseInt(getVal('edit-reviews')) || 0;
+  r.cover             = getVal('edit-cover') || r.cover;
+  r.website_url       = getVal('edit-website') || null;
+  r.has_yumyumpo_site = isChecked('edit-has-yumyumpo-site');
+  r.featured          = isChecked('edit-featured');
+  r.active            = isChecked('edit-active');
+  r.emoji             = getCuisineEmoji(r.cuisine);
 
   // Supabase update
   if (window.YYP?.client) {
@@ -405,8 +406,7 @@ window.saveEdit = function(e) {
       name: r.name, slug: r.slug, description: r.description,
       cuisine_type: r.cuisine, location: r.location,
       google_rating: r.rating, cover_image_url: r.cover,
-      whatsapp_url: r.whatsapp_url, website_url: r.website_url,
-      instagram_url: r.instagram_url, facebook_url: r.facebook_url,
+      website_url: r.website_url, has_yumyumpo_site: r.has_yumyumpo_site,
       is_featured: r.featured, is_active: r.active,
     }).eq('id', id).then(({ error }) => {
       if (error) console.warn('[Admin] Edit save error:', error.message);
@@ -787,9 +787,8 @@ window.submitRestaurant = async function(e) {
       cuisine_type: data.cuisine_type, location: data.location, address: data.address || null,
       google_rating: parseFloat(data.google_rating) || null,
       review_count:  parseInt(data.review_count) || 0,
-      website_url:   data.website_url || null, whatsapp_url: data.whatsapp_url || null,
-      messenger_url: data.messenger_url || null, instagram_url: data.instagram_url || null,
-      facebook_url:  data.facebook_url || null, phone: data.phone || null,
+      website_url:   data.website_url || null,
+      has_yumyumpo_site: !!data.has_yumyumpo_site,
       cover_image_url: data.cover_image_url || null, tagline: data.tagline || null,
       is_featured: !!data.is_featured, is_active: !!data.is_active,
     }]);
@@ -799,11 +798,12 @@ window.submitRestaurant = async function(e) {
       id: Date.now(), emoji: getCuisineEmoji(data.cuisine_type),
       name: data.name, slug: data.slug, cuisine: data.cuisine_type,
       location: data.location, rating: parseFloat(data.google_rating) || 0,
-      views: 0, whatsapp: 0, website: 0,
+      views: 0, website: 0,
       featured: !!data.is_featured, active: true,
       cover: data.cover_image_url || '', tags: data.tags,
       description: data.description, address: data.address,
-      whatsapp_url: data.whatsapp_url || null, website_url: data.website_url || null,
+      website_url: data.website_url || null,
+      has_yumyumpo_site: !!data.has_yumyumpo_site,
     });
   }
 

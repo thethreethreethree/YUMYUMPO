@@ -562,12 +562,16 @@ function updateSEO(r) {
   const title = `${r.name} — YUMYUMPO`;
   const desc  = r.description?.substring(0, 160) || `${r.name} on YUMYUMPO`;
 
-  document.getElementById('page-title').textContent = title;
-  document.getElementById('meta-desc').content      = desc;
-  document.getElementById('og-title').content       = title;
-  document.getElementById('og-desc').content        = desc;
-  document.getElementById('og-image').content       = r.cover_image_url || '';
-  document.getElementById('og-url').content         = window.location.href;
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const setAttr = (id, val) => { const el = document.getElementById(id); if (el) el.content = val; };
+
+  setText('page-title', title);
+  setAttr('meta-desc',  desc);
+  setAttr('og-title',   title);
+  setAttr('og-desc',    desc);
+  setAttr('og-image',   r.cover_image_url || '');
+  setAttr('og-url',     window.location.href);
+  document.title = title;
 
   // JSON-LD structured data for Google
   const jsonLd = {
@@ -665,12 +669,11 @@ function renderHero(r) {
     <!-- Tags -->
     <div class="flex flex-wrap gap-2 mb-6">${tagsHTML}</div>
 
-    <!-- Primary action buttons -->
+    <!-- Primary action — single CTA: external website OR get listed funnel -->
     <div class="hero-action-row">
-      ${r.whatsapp_url  ? `<a href="${r.whatsapp_url}" target="_blank" rel="noopener noreferrer" onclick="trackAction('whatsapp_click','${r.id}')" class="hero-btn yellow">${waIcon()} Order via WhatsApp</a>` : ''}
-      ${r.website_url   ? `<a href="${r.website_url}"  target="_blank" rel="noopener noreferrer" onclick="trackAction('website_click','${r.id}')"   class="hero-btn ghost">${webIcon()} Visit Website</a>` : ''}
-      ${!r.whatsapp_url && !r.website_url && r.phone
-          ? `<a href="tel:${r.phone}" class="hero-btn ghost">${phoneIcon()} Call Restaurant</a>` : ''}
+      ${r.website_url
+        ? `<a href="${r.website_url}" target="_blank" rel="noopener noreferrer" onclick="trackAction('website_click','${r.id}')" class="hero-btn yellow">${webIcon()} Visit Official Website</a>`
+        : `<a href="admin/index.html?ref=get-listed&restaurant=${encodeURIComponent(r.name || '')}" class="hero-btn yellow">Get this restaurant a website</a>`}
     </div>
   `;
 
@@ -718,8 +721,8 @@ function renderGalleryMosaic(r) {
 }
 
 window.openGallery = function(idx) {
-  // Lightbox placeholder — expand in a future step
-  console.log('Gallery photo', idx, '— lightbox coming soon');
+  /* Lightbox — to be implemented; for now scroll to the gallery section */
+  document.getElementById('gallery-section')?.scrollIntoView({ behavior: 'smooth' });
 };
 
 
@@ -937,23 +940,30 @@ function renderActionCard(r) {
   const buttons = document.getElementById('action-buttons');
   if (!card || !buttons) return;
 
-  const actions = [];
-  if (r.whatsapp_url)  actions.push({ label: 'Order via WhatsApp',    href: r.whatsapp_url,  icon: waIcon(),        cls: 'green',  track: 'whatsapp_click' });
-  if (r.website_url)   actions.push({ label: 'Visit Website',          href: r.website_url,   icon: webIcon(),       cls: 'yellow', track: 'website_click' });
-  if (r.messenger_url) actions.push({ label: 'Message on Messenger',   href: r.messenger_url, icon: messengerIcon(), cls: 'black',  track: 'messenger_click' });
-  if (r.phone)         actions.push({ label: `Call ${r.phone}`,        href: `tel:${r.phone}`,icon: phoneIcon(),     cls: 'outline',track: 'call_click' });
-
-  if (!actions.length) return;
   card.classList.remove('hidden');
 
-  buttons.innerHTML = actions.map(a => `
-    <a href="${a.href}" target="_blank" rel="noopener noreferrer"
-       onclick="trackAction('${a.track}','${r.id}')"
-       class="r-action-btn ${a.cls}">
-      ${a.icon}
-      ${a.label}
-    </a>
-  `).join('');
+  if (r.website_url) {
+    buttons.innerHTML = `
+      <a href="${r.website_url}" target="_blank" rel="noopener noreferrer"
+         onclick="trackAction('website_click','${r.id}')"
+         class="r-action-btn yellow">
+        ${webIcon()}
+        Visit Official Website
+      </a>
+    `;
+  } else {
+    /* No website yet — show the platform's premium-website funnel */
+    const heading = card.querySelector('h3');
+    const sub     = card.querySelector('p');
+    if (heading) heading.textContent = 'No website yet?';
+    if (sub)     sub.textContent     = 'YUMYUMPO can build and host a website for this restaurant.';
+    buttons.innerHTML = `
+      <a href="admin/index.html?ref=get-listed&restaurant=${encodeURIComponent(r.name || '')}"
+         class="r-action-btn yellow">
+        Get this restaurant a website
+      </a>
+    `;
+  }
 }
 
 
@@ -970,7 +980,6 @@ function renderInfoCard(r) {
   const rows = [
     r.cuisine_type && { icon: '🍽️', label: 'Cuisine',       value: r.cuisine_type },
     r.location     && { icon: '📍', label: 'Location',      value: r.location },
-    r.phone        && { icon: '📞', label: 'Phone',         value: r.phone },
     todayHrs       && { icon: '🕐', label: "Today's Hours", value: todayHrs.closed ? 'Closed today' : `${todayHrs.open} – ${todayHrs.close}` },
     r.website_url  && { icon: '🌐', label: 'Website',       value: 'View website →', href: r.website_url },
   ].filter(Boolean);
@@ -996,48 +1005,29 @@ function renderInfoCard(r) {
 /* ══════════════════════════════════════════════════════════
    SIDEBAR — SOCIAL CARD
 ══════════════════════════════════════════════════════════ */
-function renderSocialCard(r) {
-  const card  = document.getElementById('social-card');
-  const links = document.getElementById('social-links');
-  if (!card || !links) return;
-
-  const socials = [];
-  if (r.instagram_url) socials.push({ href: r.instagram_url, icon: igIcon(),  label: 'Instagram',    cls: 'pink' });
-  if (r.facebook_url)  socials.push({ href: r.facebook_url,  icon: fbIcon(),  label: 'Facebook',     cls: 'blue' });
-
-  if (!socials.length) return;
-  card.classList.remove('hidden');
-
-  links.innerHTML = socials.map(s => `
-    <a href="${s.href}" target="_blank" rel="noopener noreferrer"
-       onclick="trackAction('social_click','${s.label}')"
-       class="r-action-btn ${s.cls}">
-      ${s.icon}
-      Follow on ${s.label}
-    </a>
-  `).join('');
-}
+/* renderSocialCard intentionally removed — YUMYUMPO is a discovery + website
+   platform; we don't redirect users to third-party social profiles. */
+function renderSocialCard() {}
 
 
 /* ══════════════════════════════════════════════════════════
    MOBILE BAR
 ══════════════════════════════════════════════════════════ */
 function renderMobileBar(r) {
-  const wa      = document.getElementById('m-whatsapp');
-  const call    = document.getElementById('m-call');
   const website = document.getElementById('m-website');
+  const claim   = document.getElementById('m-claim');
 
-  if (wa && r.whatsapp_url) {
-    wa.classList.remove('hidden');
-    wa.onclick = () => { trackAction('whatsapp_click', r.id); window.open(r.whatsapp_url, '_blank'); };
-  }
-  if (call && r.phone) {
-    call.classList.remove('hidden');
-    call.onclick = () => { trackAction('call_click', r.id); window.location.href = `tel:${r.phone}`; };
-  }
-  if (website && r.website_url) {
-    website.classList.remove('hidden');
-    website.onclick = () => { trackAction('website_click', r.id); window.open(r.website_url, '_blank'); };
+  if (r.website_url) {
+    if (website) {
+      website.classList.remove('hidden');
+      website.onclick = () => {
+        trackAction('website_click', r.id);
+        window.open(r.website_url, '_blank');
+      };
+    }
+  } else if (claim) {
+    claim.classList.remove('hidden');
+    claim.href = `admin/index.html?ref=get-listed&restaurant=${encodeURIComponent(r.name || '')}`;
   }
 }
 
