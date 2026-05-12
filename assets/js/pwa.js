@@ -162,8 +162,9 @@
         }
         .yyp-ios-tip-body  { flex: 1; min-width: 0; line-height: 1.3; }
         .yyp-ios-tip-title { font-weight: 900; color: #111; letter-spacing: -.01em; font-size: .9rem; display: block; }
-        .yyp-ios-tip-sub   { color: rgba(17, 17, 17, .68); font-size: .75rem; font-weight: 600; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-        .yyp-ios-tip-sub svg { width: 14px; height: 14px; }
+        .yyp-ios-tip-sub   { color: rgba(17, 17, 17, .68); font-size: .75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+        /* Constrain every SVG inside the iOS tip so it can never go giant */
+        .yyp-ios-tip svg { width: 14px !important; height: 14px !important; max-width: 14px; max-height: 14px; flex-shrink: 0; }
         .yyp-ios-tip-close {
           background: rgba(17,17,17,.08); border: none; color: #111;
           width: 30px; height: 30px;
@@ -331,9 +332,9 @@
           <div class="yyp-ios-tip-body">
             <strong class="yyp-ios-tip-title">Install the YUMYUMPO app</strong>
             <span class="yyp-ios-tip-sub">
-              Tap
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="M7 7l5-5 5 5"/><rect x="4" y="13" width="16" height="8" rx="2"/></svg>
-              <strong>Share</strong> → <strong>Add to Home Screen</strong>
+              Tap <strong>Share</strong>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v13"/><path d="M7 7l5-5 5 5"/><rect x="4" y="13" width="16" height="8" rx="2"/></svg>
+              → <strong>Add to Home Screen</strong>
             </span>
           </div>
           <button class="yyp-ios-tip-close" aria-label="Dismiss">×</button>
