@@ -37,25 +37,46 @@ CREATE POLICY "owner update own restaurant" ON restaurants
 -- Whenever a profile is inserted/updated with an email, attach
 -- it to any matching restaurant that's been pre-assigned by an
 -- admin via owner_email.
+-- profiles table doesn't store email (it's only in auth.users), so we
+-- look it up by NEW.id (which equals auth.users.id).
 CREATE OR REPLACE FUNCTION claim_pending_restaurants()
 RETURNS TRIGGER
 LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE v_email TEXT;
 BEGIN
-  IF NEW.email IS NULL THEN
+  SELECT email INTO v_email FROM auth.users WHERE id = NEW.id;
+  IF v_email IS NULL THEN
     RETURN NEW;
   END IF;
   UPDATE restaurants
      SET owner_user_id = NEW.id,
          updated_at    = NOW()
    WHERE owner_user_id IS NULL
-     AND lower(owner_email) = lower(NEW.email);
+     AND lower(owner_email) = lower(v_email);
   RETURN NEW;
 END $$;
 
 DROP TRIGGER IF EXISTS trg_claim_restaurants_on_profile_insert ON profiles;
 CREATE TRIGGER trg_claim_restaurants_on_profile_insert
-  AFTER INSERT OR UPDATE OF email ON profiles
+  AFTER INSERT ON profiles
   FOR EACH ROW EXECUTE FUNCTION claim_pending_restaurants();
+
+-- Also auto-link when admin SETS owner_email on a restaurant after the
+-- owner already signed up.
+CREATE OR REPLACE FUNCTION claim_on_restaurant_email_set()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  IF NEW.owner_email IS NOT NULL AND NEW.owner_user_id IS NULL THEN
+    SELECT id INTO NEW.owner_user_id FROM auth.users
+     WHERE lower(email) = lower(NEW.owner_email) LIMIT 1;
+  END IF;
+  RETURN NEW;
+END $$;
+
+DROP TRIGGER IF EXISTS trg_claim_restaurant_on_email_set ON restaurants;
+CREATE TRIGGER trg_claim_restaurant_on_email_set
+  BEFORE INSERT OR UPDATE OF owner_email ON restaurants
+  FOR EACH ROW EXECUTE FUNCTION claim_on_restaurant_email_set();
 
 
 -- ── 4. HELPER — fetch my owned restaurant (for owner dashboard)
