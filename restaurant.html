@@ -556,8 +556,31 @@
 
 
 <!-- ══════════════════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════════════════ -->
+<footer class="bg-brand-black text-white/50 py-10 mt-12">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+      <img src="assets/images/YUMYUMPO LOGO.png" alt="YUMYUMPO" class="h-7 w-auto brightness-0 invert opacity-70" onerror="this.style.display='none'" />
+      <p class="text-xs text-white/40">© <span id="r-year">2026</span> YUMYUMPO</p>
+    </div>
+    <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm justify-center">
+      <a href="index.html"       class="text-white/50 hover:text-white transition-colors">Home</a>
+      <a href="discover.html"    class="text-white/50 hover:text-white transition-colors">Discover</a>
+      <a href="ai-search.html"   class="text-white/50 hover:text-white transition-colors">Ask Fred</a>
+      <a href="admin/apply.html" class="text-white/50 hover:text-white transition-colors">List Restaurant</a>
+      <a href="privacy.html"     class="text-white/50 hover:text-white transition-colors">Privacy</a>
+      <a href="terms.html"       class="text-white/50 hover:text-white transition-colors">Terms</a>
+      <a href="contact.html"     class="text-white/50 hover:text-white transition-colors">Contact</a>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ══════════════════════════════════════════════════════════
      SCRIPTS
 ══════════════════════════════════════════════════════════ -->
+<script>(function(){var e=document.getElementById('r-year');if(e)e.textContent=new Date().getFullYear();})();</script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/analytics.js"></script>

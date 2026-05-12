@@ -296,6 +296,11 @@
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
         AI Tags
       </div>
+      <div class="sidebar-link" data-tab="applications" onclick="showTab('applications')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span class="flex-1">Applications</span>
+        <span id="apps-pending-badge" class="hidden text-xs font-black bg-brand-yellow text-brand-black px-2 py-0.5 rounded-full">0</span>
+      </div>
       <a href="../analytics.html" class="sidebar-link">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
         Analytics
@@ -641,13 +646,94 @@
       </div>
     </div>
 
+
+    <!-- ════ APPLICATIONS ════ -->
+    <div id="tab-applications" class="hidden">
+      <header class="bg-white border-b border-gray-200 px-6 md:px-10 py-5">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <h1 class="font-display font-black text-2xl text-brand-black">Restaurant Applications</h1>
+            <p class="text-gray-400 text-sm mt-0.5">Review applications from restaurants that want to join YUMYUMPO.</p>
+          </div>
+          <button onclick="refreshApplications()" class="btn-yellow btn-sm">↻ Refresh</button>
+        </div>
+      </header>
+
+      <div class="px-6 md:px-10 py-8 space-y-6">
+
+        <!-- Status filter pills -->
+        <div class="flex gap-2 flex-wrap" id="apps-filters">
+          <button class="apps-filter-btn active" data-filter="pending"   onclick="filterApps('pending', this)">Pending <span class="ml-1 opacity-60" id="count-pending">0</span></button>
+          <button class="apps-filter-btn"        data-filter="reviewing" onclick="filterApps('reviewing', this)">Reviewing <span class="ml-1 opacity-60" id="count-reviewing">0</span></button>
+          <button class="apps-filter-btn"        data-filter="approved"  onclick="filterApps('approved', this)">Approved <span class="ml-1 opacity-60" id="count-approved">0</span></button>
+          <button class="apps-filter-btn"        data-filter="rejected"  onclick="filterApps('rejected', this)">Rejected <span class="ml-1 opacity-60" id="count-rejected">0</span></button>
+          <button class="apps-filter-btn"        data-filter="all"       onclick="filterApps('all', this)">All</button>
+        </div>
+
+        <!-- Applications list -->
+        <div id="apps-list" class="space-y-3"></div>
+
+        <!-- Empty state -->
+        <div id="apps-empty" class="hidden text-center py-16 bg-white rounded-2xl border border-gray-100">
+          <div class="text-5xl mb-3">📭</div>
+          <p class="font-display font-black text-lg text-brand-black mb-1">No applications yet</p>
+          <p class="text-gray-400 text-sm">Applications will appear here when restaurants apply to join.</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Application detail modal -->
+    <div id="app-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick="if(event.target.id==='app-modal')closeAppModal()">
+      <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div class="p-6 md:p-8" id="app-modal-body"></div>
+      </div>
+    </div>
+
   </main>
 </div>
+
+
+<!-- Applications tab styles -->
+<style>
+  .apps-filter-btn {
+    background: #fff; border: 1.5px solid #E8E8E8;
+    color: #6B6B6B; font-weight: 700; font-size: 0.8125rem;
+    padding: 8px 16px; border-radius: 999px; cursor: pointer;
+    transition: all 0.18s; font-family: 'Space Grotesk', sans-serif;
+  }
+  .apps-filter-btn:hover { border-color: #111; color: #111; }
+  .apps-filter-btn.active { background: #111; color: #FFD000; border-color: #111; }
+  .app-card {
+    background: #fff; border: 1.5px solid #F3F3F3; border-radius: 18px;
+    padding: 1.25rem; cursor: pointer;
+    transition: all 0.18s;
+  }
+  .app-card:hover { border-color: #FFD000; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,208,0,0.12); }
+  .app-status {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    font-size: 0.68rem; font-weight: 800; letter-spacing: 0.04em;
+    text-transform: uppercase; font-family: 'Space Grotesk', sans-serif;
+  }
+  .app-status.pending   { background: #FFF9D6; color: #92400E; }
+  .app-status.reviewing { background: #DBEAFE; color: #1E40AF; }
+  .app-status.approved  { background: #D1FAE5; color: #065F46; }
+  .app-status.rejected  { background: #FEE2E2; color: #991B1B; }
+  .app-status.onboarded { background: #111; color: #FFD000; }
+  .app-needs-website {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #FFD000; color: #111;
+    padding: 2px 10px; border-radius: 999px;
+    font-size: 0.68rem; font-weight: 800;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+</style>
 
 
 <script src="../assets/js/config.js"></script>
 <script src="../assets/js/supabase-client.js"></script>
 <script src="../assets/js/analytics.js"></script>
 <script src="../assets/js/admin.js"></script>
+<script src="../assets/js/admin-applications.js"></script>
 </body>
 </html>
