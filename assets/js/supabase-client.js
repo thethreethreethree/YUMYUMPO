@@ -97,7 +97,7 @@
       .select(`
         *,
         restaurant_tags ( tag_name ),
-        operating_hours ( day_of_week, opens_at, closes_at, is_closed ),
+        operating_hours ( day_of_week, open_time, close_time, is_closed ),
         menu_categories (
           id, name, sort_order,
           menu_items ( id, name, description, price, image_url, is_available, tags )
