@@ -72,6 +72,13 @@
     .menu-item .mi-tags::placeholder { font-style:italic; }
     .btn-tiny { background:none; border:none; cursor:pointer; color:#ABABAB; font-size:1.2rem; line-height:1; padding:4px 8px; border-radius:6px; }
     .btn-tiny:hover { background:#F3F3F3; color:#111; }
+    .vibe-chip {
+      padding:6px 12px; border:1.5px solid #E8E8E8; border-radius:999px;
+      font-size:0.78rem; font-weight:700; cursor:pointer; background:#fff;
+      color:#6B6B6B; transition: all 0.15s; user-select:none;
+    }
+    .vibe-chip:hover  { border-color:#FFD000; color:#111; }
+    .vibe-chip.active { background:#FFD000; border-color:#FFD000; color:#111; }
   </style>
 </head>
 
@@ -199,15 +206,33 @@
       </div>
     </div>
 
-    <!-- GALLERY -->
+    <!-- VENUE GALLERY -->
     <div class="section-card space-y-3">
       <div class="flex items-end justify-between">
-        <h2 class="font-display font-black text-lg">Gallery</h2>
-        <p class="text-xs text-gray-400" id="gallery-count">0 / 6 photos</p>
+        <h2 class="font-display font-black text-lg">Venue Gallery</h2>
+        <p class="text-xs text-gray-400" id="gallery-count">0 / 4 photos</p>
       </div>
-      <p class="text-sm text-gray-400">Up to 3 photos showcasing your food, space, or vibe. JPG/PNG/WebP, max 5MB each.</p>
+      <p class="text-sm text-gray-400">Up to 4 photos of your space, interior, or vibe. Shown in the hero gallery mosaic.</p>
       <div class="photo-grid" id="gallery-grid"></div>
       <input type="file" id="gallery-file" accept="image/*" multiple class="hidden" />
+    </div>
+
+    <!-- FOOD GALLERY -->
+    <div class="section-card space-y-3">
+      <div class="flex items-end justify-between">
+        <h2 class="font-display font-black text-lg">Food Gallery</h2>
+        <p class="text-xs text-gray-400" id="food-gallery-count">0 / 6 photos</p>
+      </div>
+      <p class="text-sm text-gray-400">Up to 6 plated-food shots. Shown as a dedicated food gallery grid on your page.</p>
+      <div class="photo-grid" id="food-gallery-grid"></div>
+      <input type="file" id="food-gallery-file" accept="image/*" multiple class="hidden" />
+    </div>
+
+    <!-- VIBE TAGS -->
+    <div class="section-card space-y-3">
+      <h2 class="font-display font-black text-lg">Vibe Tags</h2>
+      <p class="text-sm text-gray-400">Pick the tags that describe your place. Used by Fred and the discovery filter.</p>
+      <div class="flex flex-wrap gap-2" id="vibe-tag-picker"></div>
     </div>
 
     <!-- HOURS -->
@@ -277,9 +302,9 @@
 </div>
 
 <script src="../assets/js/config.js"></script>
-<script src="../assets/js/supabase-client.js?v=owner5"></script>
+<script src="../assets/js/supabase-client.js?v=marias1"></script>
 <script src="../assets/js/main.js"></script>
-<script src="../assets/js/account-restaurant.js?v=owner5"></script>
+<script src="../assets/js/account-restaurant.js?v=marias1"></script>
 <script src="../assets/js/pwa.js"></script>
 </body>
 </html>

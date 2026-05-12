@@ -7,13 +7,23 @@
 
 'use strict';
 
-const MAX_GALLERY = 3;
+const MAX_GALLERY      = 4;   // venue gallery — matches Maria's Kitchen reference
+const MAX_FOOD_GALLERY = 6;   // food gallery
+const VIBE_TAG_PRESETS = [
+  'Local Favorite','Family-Friendly','Budget-Friendly','Backpacker-Approved',
+  'Hidden Gem','Romantic','Date Spot','Late Night','Group-Friendly',
+  'Instagrammable','Scenic View','Beach Dining','WiFi-Friendly',
+  'Outdoor Seating','Vegan','Healthy','Must Try','Chef Special',
+  'Fine Dining','Tourist Favorite',
+];
 const BUCKET = 'restaurant-photos';
 const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
 let restaurant = null;
 let originalSnapshot = null;
 let pendingGallery = [];
+let pendingFoodGallery = [];
+let pendingVibeTags = new Set();   // selected lifestyle tag names
 let hours = {};          // day_of_week -> { is_closed, open_time, close_time }
 let categories = [];     // [{id?, name, sort_order, items:[{id?, name, price, description, sort_order}]}]
 let dirty = false;
@@ -53,10 +63,12 @@ async function init() {
 
   restaurant = row;
   originalSnapshot = JSON.stringify(row);
-  pendingGallery = Array.isArray(row.gallery_urls) ? [...row.gallery_urls] : [];
+  pendingGallery     = Array.isArray(row.gallery_urls)      ? [...row.gallery_urls]      : [];
+  pendingFoodGallery = Array.isArray(row.food_gallery_urls) ? [...row.food_gallery_urls] : [];
 
   await loadHours(c, row.id);
   await loadMenu(c, row.id);
+  await loadVibeTags(c, row.id);
 
   populateForm();
   wireEvents();
@@ -97,6 +109,8 @@ function populateForm() {
   renderCover();
   renderLogo();
   renderGallery();
+  renderFoodGalleryUI();
+  renderVibeTags();
   renderHours();
   renderMenu();
 }
@@ -114,20 +128,54 @@ function renderLogo() {
 }
 
 function renderGallery() {
-  const grid = document.getElementById('gallery-grid');
-  grid.innerHTML = pendingGallery.map((url, i) => `
+  renderPhotoStrip('gallery-grid', 'gallery-count', 'gallery-file', pendingGallery, MAX_GALLERY, 'removeGalleryPhoto');
+}
+function renderFoodGalleryUI() {
+  renderPhotoStrip('food-gallery-grid', 'food-gallery-count', 'food-gallery-file', pendingFoodGallery, MAX_FOOD_GALLERY, 'removeFoodGalleryPhoto');
+}
+
+function renderPhotoStrip(gridId, countId, fileId, list, max, removeFn) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  grid.innerHTML = list.map((url, i) => `
     <div class="photo-tile" data-idx="${i}">
       <img src="${url}" alt="">
-      <button type="button" class="photo-remove" onclick="removeGalleryPhoto(${i})" aria-label="Remove">×</button>
+      <button type="button" class="photo-remove" onclick="${removeFn}(${i})" aria-label="Remove">×</button>
     </div>
   `).join('');
-  if (pendingGallery.length < MAX_GALLERY) {
+  if (list.length < max) {
     grid.insertAdjacentHTML('beforeend', `
-      <div class="photo-add" onclick="document.getElementById('gallery-file').click()">
+      <div class="photo-add" onclick="document.getElementById('${fileId}').click()">
         <span style="font-size:1.6rem;line-height:1">＋</span><span>Add photo</span>
       </div>`);
   }
-  document.getElementById('gallery-count').textContent = `${pendingGallery.length} / ${MAX_GALLERY} photos`;
+  const countEl = document.getElementById(countId);
+  if (countEl) countEl.textContent = `${list.length} / ${max} photos`;
+}
+
+
+/* ── Vibe tags (restaurant_tags rows) ────────────────────── */
+async function loadVibeTags(c, restaurantId) {
+  const { data } = await c.from('restaurant_tags').select('tag_name').eq('restaurant_id', restaurantId);
+  pendingVibeTags = new Set((data || []).map(t => t.tag_name));
+}
+
+function renderVibeTags() {
+  const wrap = document.getElementById('vibe-tag-picker');
+  if (!wrap) return;
+  const all = Array.from(new Set([...VIBE_TAG_PRESETS, ...pendingVibeTags]));
+  wrap.innerHTML = all.map(t => `
+    <button type="button" class="vibe-chip ${pendingVibeTags.has(t) ? 'active' : ''}" data-tag="${escapeAttr(t)}">${t}</button>
+  `).join('');
+  wrap.querySelectorAll('.vibe-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const t = btn.dataset.tag;
+      if (pendingVibeTags.has(t)) pendingVibeTags.delete(t);
+      else                         pendingVibeTags.add(t);
+      btn.classList.toggle('active');
+      markDirty();
+    });
+  });
 }
 
 
@@ -243,6 +291,7 @@ function renderMenu() {
               <input value="${escapeAttr(it.name)}"  placeholder="Item name"      data-ci="${ci}" data-ii="${ii}" data-item-field="name" />
               <input value="${escapeAttr(it.price)}" placeholder="₱180"           data-ci="${ci}" data-ii="${ii}" data-item-field="price" />
             </div>
+            <input value="${escapeAttr(it.price_note || '')}" placeholder="Price note — e.g., 'good for 2', '/ slice'" data-ci="${ci}" data-ii="${ii}" data-item-field="price_note" style="font-size:0.75rem;" />
             <textarea class="mi-desc" rows="2" placeholder="Short description (optional)" data-ci="${ci}" data-ii="${ii}" data-item-field="description">${escapeAttr(it.description)}</textarea>
             <input class="mi-tags" value="${escapeAttr((it.tags || []).join(', '))}" placeholder="Tags (Best Seller, Spicy, Chef Special) — comma separated" data-ci="${ci}" data-ii="${ii}" data-item-field="tags" />
           </div>
@@ -349,6 +398,7 @@ function wireEvents() {
   document.getElementById('cover-file').addEventListener('change', e => handleSingleUpload(e, 'cover'));
   document.getElementById('logo-file').addEventListener('change',  e => handleSingleUpload(e, 'logo'));
   document.getElementById('gallery-file').addEventListener('change', handleGalleryUpload);
+  document.getElementById('food-gallery-file').addEventListener('change', handleFoodGalleryUpload);
 
   document.getElementById('save-btn').addEventListener('click', save);
   document.getElementById('discard-btn').addEventListener('click', discard);
@@ -399,7 +449,21 @@ async function handleGalleryUpload(e) {
   renderGallery(); markDirty(); e.target.value = '';
 }
 
-function removeGalleryPhoto(idx) { pendingGallery.splice(idx,1); renderGallery(); markDirty(); }
+function removeGalleryPhoto(idx)     { pendingGallery.splice(idx,1);     renderGallery();        markDirty(); }
+function removeFoodGalleryPhoto(idx) { pendingFoodGallery.splice(idx,1); renderFoodGalleryUI();  markDirty(); }
+window.removeFoodGalleryPhoto = removeFoodGalleryPhoto;
+
+async function handleFoodGalleryUpload(e) {
+  const files = [...(e.target.files || [])]; if (!files.length) return;
+  const slotsLeft = MAX_FOOD_GALLERY - pendingFoodGallery.length;
+  if (slotsLeft <= 0) return toast(`You already have ${MAX_FOOD_GALLERY} food photos.`);
+  for (const file of files.slice(0, slotsLeft)) {
+    if (file.size > 5 * 1024 * 1024) { toast(`${file.name} skipped — over 5MB.`); continue; }
+    const url = await uploadToBucket(file);
+    if (url) pendingFoodGallery.push(url);
+  }
+  renderFoodGalleryUI(); markDirty(); e.target.value = '';
+}
 
 async function uploadToBucket(file) {
   const c = window.YYP.client;
@@ -430,9 +494,10 @@ async function save() {
     instagram_url:   normalizeInstagram(fd.instagram_url)|| null,
     facebook_url:    normalizeUrl(fd.facebook_url)       || null,
     messenger_url:   normalizeUrl(fd.messenger_url)      || null,
-    cover_image_url: restaurant.cover_image_url || null,
-    logo_image_url:  restaurant.logo_image_url  || null,
-    gallery_urls:    pendingGallery,
+    cover_image_url:   restaurant.cover_image_url || null,
+    logo_image_url:    restaurant.logo_image_url  || null,
+    gallery_urls:      pendingGallery,
+    food_gallery_urls: pendingFoodGallery,
   };
 
   const btn = document.getElementById('save-btn');
@@ -476,6 +541,7 @@ async function save() {
           name:             it.name.trim(),
           description:      it.description || null,
           price:            it.price || null,
+          price_note:       it.price_note || null,
           image_url:        photos[0] || null,
           gallery_urls:     photos,
           tags:             Array.isArray(it.tags) ? it.tags : [],
@@ -487,6 +553,14 @@ async function save() {
       const { error: ei } = await c.from('menu_items').insert(itemRows);
       if (ei) console.warn('items save:', ei.message);
     }
+  }
+
+  /* 4. Vibe tags — wipe and re-insert */
+  await c.from('restaurant_tags').delete().eq('restaurant_id', restaurant.id);
+  const tagRows = [...pendingVibeTags].map(tag_name => ({ restaurant_id: restaurant.id, tag_name }));
+  if (tagRows.length) {
+    const { error: et } = await c.from('restaurant_tags').insert(tagRows);
+    if (et) console.warn('tags save:', et.message);
   }
 
   btn.disabled = false; btn.textContent = 'Save Changes';

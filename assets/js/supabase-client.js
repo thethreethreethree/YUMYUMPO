@@ -101,7 +101,7 @@
         operating_hours ( day_of_week, open_time, close_time, is_closed ),
         menu_categories (
           id, name, sort_order,
-          menu_items ( id, name, description, price, image_url, gallery_urls, tags, is_available, sort_order )
+          menu_items ( id, name, description, price, price_note, image_url, gallery_urls, tags, is_available, sort_order )
         )
       `)
       .ilike('slug', slug)
@@ -110,9 +110,10 @@
     if (!data) return null;
 
     /* Shape-adapter — bridge Supabase columns to the static template's field names. */
-    if (data.gallery_urls && !data.gallery)   data.gallery = data.gallery_urls;
-    if (Array.isArray(data.restaurant_tags))  data.tags    = data.restaurant_tags.map(t => t.tag_name);
-    if (Array.isArray(data.operating_hours))  data.hours   = data.operating_hours;
+    if (data.gallery_urls && !data.gallery)            data.gallery      = data.gallery_urls;
+    if (data.food_gallery_urls && !data.food_gallery)  data.food_gallery = data.food_gallery_urls;
+    if (Array.isArray(data.restaurant_tags))           data.tags         = data.restaurant_tags.map(t => t.tag_name);
+    if (Array.isArray(data.operating_hours))           data.hours        = data.operating_hours;
 
     /* Menu adapter: normalise each item so renderMenu sees a consistent shape. */
     if (Array.isArray(data.menu_categories)) {
@@ -129,6 +130,7 @@
             name:        it.name,
             description: it.description || '',
             price:       it.price || '',
+            price_note:  it.price_note || '',
             image:       gallery[0] || '',          // legacy alias used by old templates
             image_url:   gallery[0] || '',
             gallery,
