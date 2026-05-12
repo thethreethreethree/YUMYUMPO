@@ -509,7 +509,6 @@ function gridCard(r, idx) {
           onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&auto=format&fit=crop&q=75'"
         />
         <span class="${badgeCls}">${r.badge}</span>
-        ${buzzPill(r)}
         ${r.has_yumyumpo_site ? `<span class="card-hosted-badge" title="Powered by YUMYUMPO">⚡ On YUMYUMPO</span>` : ''}
         <button
           class="card-save-btn"
@@ -525,6 +524,7 @@ function gridCard(r, idx) {
       </div>
 
       <div class="card-body">
+        ${buzzPill(r)}
         <div class="card-rating">
           <span class="stars">${starString(r.rating)}</span>
           <span class="score">${r.rating}</span>
@@ -564,10 +564,10 @@ function listCard(r, idx) {
       <div class="list-card-image">
         <img src="${r.image}" alt="${r.name}" loading="${idx < 4 ? 'eager' : 'lazy'}"
           onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&auto=format&fit=crop&q=75'" />
-        ${buzzPill(r)}
       </div>
       <div class="list-card-body">
         <div>
+          ${buzzPill(r)}
           <div class="flex items-start justify-between gap-3 mb-1">
             <div>
               <span class="text-xs font-black text-yellow-600 uppercase tracking-wider">${r.cuisine}</span>
