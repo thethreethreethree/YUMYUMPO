@@ -466,48 +466,53 @@ class ConversationManager {
 ══════════════════════════════════════════════════════════ */
 class ClaudeProxy {
 
-  /* Supabase Edge Function endpoint — deploy from supabase/functions/ai-search */
-  static ENDPOINT = '/api/ai-search';
+  /* Resolves the AI endpoint at call time so config.js can be loaded after this file. */
+  static endpoint() {
+    return window.YUMYUMPO_CONFIG?.AI_ENDPOINT || '';
+  }
 
-  static PROMPT_TEMPLATE = `You are a warm, knowledgeable restaurant concierge for YUMYUMPO —
-a restaurant discovery platform focused on travelers and food lovers in the Philippines.
+  /* Returns { opening, closing, followUp } on success, or null on failure. */
+  static async enhance(query, localResults, context = {}) {
+    const url = this.endpoint();
+    if (!url || /YOUR_/.test(url)) return null;
 
-The user asked: "{query}"
+    /* AbortController with timeout (Safari < 16.4 compatibility) */
+    const controller = new AbortController();
+    const timeoutId  = setTimeout(() => controller.abort(), 8000);
 
-Based on local intelligence, the top matching restaurants are:
-{restaurantList}
-
-Write a conversational, enthusiastic response (2-3 sentences max) that:
-1. Acknowledges what the user is looking for
-2. Highlights the single best recommendation with one compelling detail
-3. Ends with an invitation to explore the results
-
-Tone: friendly, warm, knowledgeable local friend. Not corporate. Use 1-2 relevant emojis.`;
-
-  static async enhance(query, localResults) {
     try {
-      const restaurantList = localResults.slice(0, 3).map((r, i) =>
-        `${i + 1}. ${r.name} (${r.cuisine}, ${r.location}) — Rating: ${r.rating}/5 — Tags: ${(r.tags || []).join(', ')}`
-      ).join('\n');
+      const restaurants = (localResults || []).slice(0, 6).map(r => ({
+        name:     r.name,
+        cuisine:  r.cuisine,
+        location: r.location,
+        rating:   r.rating,
+        tags:     (r.tags || []).slice(0, 4),
+      }));
 
-      const prompt = this.PROMPT_TEMPLATE
-        .replace('{query}', query)
-        .replace('{restaurantList}', restaurantList);
-
-      const res = await fetch(this.ENDPOINT, {
+      const res = await fetch(url, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ prompt, query }),
-        signal:  AbortSignal.timeout(8000),
+        body:    JSON.stringify({ query, restaurants, context }),
+        signal:  controller.signal,
       });
+      clearTimeout(timeoutId);
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) return null;
       const data = await res.json();
-      return data.response || null;
+      if (data.fallback || !data.opening) return null;
+
+      return {
+        opening:  data.opening  || null,
+        closing:  data.closing  || null,
+        followUp: Array.isArray(data.followUp) ? data.followUp : [],
+      };
 
     } catch (err) {
-      console.warn('[YAI] Claude enhancement unavailable — using local engine:', err.message);
-      return null; // falls back to ResponseGenerator
+      clearTimeout(timeoutId);
+      if (window.YYP?.mode === 'development') {
+        console.warn('[Fred] Claude enhancement unavailable, using local engine:', err.message);
+      }
+      return null;
     }
   }
 }
@@ -552,29 +557,35 @@ const YAI = (() => {
     const results = engine.rank(restaurantPool, parsed, limit);
     results.forEach(r => r._parsed = parsed); // carry parsed onto results for follow-ups
 
-    // Try Claude enhancement; fall back to local generator
-    let openingText = null;
-    if (useClaudeIfAvailable && results.length > 0) {
-      openingText = await ClaudeProxy.enhance(rawQuery, results);
-    }
-    if (!openingText) {
-      openingText = respGen.opening(parsed, results.length);
-    }
+    /* Local response as the always-available baseline */
+    let openingText = respGen.opening(parsed, results.length);
+    let closingText = respGen.closing(parsed, results);
+    let followUp   = respGen.followUpSuggestions(parsed);
 
-    const closingText  = respGen.closing(parsed, results);
-    const suggestions  = respGen.followUpSuggestions(parsed);
+    /* Optionally upgrade with Claude-generated copy */
+    if (useClaudeIfAvailable && results.length > 0) {
+      const enhanced = await ClaudeProxy.enhance(rawQuery, results, {
+        previousQuery: convo.history.length > 1 ? convo.history[convo.history.length - 2]?.text : null,
+      });
+      if (enhanced) {
+        if (enhanced.opening)         openingText = enhanced.opening;
+        if (enhanced.closing)         closingText = enhanced.closing;
+        if (enhanced.followUp?.length) followUp   = enhanced.followUp;
+      }
+    }
 
     const aiMessage = {
       opening:     openingText,
       closing:     closingText,
-      suggestions,
-      results,
+      followUp,                              // primary name
+      suggestions: followUp,                 // backwards-compatible alias
+      restaurants: results,                  // primary name (matches UI expectations)
+      results,                               // backwards-compatible alias
       parsed,
     };
 
     convo.addAIMessage(openingText, results, parsed);
 
-    // Analytics
     if (window.YAn) {
       YAn.track(YAn.EVENT_TYPES.SEARCH, {
         query:        rawQuery,

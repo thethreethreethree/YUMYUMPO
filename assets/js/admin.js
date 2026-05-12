@@ -90,26 +90,41 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function checkAuth() {
-  const isDemo    = localStorage.getItem('yyp_admin_demo') === 'true';
-  const hasSupabase = !!window.supabase;
+  /* Production auth: require a real Supabase session — no exceptions. */
+  const mode = window.YYP?.mode || 'production';
 
-  if (!isDemo && !hasSupabase) {
-    // No auth at all — allow access in pure static mode
-    return;
-  }
+  const enforce = () => {
+    const client = window.YYP?.client;
 
-  if (isDemo) {
-    // Demo session
-    const greeting = document.getElementById('admin-greeting');
-    if (greeting) greeting.textContent = 'Demo admin session active.';
-    return;
-  }
+    /* Without a configured Supabase client, the admin area cannot be authenticated. */
+    if (!client) {
+      if (mode === 'production') {
+        window.location.href = 'login.html';
+      } else {
+        const greeting = document.getElementById('admin-greeting');
+        if (greeting) greeting.textContent = 'Development mode — Supabase not configured.';
+      }
+      return;
+    }
 
-  if (hasSupabase) {
-    window.supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) window.location.href = 'login.html';
+    client.auth.getSession().then(({ data: { session }, error }) => {
+      if (error || !session) {
+        window.location.href = 'login.html';
+        return;
+      }
+      const greeting = document.getElementById('admin-greeting');
+      if (greeting && session.user?.email) {
+        greeting.textContent = `Signed in as ${session.user.email}`;
+      }
+      /* Auto-logout on session expiry */
+      client.auth.onAuthStateChange((event) => {
+        if (event === 'SIGNED_OUT') window.location.href = 'login.html';
+      });
     });
-  }
+  };
+
+  if (window.YYP?.ready) enforce();
+  else document.addEventListener('yyp:ready', enforce, { once: true });
 }
 
 function initDashboard() {
@@ -124,8 +139,8 @@ function initDashboard() {
 }
 
 window.handleLogout = async function() {
-  localStorage.removeItem('yyp_admin_demo');
-  if (window.supabase) await window.supabase.auth.signOut();
+  const client = window.YYP?.client;
+  if (client) await client.auth.signOut();
   window.location.href = 'login.html';
 };
 
@@ -385,8 +400,8 @@ window.saveEdit = function(e) {
   r.emoji         = getCuisineEmoji(r.cuisine);
 
   // Supabase update
-  if (window.supabase) {
-    window.supabase.from('restaurants').update({
+  if (window.YYP?.client) {
+    window.YYP.client.from('restaurants').update({
       name: r.name, slug: r.slug, description: r.description,
       cuisine_type: r.cuisine, location: r.location,
       google_rating: r.rating, cover_image_url: r.cover,
@@ -454,14 +469,14 @@ async function processImageFiles(files, prefix) {
     const itemEl   = addImagePreview(prefix, localURL, file.name);
 
     // Upload to Supabase Storage if available
-    if (window.supabase) {
+    if (window.YYP?.client) {
       const fileName = `restaurants/${Date.now()}-${file.name.replace(/[^a-z0-9.]/gi, '-')}`;
-      const { data, error } = await window.supabase.storage
+      const { data, error } = await window.YYP.client.storage
         .from('restaurant-images')
         .upload(fileName, file, { cacheControl: '3600', upsert: false });
 
       if (!error && data) {
-        const { data: { publicUrl } } = window.supabase.storage
+        const { data: { publicUrl } } = window.YYP.client.storage
           .from('restaurant-images').getPublicUrl(data.path);
 
         // Update the cover URL input with the first uploaded image
@@ -598,8 +613,8 @@ window.saveCuisine = function() {
   closeAddCuisine();
   renderCuisinesTab();
 
-  if (window.supabase) {
-    window.supabase.from('cuisine_categories').insert([{ name, emoji, sort_order: order }]).then(() => {});
+  if (window.YYP?.client) {
+    window.YYP.client.from('cuisine_categories').insert([{ name, emoji, sort_order: order }]).then(() => {});
   }
 };
 
@@ -705,8 +720,8 @@ window.addTag = function() {
   renderTagsTab();
   renderTagSelector();
 
-  if (window.supabase) {
-    window.supabase.from('restaurant_tags').insert([{ tag_name: name }]).then(() => {});
+  if (window.YYP?.client) {
+    window.YYP.client.from('restaurant_tags').insert([{ tag_name: name }]).then(() => {});
   }
 };
 
@@ -766,8 +781,8 @@ window.submitRestaurant = async function(e) {
     if (firstPreview) data.cover_image_url = firstPreview.dataset.url || '';
   }
 
-  if (window.supabase) {
-    const { error } = await window.supabase.from('restaurants').insert([{
+  if (window.YYP?.client) {
+    const { error } = await window.YYP.client.from('restaurants').insert([{
       name: data.name, slug: data.slug, description: data.description,
       cuisine_type: data.cuisine_type, location: data.location, address: data.address || null,
       google_rating: parseFloat(data.google_rating) || null,
@@ -842,3 +857,4 @@ function getCuisineEmoji(c) {
   const m = { Filipino:'🍛', Japanese:'🍜', Korean:'🥘', Italian:'🍕', Chinese:'🥟', Seafood:'🦞', Café:'☕', 'BBQ & Grill':'🔥', BBQ:'🔥', Vegan:'🥗', Burgers:'🍔', Mexican:'🌮', Desserts:'🍨' };
   return m[c] || '🍽️';
 }
+

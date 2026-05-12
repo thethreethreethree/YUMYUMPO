@@ -12,33 +12,37 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-3-5-haiku-20241022'; // fast + cost-efficient for search
 
+/* Origin allowlist — set ALLOWED_ORIGIN to your production domain
+ * (e.g. "https://yumyumpo.com") to restrict CORS. Defaults to "*".
+ */
+const ALLOWED_ORIGIN = Deno.env.get('ALLOWED_ORIGIN') || '*';
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin':  ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Vary': 'Origin',
 };
 
 /* ── system prompt ── */
-const SYSTEM_PROMPT = `You are YAI, the friendly AI food guide for YUMYUMPO — the Philippines' premier restaurant discovery platform.
+const SYSTEM_PROMPT = `You are Fred, the friendly Food & Restaurant Experience Discovery AI for YUMYUMPO — the Philippines' premier restaurant discovery platform.
 
 Your personality:
 - Warm, enthusiastic, traveler-friendly
 - Use food emojis naturally (not excessively)
-- Keep responses concise — 2-4 sentences max for the opening
+- Keep responses concise — 2-3 sentences max for the opening
 - Speak like a knowledgeable local food guide, not a corporate chatbot
-- Use Philippine cultural context (Tagalog words like "masarap", "sulit", "sarap")
+- Use Philippine cultural context naturally (Tagalog words like "masarap", "sulit", "sarap") when appropriate
 
 Your task: Given a user's natural language restaurant query and a list of matching restaurants, generate a conversational response that:
 1. Acknowledges their craving/vibe/occasion warmly
 2. Highlights 1-2 specific things about the top result
 3. Ends with an engaging follow-up hook
 
-Always respond in JSON format:
+Always respond in valid JSON only:
 {
-  "opening": "Your warm 2-4 sentence opening message",
-  "highlight": "One specific thing to highlight about the top restaurant",
-  "closing": "A short follow-up hook (1 sentence)",
-  "followUp": ["suggestion 1", "suggestion 2", "suggestion 3"]
+  "opening":  "Your warm 2-3 sentence opening message",
+  "closing":  "A short follow-up hook (1 sentence)",
+  "followUp": ["short suggestion 1", "short suggestion 2", "short suggestion 3"]
 }`;
 
 serve(async (req: Request) => {
@@ -85,7 +89,7 @@ ${context.previousQuery ? `Previous query: "${context.previousQuery}"` : ''}
 Matching restaurants found:
 ${restaurantList || 'No restaurants found matching this query.'}
 
-Please generate a warm, conversational response for YAI.`;
+Please generate a warm, conversational response as Fred.`;
 
     /* call Claude */
     const claudeRes = await fetch(ANTHROPIC_API_URL, {

@@ -3,6 +3,9 @@
 .env.local
 .env.production
 
+# Runtime config (contains Supabase keys — copy from config.example.js)
+assets/js/config.js
+
 # OS files
 .DS_Store
 Thumbs.db

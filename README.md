@@ -72,21 +72,46 @@ cd yumyumpo
 
 ### 2. Set Up Supabase
 
-1. Create a free project at [supabase.com](https://supabase.com)
-2. Go to **SQL Editor → New Query**
-3. Paste the contents of `supabase/schema.sql` and run it
-4. Go to **Settings → API** and copy your `Project URL` and `anon public` key
+1. Create a free project at [supabase.com](https://supabase.com).
+2. Open **SQL Editor → New Query** and run these files **in order**:
+   - `supabase/schema.sql` (core tables + RLS + seed data)
+   - `supabase/analytics-schema.sql` (sessions, daily stats, search log)
+   - `supabase/ai-schema.sql` (Fred's mood collections + AI tags)
+3. Open **Authentication → Users** and create your admin user.
+4. Copy your `Project URL` and `anon public` key from **Settings → API**.
 
-### 3. Connect the Frontend
+### 3. Configure the Frontend
 
-Open `assets/js/supabase-client.js` and update:
-
-```js
-const SUPABASE_URL  = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
+```bash
+cp assets/js/config.example.js assets/js/config.js
 ```
 
-### 4. Run Locally
+Open `assets/js/config.js` and fill in:
+
+```js
+SUPABASE_URL:      'https://YOUR_PROJECT_ID.supabase.co',
+SUPABASE_ANON_KEY: 'YOUR_SUPABASE_ANON_PUBLIC_KEY',
+AI_ENDPOINT:       'https://YOUR_PROJECT_ID.supabase.co/functions/v1/ai-search',
+MODE:              'production',
+```
+
+> `config.js` is git-ignored. Never commit it. The Supabase anon key is safe to ship (RLS protects your data); other keys must stay server-side.
+
+### 4. Deploy the Fred Edge Function (for AI search)
+
+```bash
+# Install Supabase CLI: https://supabase.com/docs/guides/cli
+supabase login
+supabase link --project-ref YOUR_PROJECT_REF
+supabase functions deploy ai-search
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-YOUR_KEY
+# Optional: lock CORS to your domain
+supabase secrets set ALLOWED_ORIGIN=https://yumyumpo.com
+```
+
+Without this step Fred still works using local intelligence — Claude is purely an enhancement layer.
+
+### 5. Run Locally
 
 ```bash
 # Python
@@ -126,22 +151,18 @@ Push to `main` branch → Settings → Pages → Source: `main` → Save.
 
 ---
 
-## AI Search Integration (Future)
+## Meet Fred
 
-Architecture is ready. To activate:
+**Fred** is YUMYUMPO's Food & Restaurant Experience Discovery AI (`ai-search.html`). Architecture lives in `assets/js/ai-search.js`:
 
-1. Create a **Supabase Edge Function** (secure proxy)
-2. Call Claude API from the Edge Function with the user's query
-3. Return semantic recommendations from the database
-4. Wire the frontend search bar to the Edge Function
-
-**Never expose `ANTHROPIC_API_KEY` on the frontend.**
+- 5-layer local engine: query parser → recommendation scorer → response generator → conversation memory → Claude proxy
+- Fred works fully offline. Claude is an optional enhancement layer that gets routed through the Supabase Edge Function — your `ANTHROPIC_API_KEY` is never exposed to the browser.
 
 ---
 
 ## Analytics Events Tracked
 
-`card_click` · `profile_view` · `whatsapp_click` · `website_click` · `messenger_click` · `call_click` · `search` · `cuisine_filter`
+`card_click` · `profile_view` · `website_click` (external) · `website_click:profile` (YUMYUMPO-hosted) · `search` · `fred_search` · `cuisine_filter` · `scroll_depth` · `time_on_page`
 
 ---
 

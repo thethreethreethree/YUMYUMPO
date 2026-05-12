@@ -563,12 +563,20 @@
   <!-- ════════════════════════════════════════════════
        SCRIPTS
   ════════════════════════════════════════════════ -->
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/analytics.js"></script>
+  <script src="assets/js/discover.js"></script>
   <script src="assets/js/ai-search.js"></script>
 
   <script>
   (function () {
     'use strict';
+
+    /* Wire Fred's restaurant pool from the discover.js dataset */
+    if (typeof YAI !== 'undefined' && typeof ALL_RESTAURANTS !== 'undefined') {
+      YAI.setPool(ALL_RESTAURANTS);
+    }
 
     const hero          = document.getElementById('fred-hero');
     const chatThread    = document.getElementById('chat-thread');

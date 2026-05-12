@@ -282,17 +282,11 @@
 
         </form>
 
-        <!-- Demo credentials hint -->
-        <div class="mt-6 p-4 bg-yellow-light rounded-2xl border border-yellow-200">
-          <p class="text-xs font-black text-brand-black uppercase tracking-wider mb-2">Demo Access</p>
-          <div class="space-y-1">
-            <p class="text-xs text-gray-600 font-medium">Email: <span class="font-bold text-brand-black cursor-pointer" onclick="fillDemo()">admin@yumyumpo.com</span></p>
-            <p class="text-xs text-gray-600 font-medium">Password: <span class="font-bold text-brand-black cursor-pointer" onclick="fillDemo()">yumyumpo2025</span></p>
-          </div>
-          <button onclick="fillDemo()" class="mt-3 w-full text-xs font-black text-brand-black bg-brand-yellow py-2 rounded-xl hover:bg-yellow-400 transition-colors">
-            Use Demo Credentials
-          </button>
-        </div>
+        <!-- Don't have an account hint -->
+        <p class="text-center text-sm text-gray-500 mt-6">
+          Don't have a restaurant listing yet?
+          <a href="../index.html#owner-cta" class="font-bold text-brand-black hover:underline">Get started →</a>
+        </p>
 
         <!-- Back link -->
         <p class="text-center text-sm text-gray-400 mt-6">
@@ -317,19 +311,16 @@
   </div>
 
 
+  <script src="../assets/js/config.js"></script>
   <script src="../assets/js/supabase-client.js"></script>
   <script>
-    /* ── Auth check — if already logged in, skip to dashboard ── */
-    document.addEventListener('supabase:ready', async () => {
-      const { data: { session } } = await window.supabase.auth.getSession();
+    /* ── Skip login if already authenticated ── */
+    document.addEventListener('yyp:ready', async () => {
+      const client = window.YYP?.client;
+      if (!client) return;
+      const { data: { session } } = await client.auth.getSession();
       if (session) window.location.href = 'index.html';
     });
-
-    /* ── Demo credentials ── */
-    window.fillDemo = function() {
-      document.getElementById('email-input').value    = 'admin@yumyumpo.com';
-      document.getElementById('password-input').value = 'yumyumpo2025';
-    };
 
     /* ── Toggle password visibility ── */
     window.togglePassword = function() {
@@ -337,7 +328,7 @@
       input.type  = input.type === 'password' ? 'text' : 'password';
     };
 
-    /* ── Login ── */
+    /* ── Login (strict Supabase auth, no demo bypass) ── */
     window.handleLogin = async function(e) {
       e.preventDefault();
 
@@ -352,39 +343,34 @@
         return;
       }
 
-      // Loading state
-      btn.disabled   = true;
-      btn.innerHTML  = '<span class="spinner"></span>&nbsp; Signing in…';
+      btn.disabled  = true;
+      btn.innerHTML = '<span class="spinner"></span>&nbsp; Signing in…';
       error.classList.add('hidden');
 
-      // Demo mode — bypass Supabase if using demo creds or no Supabase
-      const isDemo = email === 'admin@yumyumpo.com' && password === 'yumyumpo2025';
-
-      if (isDemo || !window.supabase) {
-        // Store a local auth flag for demo mode
-        localStorage.setItem('yyp_admin_demo', 'true');
-        success.classList.remove('hidden');
-        setTimeout(() => window.location.href = 'index.html', 1000);
+      const client = window.YYP?.client;
+      if (!client) {
+        btn.disabled  = false;
+        btn.innerHTML = 'Sign In to Dashboard';
+        showError('Authentication is not available. Please contact the administrator.');
         return;
       }
 
-      const { data, error: authError } = await window.supabase.auth.signInWithPassword({ email, password });
-
+      const { error: authError } = await client.auth.signInWithPassword({ email, password });
       if (authError) {
-        btn.disabled   = false;
-        btn.innerHTML  = 'Sign In to Dashboard';
+        btn.disabled  = false;
+        btn.innerHTML = 'Sign In to Dashboard';
         showError(authError.message || 'Invalid email or password.');
         return;
       }
 
       success.classList.remove('hidden');
-      setTimeout(() => window.location.href = 'index.html', 900);
+      setTimeout(() => window.location.href = 'index.html', 800);
     };
 
     function showError(msg) {
       const banner = document.getElementById('error-banner');
       const text   = document.getElementById('error-text');
-      if (text)    text.textContent = msg;
+      if (text) text.textContent = msg;
       banner.classList.remove('hidden');
       document.getElementById('login-form').classList.add('shake');
       setTimeout(() => document.getElementById('login-form').classList.remove('shake'), 400);
@@ -397,23 +383,22 @@
       modal.classList.add('flex');
     };
     window.closeForgotModal = function() {
-      document.getElementById('forgot-modal').classList.add('hidden');
-      document.getElementById('forgot-modal').classList.remove('flex');
+      const modal = document.getElementById('forgot-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
     };
     window.sendReset = async function() {
       const email = document.getElementById('reset-email').value.trim();
       if (!email) return;
-      if (window.supabase) {
-        await window.supabase.auth.resetPasswordForEmail(email);
+      const client = window.YYP?.client;
+      if (client) {
+        await client.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + '/admin/login.html',
+        });
       }
       closeForgotModal();
       alert(`If ${email} exists in our system, a reset link has been sent.`);
     };
-
-    /* ── Enter key ── */
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Enter') document.getElementById('login-form').dispatchEvent(new Event('submit'));
-    });
   </script>
 </body>
 </html>

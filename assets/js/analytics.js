@@ -181,7 +181,8 @@ const YAn = (() => {
   ══════════════════════════════════════════════════════════ */
   async function flush() {
     if (isFlushing || !queue.length) return;
-    if (!window.supabase && !window.db) return;
+    const client = window.YYP?.client;
+    if (!client) return;
 
     isFlushing = true;
     const batch = queue.slice(0, 30); // max 30 per flush
@@ -197,13 +198,10 @@ const YAn = (() => {
         created_at:    e.created_at,
       }));
 
-      const client = window.supabase || window._supabaseClient;
-      if (client) {
-        const { error } = await client.from('analytics_events').insert(rows);
-        if (!error) {
-          clearQueue(batch.map(e => e.id));
-          if (isDev()) console.log(`[YAn] Flushed ${batch.length} events to Supabase`);
-        }
+      const { error } = await client.from('analytics_events').insert(rows);
+      if (!error) {
+        clearQueue(batch.map(e => e.id));
+        if (isDev()) console.log(`[YAn] Flushed ${batch.length} events to Supabase`);
       }
     } catch (err) {
       if (isDev()) console.warn('[YAn] Flush failed, retrying later:', err.message);
@@ -431,7 +429,7 @@ const YAn = (() => {
     });
 
     // Flush when Supabase becomes ready
-    document.addEventListener('supabase:ready', flushNow);
+    document.addEventListener('yyp:ready', flushNow);
 
     if (isDev()) console.log('[YAn] Analytics engine ready. Session:', session.session_id);
   }

@@ -615,17 +615,14 @@ function animateCount(el, target) {
 }
 
 
-/* ── ANALYTICS (stub — connects to Supabase) ── */
+/* ── ANALYTICS — defers to YAn (assets/js/analytics.js) when present ── */
 function trackEvent(eventType, metadata = {}) {
-  // In production, send to Supabase analytics_events table
-  if (window.supabase) {
-    window.supabase
-      .from('analytics_events')
-      .insert([{ event_type: eventType, metadata, created_at: new Date().toISOString() }])
-      .then(({ error }) => { if (error) console.warn('Analytics error:', error); });
+  if (typeof YAn !== 'undefined' && typeof YAn.track === 'function') {
+    YAn.track(eventType, metadata);
+    return;
   }
-  // Also log locally for debugging
-  if (window.location.hostname === 'localhost' || window.location.protocol === 'file:') {
-    console.log('[Analytics]', eventType, metadata);
+  /* Last-resort fallback through the data helper */
+  if (window.db?.trackAnalyticsEvent) {
+    window.db.trackAnalyticsEvent(eventType, metadata.restaurant_id || null, metadata);
   }
 }
