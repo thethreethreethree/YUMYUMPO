@@ -7,7 +7,7 @@
 
 'use strict';
 
-const MAX_GALLERY = 6;
+const MAX_GALLERY = 3;
 const BUCKET = 'restaurant-photos';
 const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
@@ -184,7 +184,7 @@ async function loadMenu(c, restaurantId) {
     .eq('restaurant_id', restaurantId)
     .order('sort_order');
   const { data: items } = await c.from('menu_items')
-    .select('id, menu_category_id, name, description, price, sort_order, is_available')
+    .select('id, menu_category_id, name, description, price, image_url, tags, sort_order, is_available')
     .eq('restaurant_id', restaurantId)
     .order('sort_order');
 
@@ -195,10 +195,13 @@ async function loadMenu(c, restaurantId) {
     items: (items || [])
       .filter(it => it.menu_category_id === cat.id)
       .map(it => ({
-        id: it.id, name: it.name,
+        id: it.id,
+        name:        it.name,
         description: it.description || '',
-        price: it.price || '',
-        sort_order: it.sort_order || 0,
+        price:       it.price || '',
+        image_url:   it.image_url || '',
+        tags:        Array.isArray(it.tags) ? it.tags : [],
+        sort_order:  it.sort_order || 0,
         is_available: it.is_available !== false,
       })),
   }));
@@ -213,13 +216,23 @@ function renderMenu() {
   wrap.innerHTML = categories.map((cat, ci) => `
     <div class="menu-cat" data-ci="${ci}">
       <div class="menu-cat-head">
-        <input class="menu-cat-name" value="${escapeAttr(cat.name)}" placeholder="Category name (e.g., Drinks)" data-ci="${ci}" data-cat-field="name" />
+        <input class="menu-cat-name" list="cat-suggestions" value="${escapeAttr(cat.name)}" placeholder="Category name — pick a preset or type your own" data-ci="${ci}" data-cat-field="name" />
         <button type="button" class="btn-tiny" title="Delete category" onclick="deleteCategory(${ci})">🗑</button>
       </div>
       ${cat.items.map((it, ii) => `
         <div class="menu-item">
-          <input value="${escapeAttr(it.name)}" placeholder="Item name" data-ci="${ci}" data-ii="${ii}" data-item-field="name" />
-          <input value="${escapeAttr(it.price)}" placeholder="₱180"   data-ci="${ci}" data-ii="${ii}" data-item-field="price" />
+          <div class="mi-thumb" onclick="pickItemPhoto(${ci},${ii})">
+            ${it.image_url ? `<img src="${it.image_url}" alt="">` : `<div class="mi-thumb-empty">📷</div>`}
+            <div class="mi-thumb-overlay">${it.image_url ? 'Change' : 'Add photo'}</div>
+          </div>
+          <div class="mi-fields">
+            <div class="mi-row1">
+              <input value="${escapeAttr(it.name)}"  placeholder="Item name"      data-ci="${ci}" data-ii="${ii}" data-item-field="name" />
+              <input value="${escapeAttr(it.price)}" placeholder="₱180"           data-ci="${ci}" data-ii="${ii}" data-item-field="price" />
+            </div>
+            <textarea class="mi-desc" rows="2" placeholder="Short description (optional)" data-ci="${ci}" data-ii="${ii}" data-item-field="description">${escapeAttr(it.description)}</textarea>
+            <input class="mi-tags" value="${escapeAttr((it.tags || []).join(', '))}" placeholder="Tags (Best Seller, Spicy, Chef Special) — comma separated" data-ci="${ci}" data-ii="${ii}" data-item-field="tags" />
+          </div>
           <button type="button" class="btn-tiny" title="Delete item" onclick="deleteItem(${ci},${ii})">×</button>
         </div>
       `).join('')}
@@ -236,11 +249,38 @@ function renderMenu() {
   wrap.querySelectorAll('[data-item-field]').forEach(el => {
     el.addEventListener('input', () => {
       const ci = +el.dataset.ci, ii = +el.dataset.ii;
-      categories[ci].items[ii][el.dataset.itemField] = el.value;
+      const field = el.dataset.itemField;
+      if (field === 'tags') {
+        categories[ci].items[ii].tags = el.value.split(',').map(t => t.trim()).filter(Boolean);
+      } else {
+        categories[ci].items[ii][field] = el.value;
+      }
       markDirty();
     });
   });
 }
+
+window.pickItemPhoto = function(ci, ii) {
+  let input = document.getElementById('item-photo-input');
+  if (!input) {
+    input = document.createElement('input');
+    input.type = 'file'; input.accept = 'image/*'; input.id = 'item-photo-input';
+    input.style.display = 'none';
+    document.body.appendChild(input);
+  }
+  input.onchange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) return toast('File too big — 5MB max.');
+    const url = await uploadToBucket(file);
+    if (!url) return;
+    categories[ci].items[ii].image_url = url;
+    renderMenu();
+    markDirty();
+    input.value = '';
+  };
+  input.click();
+};
 
 function escapeAttr(s) { return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 
@@ -410,6 +450,8 @@ async function save() {
         name:             it.name.trim(),
         description:      it.description || null,
         price:            it.price || null,
+        image_url:        it.image_url || null,
+        tags:             Array.isArray(it.tags) ? it.tags : [],
         sort_order:       ii,
         is_available:     it.is_available !== false,
       }));

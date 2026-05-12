@@ -56,9 +56,19 @@
     .menu-cat-head { display:flex; gap:8px; align-items:center; margin-bottom:10px; }
     .menu-cat-name { flex:1; padding:6px 10px; border:1.5px solid transparent; border-radius:8px; font-weight:700; font-size:0.95rem; }
     .menu-cat-name:focus { outline:none; border-color:#FFD000; background:#FFFDF2; }
-    .menu-item { display:grid; grid-template-columns: 1fr 80px auto; gap:8px; padding:8px; border:1px solid #F3F3F3; border-radius:10px; margin-bottom:6px; align-items:center; }
-    .menu-item input { padding:6px 8px; border:1.5px solid transparent; border-radius:6px; font-size:0.85rem; min-width:0; }
-    .menu-item input:focus { outline:none; border-color:#FFD000; background:#FFFDF2; }
+    .menu-item { display:grid; grid-template-columns: 64px 1fr auto; gap:10px; padding:10px; border:1px solid #F3F3F3; border-radius:12px; margin-bottom:8px; }
+    .menu-item .mi-thumb { position:relative; width:64px; height:64px; border-radius:10px; overflow:hidden; background:#F3F3F3; cursor:pointer; }
+    .menu-item .mi-thumb img { width:100%; height:100%; object-fit:cover; }
+    .menu-item .mi-thumb .mi-thumb-empty { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:1.3rem; color:#ABABAB; }
+    .menu-item .mi-thumb:hover .mi-thumb-overlay { opacity:1; }
+    .menu-item .mi-thumb-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.55); color:#fff; font-size:0.65rem; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.15s; font-weight:600; }
+    .menu-item .mi-fields { display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .menu-item .mi-row1 { display:grid; grid-template-columns: 1fr 90px; gap:6px; }
+    .menu-item input, .menu-item textarea { padding:5px 8px; border:1.5px solid transparent; border-radius:6px; font-size:0.82rem; min-width:0; font-family:inherit; background:transparent; }
+    .menu-item input:focus, .menu-item textarea:focus { outline:none; border-color:#FFD000; background:#FFFDF2; }
+    .menu-item .mi-desc { font-size:0.78rem; color:#6B6B6B; resize:vertical; min-height:32px; }
+    .menu-item .mi-tags { font-size:0.72rem; color:#6B6B6B; }
+    .menu-item .mi-tags::placeholder { font-style:italic; }
     .btn-tiny { background:none; border:none; cursor:pointer; color:#ABABAB; font-size:1.2rem; line-height:1; padding:4px 8px; border-radius:6px; }
     .btn-tiny:hover { background:#F3F3F3; color:#111; }
   </style>
@@ -194,7 +204,7 @@
         <h2 class="font-display font-black text-lg">Gallery</h2>
         <p class="text-xs text-gray-400" id="gallery-count">0 / 6 photos</p>
       </div>
-      <p class="text-sm text-gray-400">Up to 6 photos showcasing your food, space, or vibe. JPG/PNG/WebP, max 5MB each.</p>
+      <p class="text-sm text-gray-400">Up to 3 photos showcasing your food, space, or vibe. JPG/PNG/WebP, max 5MB each.</p>
       <div class="photo-grid" id="gallery-grid"></div>
       <input type="file" id="gallery-file" accept="image/*" multiple class="hidden" />
     </div>
@@ -217,6 +227,28 @@
       </div>
       <p class="text-sm text-gray-400">Group menu items by category (Drinks, Mains, Desserts, etc.). Empty categories won't be shown on your page.</p>
       <div id="menu-categories" class="space-y-4"></div>
+      <datalist id="cat-suggestions">
+        <option value="Signature Dishes"></option>
+        <option value="Breakfast Favourites"></option>
+        <option value="Lunch Favourites"></option>
+        <option value="Dinner Favourites"></option>
+        <option value="All-Day Specials"></option>
+        <option value="Appetizers & Starters"></option>
+        <option value="Soups & Salads"></option>
+        <option value="Mains"></option>
+        <option value="Pasta & Noodles"></option>
+        <option value="Rice Meals"></option>
+        <option value="Sides"></option>
+        <option value="Snacks & Bites"></option>
+        <option value="Desserts"></option>
+        <option value="Drinks"></option>
+        <option value="Coffee & Tea"></option>
+        <option value="Smoothies & Juices"></option>
+        <option value="Beer & Cocktails"></option>
+        <option value="Wine"></option>
+        <option value="Vegan & Vegetarian"></option>
+        <option value="Kids Menu"></option>
+      </datalist>
     </div>
 
     <!-- READ-ONLY INFO -->
@@ -244,9 +276,9 @@
 </div>
 
 <script src="../assets/js/config.js"></script>
-<script src="../assets/js/supabase-client.js?v=owner2"></script>
+<script src="../assets/js/supabase-client.js?v=owner3"></script>
 <script src="../assets/js/main.js"></script>
-<script src="../assets/js/account-restaurant.js?v=owner2"></script>
+<script src="../assets/js/account-restaurant.js?v=owner3"></script>
 <script src="../assets/js/pwa.js"></script>
 </body>
 </html>
