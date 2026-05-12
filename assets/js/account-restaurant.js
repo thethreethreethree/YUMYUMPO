@@ -244,6 +244,35 @@ function renderMenu() {
 
 function escapeAttr(s) { return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 
+/* ── URL normalisers — convert friendly input into proper URLs ── */
+function normalizeUrl(v) {
+  v = (v || '').trim();
+  if (!v) return '';
+  if (/^https?:\/\//i.test(v)) return v;
+  return 'https://' + v.replace(/^\/+/, '');
+}
+
+function normalizeWhatsapp(v) {
+  v = (v || '').trim();
+  if (!v) return '';
+  if (/^https?:\/\//i.test(v)) return v;           // already a URL
+  let digits = v.replace(/[^\d]/g, '');             // strip + spaces dashes
+  if (!digits) return '';
+  // PH numbers commonly entered as "+63 0921 ..." — drop the trunk 0 after country code
+  if (digits.startsWith('630')) digits = '63' + digits.slice(3);
+  // If user entered just a local "09..." number, assume PH (+63)
+  if (digits.startsWith('0'))   digits = '63' + digits.slice(1);
+  return 'https://wa.me/' + digits;
+}
+
+function normalizeInstagram(v) {
+  v = (v || '').trim();
+  if (!v) return '';
+  if (/^https?:\/\//i.test(v)) return v;
+  const handle = v.replace(/^@/, '').replace(/^instagram\.com\//i, '');
+  return 'https://instagram.com/' + handle;
+}
+
 
 /* ── Wire events ─────────────────────────────────────────── */
 function wireEvents() {
@@ -332,11 +361,11 @@ async function save() {
     location:        fd.location      || null,
     address:         fd.address       || null,
     phone:           fd.phone         || null,
-    website_url:     fd.website_url   || null,
-    whatsapp_url:    fd.whatsapp_url  || null,
-    instagram_url:   fd.instagram_url || null,
-    facebook_url:    fd.facebook_url  || null,
-    messenger_url:   fd.messenger_url || null,
+    website_url:     normalizeUrl(fd.website_url)        || null,
+    whatsapp_url:    normalizeWhatsapp(fd.whatsapp_url)  || null,
+    instagram_url:   normalizeInstagram(fd.instagram_url)|| null,
+    facebook_url:    normalizeUrl(fd.facebook_url)       || null,
+    messenger_url:   normalizeUrl(fd.messenger_url)      || null,
     cover_image_url: restaurant.cover_image_url || null,
     logo_image_url:  restaurant.logo_image_url  || null,
     gallery_urls:    pendingGallery,
