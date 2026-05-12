@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Following — YUMYUMPO</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="../assets/images/YUMYUMPO.svg" type="image/svg+xml" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="../assets/css/account.css" />
+
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { 'brand-yellow':'#FFD000','brand-black':'#111111','yellow-light':'#FFF9D6','gray-50':'#F9F9F9','gray-100':'#F3F3F3','gray-200':'#E8E8E8','gray-400':'#ABABAB','gray-600':'#6B6B6B' },
+      fontFamily: { display:['"Space Grotesk"','Inter','system-ui','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+    }}}
+  </script>
+
+  <style>
+    .feed-item {
+      background: #fff;
+      border: 1.5px solid #F3F3F3;
+      border-radius: 22px;
+      overflow: hidden;
+      transition: all .2s;
+      display: flex; gap: 0;
+    }
+    .feed-item:hover { border-color: #FFD000; transform: translateY(-2px); box-shadow: 0 12px 32px rgba(255,208,0,.12); }
+    .feed-item-cover {
+      flex-shrink: 0;
+      width: 120px;
+      background: #F3F3F3 center/cover no-repeat;
+      position: relative;
+    }
+    .feed-item-cover::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to right, transparent 70%, rgba(255,255,255,.1));
+    }
+    .feed-item-body { padding: 16px 18px; flex: 1; min-width: 0; }
+    .feed-item-meta {
+      display: flex; align-items: center; gap: 8px;
+      font-size: .7rem; color: #6B6B6B;
+      margin-bottom: 4px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .feed-item-venue {
+      font-weight: 800; color: #111;
+      text-decoration: none;
+      letter-spacing: -.01em;
+    }
+    .feed-item-venue:hover { color: #E6BB00; }
+    .feed-item-type {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #FFF9D6;
+      color: #111;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: .65rem; font-weight: 800;
+      letter-spacing: .04em; text-transform: uppercase;
+      border: 1px solid rgba(255,208,0,.5);
+    }
+    .feed-item-type.event       { background: #DBEAFE; color: #1E40AF; border-color: rgba(30,64,175,.3); }
+    .feed-item-type.promo       { background: #D1FAE5; color: #065F46; border-color: rgba(6,95,70,.3); }
+    .feed-item-type.live-music  { background: #FCE7F3; color: #9D174D; border-color: rgba(157,23,77,.3); }
+    .feed-item-type.happy-hour  { background: #FED7AA; color: #9A3412; border-color: rgba(154,52,18,.3); }
+    .feed-item-type.menu        { background: #F3F4F6; color: #1F2937; border-color: rgba(31,41,55,.2); }
+    .feed-item-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800; font-size: 1rem;
+      color: #111; letter-spacing: -.01em;
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .feed-item-body-text {
+      font-size: .85rem; color: #4B4B4B;
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .feed-item-when {
+      margin-top: 8px;
+      font-size: .75rem; color: #6B6B6B;
+    }
+    .feed-item-when strong { color: #111; font-weight: 700; }
+
+    @media (max-width: 640px) {
+      .feed-item { flex-direction: column; }
+      .feed-item-cover { width: 100%; aspect-ratio: 16/9; }
+    }
+
+    .feed-day-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 24px 0 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: .7rem; font-weight: 800;
+      color: #6B6B6B; letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .feed-day-divider::after {
+      content: ''; flex: 1; height: 1px; background: #E8E8E8;
+    }
+
+    /* "Followed venues" sidebar / chips */
+    .followed-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #fff;
+      border: 1.5px solid #E8E8E8;
+      border-radius: 999px;
+      padding: 6px 12px 6px 6px;
+      font-size: .8rem; font-weight: 700;
+      color: #111;
+      text-decoration: none;
+      transition: all .15s;
+    }
+    .followed-chip:hover { border-color: #FFD000; transform: translateY(-1px); }
+    .followed-chip-avatar {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #FFF9D6 center/cover no-repeat;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+
+<body class="acct-page">
+
+<nav id="navbar" class="solid fixed top-0 left-0 right-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <a href="../index.html" class="flex items-center shrink-0">
+        <img src="../assets/images/YUMYUMPO.svg" alt="YUMYUMPO" class="nav-logo-img" />
+      </a>
+      <div class="hidden md:flex items-center gap-7">
+        <a href="../discover.html"  class="text-sm font-600 text-gray-600 hover:text-brand-black transition-colors">Discover</a>
+        <a href="../ai-search.html" class="text-sm font-600 text-gray-600 hover:text-brand-black transition-colors">Ask Fred</a>
+      </div>
+      <div class="flex items-center gap-3"></div>
+    </div>
+  </div>
+</nav>
+
+<div id="auth-gate" class="acct-container" style="display:none;padding-top:24px">
+  <div class="acct-empty" style="margin-top:40px">
+    <div class="acct-empty-emoji">📣</div>
+    <h1 class="acct-empty-title">Sign in to see your feed</h1>
+    <p class="acct-empty-text">Follow venues to get their announcements, live music nights, happy hours, and new menu drops.</p>
+    <button class="btn-primary" onclick="window.YYP.openAuthModal({intent:'Sign in to see your following feed'})">Sign In</button>
+  </div>
+</div>
+
+<main class="acct-container" id="main" style="display:none">
+
+  <div class="acct-header">
+    <div class="flex-1">
+      <h1 class="acct-name">Following</h1>
+      <p class="acct-handle">Updates from venues you follow</p>
+    </div>
+  </div>
+
+  <div class="acct-tabs">
+    <a class="acct-tab"           href="index.html">Profile</a>
+    <a class="acct-tab"           href="saved.html">Saved Places</a>
+    <a class="acct-tab is-active" href="feed.html">Following</a>
+    <a class="acct-tab"           href="history.html">Discovery History</a>
+  </div>
+
+  <!-- Followed venues row -->
+  <div class="mb-7" id="followed-section">
+    <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Venues you follow</p>
+    <div class="flex gap-2 flex-wrap" id="followed-list"></div>
+  </div>
+
+  <!-- Feed -->
+  <h2 class="acct-section-title">Latest updates</h2>
+  <div id="feed-list" class="space-y-3"></div>
+
+  <!-- Empty state -->
+  <div id="feed-empty" class="acct-empty" style="display:none">
+    <div class="acct-empty-emoji">🪺</div>
+    <p class="acct-empty-title">Your feed is empty</p>
+    <p class="acct-empty-text">Follow a few venues to see their live music nights, happy hours, new menu items, and special events here.</p>
+    <a href="../discover.html" class="btn-primary inline-flex">Find venues to follow</a>
+  </div>
+
+</main>
+
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/analytics.js"></script>
+<script src="../assets/js/auth-modal.js"></script>
+<script src="../assets/js/account.js"></script>
+<script src="../assets/js/bottom-nav.js"></script>
+
+<script>
+'use strict';
+
+function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function showAuthGate(){
+  document.getElementById('auth-gate').style.display = '';
+  document.getElementById('main').style.display     = 'none';
+}
+
+async function hydrate() {
+  const acc = window.YYP.account;
+  if (!acc?.isSignedIn) { showAuthGate(); return; }
+
+  document.getElementById('auth-gate').style.display = 'none';
+  document.getElementById('main').style.display      = '';
+
+  await renderFollowed();
+  await renderFeed();
+}
+
+async function renderFollowed() {
+  const c = window.YYP.client;
+  const { data, error } = await c.from('venue_follows')
+    .select('restaurants(slug, name, cover_image_url, location)')
+    .eq('user_id', window.YYP.account.session.user.id);
+
+  const wrap = document.getElementById('followed-section');
+  if (error || !data?.length) {
+    wrap.innerHTML = `<p class="text-sm text-gray-500">You're not following anyone yet. Tap <strong>Follow updates</strong> on any restaurant page to start.</p>`;
+    return;
+  }
+  const list = document.getElementById('followed-list');
+  list.innerHTML = data.map(d => {
+    const r = d.restaurants; if (!r) return '';
+    return `
+      <a href="../restaurant.html?slug=${esc(r.slug)}" class="followed-chip">
+        <span class="followed-chip-avatar" style="background-image:url('${esc(r.cover_image_url||'')}')"></span>
+        <span>${esc(r.name)}</span>
+      </a>
+    `;
+  }).join('');
+}
+
+async function renderFeed() {
+  const items = await window.YYP.account.getFeed(50);
+  const wrap  = document.getElementById('feed-list');
+  const empty = document.getElementById('feed-empty');
+
+  if (!items.length) { wrap.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+
+  /* Group by date bucket */
+  const buckets = { 'Today': [], 'This week': [], 'Coming up': [], 'Earlier': [] };
+  const now = Date.now();
+  items.forEach(it => {
+    const t = new Date(it.starts_at || it.created_at).getTime();
+    const days = (t - now) / 86400000;
+    if (days > 0 && days <= 1) buckets['Today'].push(it);
+    else if (days > 1)         buckets['Coming up'].push(it);
+    else if (days >= -7)       buckets['This week'].push(it);
+    else                       buckets['Earlier'].push(it);
+  });
+
+  const labelDate = (it) => {
+    const d = new Date(it.starts_at || it.created_at);
+    const diff = (d.getTime() - Date.now()) / 86400000;
+    if (Math.abs(diff) < 1) return d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) + ' today';
+    if (diff > 0 && diff < 7) return d.toLocaleDateString('en-US',{weekday:'long', hour:'numeric'});
+    return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  };
+
+  const typeEmoji = {
+    'event':'📅','promo':'💸','live-music':'🎵','happy-hour':'🍻','menu':'🍽️','announcement':'📣'
+  };
+
+  let html = '';
+  Object.entries(buckets).forEach(([label, list]) => {
+    if (!list.length) return;
+    html += `<div class="feed-day-divider"><span>${label}</span></div>`;
+    list.forEach(it => {
+      const typeLabel = (it.type || 'announcement').toUpperCase().replace('-',' ');
+      html += `
+        <article class="feed-item" data-slug="${esc(it.restaurant_slug)}">
+          <div class="feed-item-cover" style="background-image:url('${esc(it.image_url || it.restaurant_cover || '')}')"></div>
+          <div class="feed-item-body">
+            <div class="feed-item-meta">
+              <a class="feed-item-venue" href="../restaurant.html?slug=${esc(it.restaurant_slug)}">${esc(it.restaurant_name)}</a>
+              <span>·</span>
+              <span class="feed-item-type ${esc(it.type||'announcement')}">${typeEmoji[it.type]||'📣'} ${esc(typeLabel)}</span>
+            </div>
+            <h3 class="feed-item-title">${esc(it.title)}</h3>
+            ${it.body ? `<p class="feed-item-body-text">${esc(it.body)}</p>` : ''}
+            <p class="feed-item-when"><strong>${esc(labelDate(it))}</strong>${it.link_url ? ` · <a href="${esc(it.link_url)}" target="_blank" class="text-brand-black underline">More info →</a>` : ''}</p>
+          </div>
+        </article>
+      `;
+    });
+  });
+  wrap.innerHTML = html;
+
+  /* Card click → restaurant profile (excluding inner links) */
+  wrap.querySelectorAll('.feed-item').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('a')) return;
+      window.location.href = `../restaurant.html?slug=${card.dataset.slug}`;
+    });
+  });
+}
+
+document.addEventListener('yyp:account-ready', hydrate);
+document.addEventListener('yyp:account-signed-out', showAuthGate);
+document.addEventListener('yyp:follows-changed', hydrate);
+if (window.YYP?.account?.isSignedIn) hydrate();
+else if (window.YYP?.account && !window.YYP.account.isSignedIn) showAuthGate();
+</script>
+
+</body>
+</html>

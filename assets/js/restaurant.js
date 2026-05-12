@@ -552,7 +552,91 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (window.YYP?.account?.isSignedIn) window.YYP.account.recordView(r.slug);
     }, { once: true });
   }
+
+  /* Social discovery: reactions + "people also saved" */
+  initReactions(r.slug);
+  loadPeopleAlsoSaved(r.slug);
 });
+
+
+/* ══════════════════════════════════════════════════════════
+   REACTIONS — love / want-to-go / been-there
+══════════════════════════════════════════════════════════ */
+function initReactions(slug) {
+  const buttons = document.querySelectorAll('#reaction-buttons .reaction-btn');
+  if (!buttons.length) return;
+
+  async function paint() {
+    if (!window.YYP?.account?.getReactions) return;
+    const data = await window.YYP.account.getReactions(slug);
+    if (!data) return;
+    const mine = new Set(Array.isArray(data.my_reactions) ? data.my_reactions : []);
+    document.querySelector('[data-count="love"]').textContent       = data.love       || 0;
+    document.querySelector('[data-count="want_to_go"]').textContent = data.want_to_go || 0;
+    document.querySelector('[data-count="been_there"]').textContent = data.been_there || 0;
+    buttons.forEach(b => b.classList.toggle('is-active', mine.has(b.dataset.reaction)));
+  }
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const reaction = btn.dataset.reaction;
+      btn.classList.add('just-tapped');
+      setTimeout(() => btn.classList.remove('just-tapped'), 350);
+      const data = await window.YYP.account.setReaction(slug, reaction);
+      if (data) {
+        const mine = new Set(Array.isArray(data.my_reactions) ? data.my_reactions : []);
+        document.querySelector('[data-count="love"]').textContent       = data.love       || 0;
+        document.querySelector('[data-count="want_to_go"]').textContent = data.want_to_go || 0;
+        document.querySelector('[data-count="been_there"]').textContent = data.been_there || 0;
+        buttons.forEach(b => b.classList.toggle('is-active', mine.has(b.dataset.reaction)));
+        if (mine.has(reaction)) {
+          window.YYP?.toast?.(
+            reaction === 'love'      ? 'Loved! ❤️' :
+            reaction === 'want-to-go'? 'Added to your wishlist 🌟' :
+                                       'Marked as been there ✓',
+            { duration: 2200 }
+          );
+        }
+      }
+    });
+  });
+
+  paint();
+  document.addEventListener('yyp:account-ready', paint);
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   PEOPLE ALSO SAVED — collaborative recommendations
+══════════════════════════════════════════════════════════ */
+async function loadPeopleAlsoSaved(slug) {
+  if (!window.YYP?.account?.getPeopleAlsoSaved) return;
+  const section = document.getElementById('also-saved-section');
+  const grid    = document.getElementById('also-saved-grid');
+  if (!section || !grid) return;
+
+  const rows = await window.YYP.account.getPeopleAlsoSaved(slug, 4);
+  if (!rows.length) { section.classList.add('hidden'); return; }
+  section.classList.remove('hidden');
+
+  const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const fallback = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&auto=format&fit=crop&q=75';
+
+  grid.innerHTML = rows.map(r => `
+    <a href="restaurant.html?slug=${esc(r.slug)}" class="block bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-brand-yellow hover:-translate-y-1 transition-all" style="text-decoration:none">
+      <div class="aspect-square overflow-hidden bg-gray-100">
+        <img src="${esc(r.cover_image_url || fallback)}" alt="${esc(r.name)}"
+             class="w-full h-full object-cover" loading="lazy"
+             onerror="this.src='${fallback}'"/>
+      </div>
+      <div class="p-3">
+        <p class="font-display font-black text-sm text-brand-black truncate">${esc(r.name)}</p>
+        <p class="text-xs text-gray-500 truncate">${esc(r.cuisine_type || '')} · ${esc(r.location || '')}</p>
+        <p class="text-xs text-yellow-700 font-bold mt-1.5">★ ${r.google_rating || '—'} · ${r.co_save_count} co-save${r.co_save_count === 1 ? '' : 's'}</p>
+      </div>
+    </a>
+  `).join('');
+}
 
 
 /* ── Empty / not-found state ─────────────────────────────
@@ -1011,28 +1095,62 @@ function renderActionCard(r) {
 
   card.classList.remove('hidden');
 
-  if (r.website_url) {
-    buttons.innerHTML = `
-      <a href="${r.website_url}" target="_blank" rel="noopener noreferrer"
+  const websiteBtn = r.website_url
+    ? `<a href="${r.website_url}" target="_blank" rel="noopener noreferrer"
          onclick="trackAction('website_click','${r.id}')"
          class="r-action-btn yellow">
         ${webIcon()}
         Visit Official Website
-      </a>
-    `;
-  } else {
-    /* No website yet — show the platform's premium-website funnel */
+      </a>`
+    : `<a href="admin/apply.html?ref=get-listed&restaurant=${encodeURIComponent(r.name || '')}"
+         class="r-action-btn yellow">
+        Get this restaurant a website
+      </a>`;
+
+  if (!r.website_url) {
     const heading = card.querySelector('h3');
     const sub     = card.querySelector('p');
     if (heading) heading.textContent = 'No website yet?';
     if (sub)     sub.textContent     = 'YUMYUMPO can build and host a website for this restaurant.';
-    buttons.innerHTML = `
-      <a href="admin/apply.html?ref=get-listed&restaurant=${encodeURIComponent(r.name || '')}"
-         class="r-action-btn yellow">
-        Get this restaurant a website
-      </a>
-    `;
   }
+
+  /* Follow button — only renders when account.js is on the page. */
+  const followBtn = `
+    <button type="button" class="r-action-btn outline" id="follow-btn" data-slug="${r.slug}">
+      <span class="follow-icon">+</span>
+      <span class="follow-label">Follow</span>
+    </button>
+  `;
+
+  buttons.innerHTML = websiteBtn + followBtn;
+  wireFollowButton(r.slug);
+}
+
+function wireFollowButton(slug) {
+  const btn = document.getElementById('follow-btn');
+  if (!btn) return;
+
+  function paint() {
+    const isFol = window.YYP?.account?.isFollowing?.(slug);
+    btn.classList.toggle('is-following', !!isFol);
+    btn.querySelector('.follow-icon').textContent  = isFol ? '✓' : '+';
+    btn.querySelector('.follow-label').textContent = isFol ? 'Following' : 'Follow updates';
+  }
+
+  paint();
+  document.addEventListener('yyp:account-ready',   paint);
+  document.addEventListener('yyp:follows-changed', paint);
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    const wasFollowing = window.YYP?.account?.isFollowing?.(slug);
+    await window.YYP?.account?.toggleFollow?.(slug);
+    paint();
+    btn.disabled = false;
+    if (!wasFollowing && window.YYP?.account?.isFollowing?.(slug)) {
+      window.YYP?.toast?.('Following — you\'ll see their updates in your feed', { duration: 3500 });
+    }
+  });
 }
 
 

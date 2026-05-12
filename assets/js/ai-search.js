@@ -532,8 +532,36 @@ const YAI = (() => {
   /* Restaurant pool — populated from ALL_RESTAURANTS or Supabase */
   let restaurantPool = [];
 
+  /* User context for personalization (taste tags + recent search keywords) */
+  let userContext = { tasteTags: [], recentKeywords: [] };
+
   function setPool(restaurants) {
     restaurantPool = restaurants;
+  }
+
+  function setUserContext(ctx) {
+    userContext = {
+      tasteTags:      Array.isArray(ctx?.tasteTags)      ? ctx.tasteTags : [],
+      recentKeywords: Array.isArray(ctx?.recentKeywords) ? ctx.recentKeywords : [],
+    };
+  }
+
+  /* Compute a personalization bonus 0..15 — boosts restaurants whose tags
+     overlap with the user's taste profile, and whose cuisine matches recent
+     searches. Lightweight; never overpowers explicit query intent. */
+  function personalizationBonus(restaurant) {
+    if (!userContext.tasteTags.length && !userContext.recentKeywords.length) return 0;
+    const restTags = (restaurant.tags || []).map(t => String(t).toLowerCase());
+    let bonus = 0;
+    userContext.tasteTags.forEach(t => {
+      if (restTags.includes(String(t).toLowerCase())) bonus += 3;
+    });
+    const cuisine = (restaurant.cuisine || restaurant.cuisine_type || '').toLowerCase();
+    userContext.recentKeywords.forEach(k => {
+      const kw = String(k).toLowerCase();
+      if (cuisine.includes(kw) || (restaurant.location || '').toLowerCase().includes(kw)) bonus += 2;
+    });
+    return Math.min(15, bonus);
   }
 
   /* ── MAIN QUERY HANDLER ── */
@@ -554,8 +582,18 @@ const YAI = (() => {
       }
     }
 
-    const results = engine.rank(restaurantPool, parsed, limit);
-    results.forEach(r => r._parsed = parsed); // carry parsed onto results for follow-ups
+    /* Score with engine, then re-sort with personalization bonus applied. */
+    let results = engine.rank(restaurantPool, parsed, limit * 2);
+    results.forEach(r => {
+      r._parsed = parsed;
+      const bonus = personalizationBonus(r);
+      if (bonus > 0) {
+        r._score        = (r._score || 0) + bonus;
+        r._personalized = true;
+      }
+    });
+    results.sort((a, b) => (b._score || 0) - (a._score || 0));
+    results = results.slice(0, limit);
 
     /* Local response as the always-available baseline */
     let openingText = respGen.opening(parsed, results.length);
@@ -673,6 +711,7 @@ const YAI = (() => {
 
   return {
     setPool,
+    setUserContext,
     query,
     scoreRestaurant,
     suggestQueries,

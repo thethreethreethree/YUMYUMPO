@@ -20,6 +20,58 @@
       fontFamily: { display:['"Space Grotesk"','Inter','system-ui','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
     }}}
   </script>
+
+  <style>
+    /* Map preview frame */
+    .map-frame-wrap {
+      position: relative;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1.5px solid #E8E8E8;
+      box-shadow: 0 8px 24px rgba(0,0,0,.06);
+      aspect-ratio: 16/9;
+      background: #F3F3F3;
+    }
+    @media (max-width: 640px) {
+      .map-frame-wrap { aspect-ratio: 4/3; }
+    }
+    .map-frame-wrap iframe {
+      width: 100%; height: 100%; border: 0; display: block;
+    }
+    .map-overlay {
+      position: absolute; bottom: 12px; left: 12px;
+      background: rgba(17,17,17,.82);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 8px 14px;
+      pointer-events: none;
+    }
+    /* Location chip — pin emoji + city name */
+    .loc-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #fff;
+      border: 1.5px solid #E8E8E8;
+      color: #111;
+      border-radius: 999px;
+      padding: 7px 14px 7px 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700; font-size: .8rem;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .loc-chip:hover { border-color: #FFD000; transform: translateY(-1px); }
+    .loc-chip.is-on {
+      background: #111; color: #FFD000; border-color: #111;
+    }
+    .loc-chip .count {
+      font-weight: 800; font-size: .65rem;
+      background: #FFF9D6; color: #111;
+      padding: 1px 7px; border-radius: 999px;
+    }
+    .loc-chip.is-on .count {
+      background: #FFD000; color: #111;
+    }
+  </style>
 </head>
 
 <body class="acct-page">
@@ -63,11 +115,37 @@
   <div class="acct-tabs">
     <a class="acct-tab"            href="index.html">Profile</a>
     <a class="acct-tab is-active"  href="saved.html">Saved Places</a>
+    <a class="acct-tab"            href="feed.html">Following</a>
     <a class="acct-tab"            href="history.html">Discovery History</a>
   </div>
 
-  <!-- Filter chips (lists) -->
-  <div id="list-filters" class="flex gap-2 flex-wrap mb-6"></div>
+  <!-- ── MAP PREVIEW ─────────────────────────────────── -->
+  <div id="map-section" class="mb-7" style="display:none">
+    <div class="flex items-end justify-between mb-3">
+      <div>
+        <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">On the map</p>
+        <h2 class="acct-section-title" style="margin-bottom:0">Your saved places</h2>
+      </div>
+      <button id="map-toggle" class="text-xs font-bold text-brand-black hover:text-yellow-600">Hide map</button>
+    </div>
+    <div id="map-body">
+      <div id="location-chips" class="flex gap-2 flex-wrap mb-3"></div>
+      <div class="map-frame-wrap">
+        <iframe id="map-frame" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <div class="map-overlay" id="map-overlay">
+          <p class="text-xs text-white/70">📍 <span id="map-place-count">0</span> places in <strong id="map-location-label" class="text-white">—</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter chips (lists) + new list -->
+  <div class="flex gap-2 flex-wrap mb-6 items-center">
+    <div id="list-filters" class="flex gap-2 flex-wrap"></div>
+    <button id="new-list-btn" type="button" class="acct-tag acct-tag-off" style="border-style:dashed">
+      + New list
+    </button>
+  </div>
 
   <!-- Sort + count -->
   <div class="flex items-center justify-between mb-4">
@@ -105,6 +183,8 @@
 let allSaved = [];
 let currentList = 'all';
 let currentSort = 'recent';
+let mapLocation = null;     // currently-focused location string
+let mapVisible  = true;
 
 function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
@@ -124,8 +204,71 @@ async function hydrate() {
   document.getElementById('saved-count').textContent = allSaved.length;
 
   renderListFilters();
+  renderMap();
   renderGrid();
 }
+
+/* Group saved places by location and pick the most-saved as default. */
+function getLocationGroups() {
+  const groups = {};
+  allSaved.forEach(s => {
+    const loc = s.restaurants?.location?.trim();
+    if (!loc) return;
+    if (!groups[loc]) groups[loc] = [];
+    groups[loc].push(s);
+  });
+  return groups;
+}
+
+function renderMap() {
+  const section = document.getElementById('map-section');
+  const groups = getLocationGroups();
+  const locs   = Object.keys(groups).sort((a,b) => groups[b].length - groups[a].length);
+
+  if (!locs.length) { section.style.display = 'none'; return; }
+  section.style.display = '';
+
+  /* Default to the most-saved location */
+  if (!mapLocation || !groups[mapLocation]) mapLocation = locs[0];
+
+  /* Render chips */
+  const chips = document.getElementById('location-chips');
+  chips.innerHTML = locs.map(loc => `
+    <button class="loc-chip ${loc === mapLocation ? 'is-on' : ''}" data-loc="${esc(loc)}">
+      <span>📍</span><span>${esc(loc)}</span>
+      <span class="count">${groups[loc].length}</span>
+    </button>
+  `).join('');
+  chips.querySelectorAll('[data-loc]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      mapLocation = btn.dataset.loc;
+      renderMap();
+      renderGrid();   // also filter the cards to this location
+    });
+  });
+
+  /* Compose a Google Maps embed search query: "restaurants in CITY" */
+  const places = groups[mapLocation];
+  const queryParts = [`restaurants in ${mapLocation}`];
+  /* For zoomed-in feel, include 1-2 specific venue names */
+  places.slice(0, 2).forEach(p => { if (p.restaurants?.name) queryParts.push(p.restaurants.name); });
+  const q = encodeURIComponent(queryParts.join(' '));
+  document.getElementById('map-frame').src =
+    `https://www.google.com/maps?q=${q}&hl=en&z=13&output=embed`;
+
+  document.getElementById('map-location-label').textContent = mapLocation;
+  document.getElementById('map-place-count').textContent    = places.length;
+}
+
+/* Hide / show the map preview */
+document.getElementById('map-toggle').addEventListener('click', () => {
+  const body = document.getElementById('map-body');
+  const btn  = document.getElementById('map-toggle');
+  const showing = body.style.display !== 'none';
+  body.style.display = showing ? 'none' : '';
+  btn.textContent = showing ? 'Show map' : 'Hide map';
+  mapVisible = !showing;
+});
 
 function renderListFilters() {
   const lists = new Set(['Favorites']);
@@ -144,6 +287,16 @@ function renderListFilters() {
 
 function renderGrid() {
   let list = currentList === 'all' ? allSaved : allSaved.filter(s => s.list_name === currentList);
+
+  /* If the user is currently focused on a map location, also filter to that.
+     Counts only — the chips themselves remain interactive on the map. */
+  if (mapLocation && document.getElementById('location-chips')) {
+    /* Only constrain if there are multiple locations to choose from */
+    const locs = Object.keys(getLocationGroups());
+    if (locs.length > 1) {
+      list = list.filter(s => s.restaurants?.location === mapLocation);
+    }
+  }
 
   /* Sort */
   if (currentSort === 'recent')  list = [...list].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
@@ -165,42 +318,73 @@ function renderGrid() {
   grid.innerHTML = list.map(s => {
     const r = s.restaurants;
     if (!r) return '';
+    const listLabel = s.list_name && s.list_name !== 'Favorites' ? s.list_name : '';
     return `
-      <div class="acct-saved-card" data-slug="${esc(r.slug)}">
+      <div class="acct-saved-card" data-slug="${esc(r.slug)}" data-list="${esc(s.list_name||'Favorites')}">
         <img src="${esc(r.cover_image_url || '')}" alt="${esc(r.name)}" class="acct-saved-card-img"
              onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&auto=format&fit=crop&q=75'"/>
         <div class="acct-saved-card-body">
           <p class="acct-saved-card-name">${esc(r.name)}</p>
           <p class="acct-saved-card-meta">${esc(r.cuisine_type || '')} · ${esc(r.location || '')}</p>
+          ${listLabel ? `<span class="acct-tag is-on" style="margin-top:6px;font-size:.65rem;padding:2px 8px">📁 ${esc(listLabel)}</span>` : ''}
           <div class="flex items-center justify-between mt-2">
             <span class="text-xs text-gray-500">★ ${r.google_rating || '—'}</span>
-            <button class="text-xs font-bold text-red-500 hover:text-red-700" data-unsave="${esc(r.slug)}">Remove</button>
+            <div class="flex gap-3">
+              <button class="text-xs font-bold text-brand-black hover:text-yellow-600" data-move="${esc(r.slug)}">Move</button>
+              <button class="text-xs font-bold text-red-500 hover:text-red-700" data-unsave="${esc(r.slug)}">Remove</button>
+            </div>
           </div>
         </div>
       </div>
     `;
   }).join('');
 
-  /* Card click → restaurant profile */
+  /* Card click → restaurant profile (ignore action buttons) */
   grid.querySelectorAll('.acct-saved-card').forEach(card => {
     card.addEventListener('click', (e) => {
-      if (e.target.dataset.unsave) return;
+      if (e.target.dataset.unsave || e.target.dataset.move) return;
       window.location.href = `../restaurant.html?slug=${card.dataset.slug}`;
+    });
+  });
+  /* Move to another list */
+  grid.querySelectorAll('[data-move]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const slug    = btn.dataset.move;
+      const fromList = btn.closest('.acct-saved-card').dataset.list;
+      await window.YYP.openListPicker(slug, fromList);
+      /* Refresh after picker closes */
+      setTimeout(hydrate, 350);
     });
   });
   /* Unsave */
   grid.querySelectorAll('[data-unsave]').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
-      const slug = btn.dataset.unsave;
+      const slug    = btn.dataset.unsave;
+      const fromList = btn.closest('.acct-saved-card').dataset.list || 'Favorites';
       if (!confirm('Remove this place from your saved list?')) return;
-      await window.YYP.account.unsaveVenue(slug);
-      allSaved = allSaved.filter(s => s.restaurants?.slug !== slug);
+      await window.YYP.account.unsaveVenue(slug, fromList);
+      allSaved = allSaved.filter(s => !(s.restaurants?.slug === slug && (s.list_name||'Favorites') === fromList));
       document.getElementById('saved-count').textContent = allSaved.length;
+      renderListFilters();
       renderGrid();
     });
   });
 }
+
+/* "+ New list" button — creates an empty list namespace by opening
+   the picker on a placeholder. For v1, lists materialise the moment
+   they have at least one item in them. */
+document.getElementById('new-list-btn').addEventListener('click', async () => {
+  const name = prompt('Name your new list (e.g. "Date Night", "El Nido Favorites"):');
+  if (!name?.trim()) return;
+  /* Switch the filter to the new list — items can be moved here from others */
+  currentList = name.trim();
+  renderListFilters();
+  renderGrid();
+  window.YYP.toast(`Created "${currentList}". Move places into it from the "Move" button.`, { duration: 4000 });
+});
 
 document.getElementById('sort').addEventListener('change', e => {
   currentSort = e.target.value; renderGrid();

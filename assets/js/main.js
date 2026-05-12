@@ -222,11 +222,105 @@ async function bootData() {
     }
   }
 
+  /* Prefer the activity-driven "Trending This Week" RPC when available.
+     Falls back to manually-curated rank_label rows, then to static seed. */
+  if (window.YYP?.client) {
+    try {
+      const { data: trend } = await window.YYP.client.rpc('trending_this_week', { p_limit: 4 });
+      if (trend?.length) {
+        trending = trend.map(r => ({
+          id: r.id, slug: r.slug, name: r.name,
+          cuisine: r.cuisine_type, cuisine_type: r.cuisine_type,
+          location: r.location, rating: Number(r.google_rating) || 0, reviews: 0,
+          ai_summary: r.ai_summary || '',
+          image: r.cover_image_url, cover: r.cover_image_url,
+          website: r.website_url, has_yumyumpo_site: r.has_yumyumpo_site,
+          tags: [], _signals: r.signal_count || 0,
+        }));
+      }
+    } catch (err) { /* RPC may not exist yet — silently fall through */ }
+  }
+
   renderFeaturedRestaurants(featured || FEATURED_RESTAURANTS);
   renderTrendingRestaurants(trending || TRENDING_RESTAURANTS);
   renderTourismRestaurants(TOURISM_RESTAURANTS);
   initStatsCounter();
   loadRealStats();
+  loadActivityStrip();
+  decorateCardsWithSocialProof();
+}
+
+/* Post-render: query venue_social_stats once and add badges where signals > 0 */
+async function decorateCardsWithSocialProof() {
+  if (!window.YYP?.client) return;
+  try {
+    const { data } = await window.YYP.client.from('venue_social_stats').select('slug, save_count, love_count');
+    if (!data?.length) return;
+    const map = {};
+    data.forEach(r => { map[r.slug] = r; });
+
+    /* Find every card on the page and prepend a badge if it has signal */
+    document.querySelectorAll('[onclick*="goToRestaurant"]').forEach(card => {
+      const m = card.getAttribute('onclick')?.match(/['"]([\w-]+)['"]/);
+      const slug = m?.[1];
+      if (!slug || !map[slug]) return;
+      const { save_count, love_count } = map[slug];
+      const total = (save_count || 0) + (love_count || 0);
+      if (total < 1) return;
+
+      /* Avoid duplicating */
+      const imgWrap = card.querySelector('.card-image-wrap, .trending-card-image');
+      if (!imgWrap || imgWrap.querySelector('.card-social-badge')) return;
+
+      const trending = save_count >= 3 || love_count >= 3;
+      const badge = document.createElement('span');
+      badge.className = `card-social-badge ${trending ? 'trending' : ''}`;
+      badge.innerHTML = trending
+        ? `<span class="pulse"></span>Trending`
+        : `❤️ ${total} ${total === 1 ? 'save' : 'saves'}`;
+      imgWrap.appendChild(badge);
+    });
+  } catch (err) { /* silent — social view may not exist */ }
+}
+
+/* ── Activity strip in the hero (only when there's real activity) ── */
+async function loadActivityStrip() {
+  if (!window.YYP?.account?.getActivityByLocation) return;
+  try {
+    const rows = await window.YYP.account.getActivityByLocation(24);
+    if (!rows?.length) return;
+
+    const top = rows[0];
+    if (!top.active_users || top.active_users < 1) return;
+
+    /* Inject the strip just above the hero search bar */
+    const hero = document.querySelector('.hero-section .relative.z-10');
+    if (!hero || hero.querySelector('.activity-strip-wrap')) return;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'activity-strip-wrap fade-in-up text-center mb-3';
+    wrap.style.animationDelay = '0.5s';
+    const word = top.active_users === 1 ? 'person' : 'people';
+    wrap.innerHTML = `
+      <span class="activity-strip">
+        <span class="activity-strip-dot"></span>
+        <strong>${top.active_users}</strong> ${word} exploring <strong>${escapeHtml(top.location)}</strong> right now
+      </span>
+    `;
+    /* Place before the search bar (which sits inside the hero column) */
+    const searchEl = hero.querySelector('#hero-search')?.closest('.fade-in-up, .max-w-3xl, .relative');
+    if (searchEl?.parentElement) {
+      searchEl.parentElement.insertBefore(wrap, searchEl);
+    } else {
+      hero.appendChild(wrap);
+    }
+  } catch (err) {
+    /* Activity RPC may not exist yet or no activity — silent */
+  }
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 async function loadRealStats() {
@@ -526,10 +620,21 @@ window.toggleHomeSave = async function(slug, btn) {
   btn.classList.add('just-saved');
   setTimeout(() => btn.classList.remove('just-saved'), 600);
 
+  const wasSaved = acc.isSaved(slug);
   const result = await acc.toggleSaved(slug);
-  /* result === true means "now saved"; false means "now unsaved" */
   btn.classList.toggle('is-saved', !!result);
   btn.title = result ? 'Saved to favourites' : 'Save to favourites';
+
+  /* Show a toast with quick "change list" action when newly saved */
+  if (result && !wasSaved && window.YYP?.toast) {
+    window.YYP.toast('Saved to Favorites', {
+      actionLabel: 'Change list',
+      onAction: () => window.YYP.openListPicker(slug, 'Favorites'),
+      duration: 4000,
+    });
+  } else if (!result && wasSaved && window.YYP?.toast) {
+    window.YYP.toast('Removed from saved', { icon: '🗑️', duration: 2500 });
+  }
 };
 
 /* Re-render save state when account state changes */

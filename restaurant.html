@@ -496,6 +496,40 @@
         </div>
       </section>
 
+      <!-- REACTIONS -->
+      <section id="reactions-section" class="r-reveal">
+        <h2 class="r-section-title mb-2">What do you think?</h2>
+        <p class="text-sm text-gray-500 mb-5">Tap a reaction — it helps Fred recommend better places to you and others.</p>
+        <div id="reaction-buttons" class="reaction-row">
+          <button class="reaction-btn" data-reaction="love">
+            <span class="reaction-emoji">❤️</span>
+            <span class="reaction-label">Love this</span>
+            <span class="reaction-count" data-count="love">0</span>
+          </button>
+          <button class="reaction-btn" data-reaction="want-to-go">
+            <span class="reaction-emoji">🌟</span>
+            <span class="reaction-label">Want to go</span>
+            <span class="reaction-count" data-count="want_to_go">0</span>
+          </button>
+          <button class="reaction-btn" data-reaction="been-there">
+            <span class="reaction-emoji">✓</span>
+            <span class="reaction-label">Been there</span>
+            <span class="reaction-count" data-count="been_there">0</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- PEOPLE ALSO SAVED -->
+      <section id="also-saved-section" class="hidden r-reveal">
+        <div class="flex items-end justify-between mb-5">
+          <div>
+            <p class="text-xs font-black uppercase tracking-widest text-yellow-600 mb-1">Social discovery</p>
+            <h2 class="r-section-title">People who saved this also liked</h2>
+          </div>
+        </div>
+        <div id="also-saved-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+      </section>
+
       <!-- SIMILAR RESTAURANTS -->
       <section id="similar-section" class="hidden r-reveal">
         <div class="flex items-end justify-between mb-5">
