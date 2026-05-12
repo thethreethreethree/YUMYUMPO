@@ -3,8 +3,10 @@
 .env.local
 .env.production
 
-# Runtime config (contains Supabase keys — copy from config.example.js)
-assets/js/config.js
+# NOTE: assets/js/config.js is intentionally committed.
+# It contains the Supabase ANON public key (safe to expose by design —
+# RLS policies are the security boundary) and the Supabase project URL.
+# NEVER put the Supabase service role key or Anthropic API key here.
 
 # OS files
 .DS_Store
