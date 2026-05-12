@@ -19,6 +19,7 @@ const ALL_RESTAURANTS = [
     ai_summary: 'Beloved local haunt serving authentic Filipino comfort food. A go-to for backpackers and families — the kind of place that feels like home.',
     location: 'El Nido, Palawan',
     rating: 4.8, reviews: 1238,
+    buzz: 'trending',
     badge: "Editor's Pick", badge_style: 'default',
     tags: ['Local Favorite', 'Family-Friendly', 'Budget-Friendly', 'Backpacker-Approved'],
     image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=700&auto=format&fit=crop&q=75',
@@ -34,6 +35,7 @@ const ALL_RESTAURANTS = [
     ai_summary: 'Perched above the water with jaw-dropping sunset views. A must-visit for couples and travelers chasing golden-hour magic over grilled seafood.',
     location: 'Coron, Palawan',
     rating: 4.9, reviews: 874,
+    buzz: 'trending',
     badge: '🔥 Trending', badge_style: 'dark',
     tags: ['Romantic', 'Scenic View', 'Beach Dining', 'Date Spot'],
     image: 'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=700&auto=format&fit=crop&q=75',
@@ -49,6 +51,7 @@ const ALL_RESTAURANTS = [
     ai_summary: 'Specialty single-origin coffee meets incredible all-day brunch. Solid WiFi, even better vibes — popular with digital nomads and slow-morning travelers.',
     location: 'BGC, Taguig',
     rating: 4.7, reviews: 2104,
+    buzz: 'hot',
     badge: 'Best Café', badge_style: 'default',
     tags: ['WiFi-Friendly', 'Instagrammable', 'Backpacker-Approved', 'Hidden Gem'],
     image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=700&auto=format&fit=crop&q=75',
@@ -64,6 +67,7 @@ const ALL_RESTAURANTS = [
     ai_summary: 'Rich, 18-hour broths that ruin all other ramen permanently. Consistently ranked Makati\'s top Japanese spot — expect queues, they\'re worth it.',
     location: 'Makati, Metro Manila',
     rating: 4.8, reviews: 3891,
+    buzz: 'hot',
     badge: 'Most Loved', badge_style: 'default',
     tags: ['Late Night', 'Date Spot', 'Must Try', 'Local Favorite'],
     image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=700&auto=format&fit=crop&q=75',
@@ -94,6 +98,7 @@ const ALL_RESTAURANTS = [
     ai_summary: 'Low and slow is the only way here. Tender smoked brisket and fall-off-the-bone ribs that draw crowds from across the city every weekend.',
     location: 'Cebu City',
     rating: 4.7, reviews: 1566,
+    buzz: 'trending',
     badge: 'Top Rated', badge_style: 'default',
     tags: ['Group-Friendly', 'Budget-Friendly', 'Local Favorite', 'Family-Friendly'],
     image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=700&auto=format&fit=crop&q=75',
@@ -470,6 +475,15 @@ function renderResults() {
 /* ══════════════════════════════════════════════════════════
    CARD TEMPLATES
 ══════════════════════════════════════════════════════════ */
+function buzzPill(r) {
+  if (!r.buzz) return '';
+  const label = r.buzz === 'hot' ? '🔥 Hot' : '📈 Trending';
+  const title = r.buzz === 'hot'
+    ? 'Trending on YUMYUMPO — top 10% this week'
+    : 'Trending on YUMYUMPO this week';
+  return `<span class="card-buzz ${r.buzz}" title="${title}"><span class="buzz-dot"></span>${label}</span>`;
+}
+
 function gridCard(r, idx) {
   const tagsHTML = r.tags.slice(0, 3).map((t, i) => {
     const cls = i === 0 ? 'card-tag yellow' : 'card-tag';
@@ -495,6 +509,7 @@ function gridCard(r, idx) {
           onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&auto=format&fit=crop&q=75'"
         />
         <span class="${badgeCls}">${r.badge}</span>
+        ${buzzPill(r)}
         ${r.has_yumyumpo_site ? `<span class="card-hosted-badge" title="Powered by YUMYUMPO">⚡ On YUMYUMPO</span>` : ''}
         <button
           class="card-save-btn"
@@ -549,6 +564,7 @@ function listCard(r, idx) {
       <div class="list-card-image">
         <img src="${r.image}" alt="${r.name}" loading="${idx < 4 ? 'eager' : 'lazy'}"
           onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&auto=format&fit=crop&q=75'" />
+        ${buzzPill(r)}
       </div>
       <div class="list-card-body">
         <div>

@@ -525,6 +525,41 @@ button, [role="button"] { cursor: pointer; }
 }
 
 /* ── Hosted badge (top-right of image, opposite of save btn) ── */
+.card-buzz {
+  position: absolute;
+  bottom: 12px; right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 4px 9px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+.card-buzz.hot {
+  background: rgba(239, 68, 68, 0.95);
+  color: #fff;
+}
+.card-buzz.trending {
+  background: rgba(249, 115, 22, 0.95);
+  color: #fff;
+}
+.card-buzz .buzz-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: buzzPulse 1.6s ease-in-out infinite;
+}
+@keyframes buzzPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(1.4); }
+}
+
 .card-hosted-badge {
   position: absolute;
   bottom: 12px; left: 12px;
