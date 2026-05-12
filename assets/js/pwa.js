@@ -271,9 +271,17 @@
   });
 
 
-  /* ── 3. iOS install tip (Safari) ──────────────────────── */
+  /* ── 3. iOS install tip — Safari has Add-to-Home-Screen, but
+        Chrome/Firefox/Edge on iOS DON'T (Apple forces all iOS
+        browsers onto WebKit but blocks the install path).
+        So we detect both cases and show the right copy. ── */
   function isIOS() {
     return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  }
+  function isIOSChromeOrOther() {
+    /* On iOS, Chrome → "CriOS", Firefox → "FxiOS", Edge → "EdgiOS",
+       Brave → "Brave" with CriOS, DuckDuckGo → "DuckDuckGo" */
+    return isIOS() && /CriOS|FxiOS|EdgiOS|DuckDuckGo|YaBrowser/i.test(navigator.userAgent);
   }
   function isInStandaloneMode() {
     return window.matchMedia?.('(display-mode: standalone)').matches
@@ -292,24 +300,72 @@
       tip.className = 'yyp-ios-tip';
       tip.setAttribute('role', 'region');
       tip.setAttribute('aria-label', 'Install YUMYUMPO on iPhone');
-      /* Inline SVG for the iOS Share icon so the instructions are visual */
-      tip.innerHTML = `
-        <div class="yyp-ios-tip-icon">🍽️</div>
-        <div class="yyp-ios-tip-body">
-          <strong class="yyp-ios-tip-title">Install the YUMYUMPO app</strong>
-          <span class="yyp-ios-tip-sub">
-            Tap
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="M7 7l5-5 5 5"/><rect x="4" y="13" width="16" height="8" rx="2"/></svg>
-            <strong>Share</strong> → <strong>Add to Home Screen</strong>
-          </span>
-        </div>
-        <button class="yyp-ios-tip-close" aria-label="Dismiss">×</button>
-      `;
+
+      const inChrome = isIOSChromeOrOther();
+
+      if (inChrome) {
+        /* Chrome/Firefox/Edge on iOS cannot install PWAs — Apple
+           restricts this to Safari only. Show a "switch to Safari"
+           message with a Copy link helper. */
+        tip.innerHTML = `
+          <div class="yyp-ios-tip-icon">🦊</div>
+          <div class="yyp-ios-tip-body">
+            <strong class="yyp-ios-tip-title">Switch to Safari to install</strong>
+            <span class="yyp-ios-tip-sub">
+              Apple only allows installs from Safari. Tap below to copy the link, then paste in Safari.
+            </span>
+          </div>
+          <button class="yyp-install-banner-btn" type="button" data-action="copy">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copy link
+          </button>
+          <button class="yyp-ios-tip-close" aria-label="Dismiss">×</button>
+        `;
+      } else {
+        /* Native Safari path — show Share → Add to Home Screen. */
+        tip.innerHTML = `
+          <div class="yyp-ios-tip-icon">🍽️</div>
+          <div class="yyp-ios-tip-body">
+            <strong class="yyp-ios-tip-title">Install the YUMYUMPO app</strong>
+            <span class="yyp-ios-tip-sub">
+              Tap
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="M7 7l5-5 5 5"/><rect x="4" y="13" width="16" height="8" rx="2"/></svg>
+              <strong>Share</strong> → <strong>Add to Home Screen</strong>
+            </span>
+          </div>
+          <button class="yyp-ios-tip-close" aria-label="Dismiss">×</button>
+        `;
+      }
+
       document.body.appendChild(tip);
       requestAnimationFrame(() => {
         tip.classList.add('is-in');
         document.body.classList.add('yyp-has-ios-tip');
       });
+
+      const copyBtn = tip.querySelector('[data-action="copy"]');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(window.location.href);
+            copyBtn.innerHTML = '✓ Copied';
+            setTimeout(() => {
+              copyBtn.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Copy link`;
+            }, 1800);
+          } catch {
+            /* clipboard API blocked — fall back to prompt */
+            window.prompt('Copy this link and paste in Safari:', window.location.href);
+          }
+        });
+      }
 
       tip.querySelector('.yyp-ios-tip-close').addEventListener('click', () => {
         tip.classList.remove('is-in');
@@ -317,7 +373,6 @@
         setTimeout(() => tip.remove(), 400);
         try { localStorage.setItem(LS_IOS_DISMISSED, '1'); } catch {}
       });
-      /* Don't auto-dismiss — user has to actively dismiss the banner */
     }, 1500);
   }
 
