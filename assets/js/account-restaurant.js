@@ -184,7 +184,7 @@ async function loadMenu(c, restaurantId) {
     .eq('restaurant_id', restaurantId)
     .order('sort_order');
   const { data: items } = await c.from('menu_items')
-    .select('id, menu_category_id, name, description, price, image_url, tags, sort_order, is_available')
+    .select('id, menu_category_id, name, description, price, image_url, gallery_urls, tags, sort_order, is_available')
     .eq('restaurant_id', restaurantId)
     .order('sort_order');
 
@@ -194,18 +194,24 @@ async function loadMenu(c, restaurantId) {
     sort_order: cat.sort_order || 0,
     items: (items || [])
       .filter(it => it.menu_category_id === cat.id)
-      .map(it => ({
-        id: it.id,
-        name:        it.name,
-        description: it.description || '',
-        price:       it.price || '',
-        image_url:   it.image_url || '',
-        tags:        Array.isArray(it.tags) ? it.tags : [],
-        sort_order:  it.sort_order || 0,
-        is_available: it.is_available !== false,
-      })),
+      .map(it => {
+        const gallery = Array.isArray(it.gallery_urls) ? [...it.gallery_urls] : [];
+        if (!gallery.length && it.image_url) gallery.push(it.image_url);
+        return {
+          id: it.id,
+          name:        it.name,
+          description: it.description || '',
+          price:       it.price || '',
+          photos:      gallery.slice(0, 3),
+          tags:        Array.isArray(it.tags) ? it.tags : [],
+          sort_order:  it.sort_order || 0,
+          is_available: it.is_available !== false,
+        };
+      }),
   }));
 }
+
+const MAX_ITEM_PHOTOS = 3;
 
 function renderMenu() {
   const wrap = document.getElementById('menu-categories');
@@ -221,9 +227,16 @@ function renderMenu() {
       </div>
       ${cat.items.map((it, ii) => `
         <div class="menu-item">
-          <div class="mi-thumb" onclick="pickItemPhoto(${ci},${ii})">
-            ${it.image_url ? `<img src="${it.image_url}" alt="">` : `<div class="mi-thumb-empty">📷</div>`}
-            <div class="mi-thumb-overlay">${it.image_url ? 'Change' : 'Add photo'}</div>
+          <div class="mi-photos">
+            ${(it.photos || []).map((url, pi) => `
+              <div class="mi-photo">
+                <img src="${url}" alt="">
+                <button type="button" class="mi-photo-remove" onclick="removeItemPhoto(${ci},${ii},${pi})" aria-label="Remove">×</button>
+              </div>
+            `).join('')}
+            ${(it.photos || []).length < ${MAX_ITEM_PHOTOS} ? `
+              <div class="mi-photo mi-photo-add" onclick="addItemPhoto(${ci},${ii})" title="Add photo">＋</div>
+            ` : ''}
           </div>
           <div class="mi-fields">
             <div class="mi-row1">
@@ -260,7 +273,10 @@ function renderMenu() {
   });
 }
 
-window.pickItemPhoto = function(ci, ii) {
+window.addItemPhoto = function(ci, ii) {
+  const item = categories[ci]?.items?.[ii];
+  if (!item) return;
+  if ((item.photos || []).length >= MAX_ITEM_PHOTOS) return toast(`Up to ${MAX_ITEM_PHOTOS} photos per item.`);
   let input = document.getElementById('item-photo-input');
   if (!input) {
     input = document.createElement('input');
@@ -274,12 +290,20 @@ window.pickItemPhoto = function(ci, ii) {
     if (file.size > 5 * 1024 * 1024) return toast('File too big — 5MB max.');
     const url = await uploadToBucket(file);
     if (!url) return;
-    categories[ci].items[ii].image_url = url;
+    item.photos = (item.photos || []).concat(url).slice(0, MAX_ITEM_PHOTOS);
     renderMenu();
     markDirty();
     input.value = '';
   };
   input.click();
+};
+
+window.removeItemPhoto = function(ci, ii, pi) {
+  const item = categories[ci]?.items?.[ii];
+  if (!item) return;
+  item.photos = (item.photos || []).filter((_, idx) => idx !== pi);
+  renderMenu();
+  markDirty();
 };
 
 function escapeAttr(s) { return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
@@ -444,17 +468,21 @@ async function save() {
     if (ec) { console.warn('cat save:', ec.message); continue; }
     const itemRows = cat.items
       .filter(it => it.name?.trim())
-      .map((it, ii) => ({
-        restaurant_id:    restaurant.id,
-        menu_category_id: insertedCat.id,
-        name:             it.name.trim(),
-        description:      it.description || null,
-        price:            it.price || null,
-        image_url:        it.image_url || null,
-        tags:             Array.isArray(it.tags) ? it.tags : [],
-        sort_order:       ii,
-        is_available:     it.is_available !== false,
-      }));
+      .map((it, ii) => {
+        const photos = Array.isArray(it.photos) ? it.photos.slice(0, MAX_ITEM_PHOTOS) : [];
+        return {
+          restaurant_id:    restaurant.id,
+          menu_category_id: insertedCat.id,
+          name:             it.name.trim(),
+          description:      it.description || null,
+          price:            it.price || null,
+          image_url:        photos[0] || null,
+          gallery_urls:     photos,
+          tags:             Array.isArray(it.tags) ? it.tags : [],
+          sort_order:       ii,
+          is_available:     it.is_available !== false,
+        };
+      });
     if (itemRows.length) {
       const { error: ei } = await c.from('menu_items').insert(itemRows);
       if (ei) console.warn('items save:', ei.message);
