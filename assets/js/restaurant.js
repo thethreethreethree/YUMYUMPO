@@ -1027,13 +1027,26 @@ function renderMap(r) {
   const dirLink = document.getElementById('directions-link');
   if (!section) return;
 
-  if (r.map_embed || r.address) section.classList.remove('hidden');
+  /* Derive a query for embed / directions from coords or address. */
+  let mapQuery = '';
+  if (r.latitude && r.longitude)  mapQuery = `${r.latitude},${r.longitude}`;
+  else if (r.address)              mapQuery = r.address;
+  else if (r.location)             mapQuery = `${r.name || ''} ${r.location}`.trim();
 
-  if (r.map_embed && embed) {
+  const embedUrl =
+    r.map_embed ||
+    (mapQuery ? `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed` : '');
+  const dirUrl =
+    r.directions_url ||
+    (mapQuery ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapQuery)}` : '');
+
+  if (embedUrl || r.address) section.classList.remove('hidden');
+
+  if (embedUrl && embed) {
     embed.style.padding = '0';
     embed.innerHTML = `
       <iframe
-        src="${r.map_embed}"
+        src="${embedUrl}"
         width="100%" height="320"
         style="border:0; display:block; border-radius: 1rem;"
         allowfullscreen loading="lazy"
@@ -1043,8 +1056,8 @@ function renderMap(r) {
 
   if (r.address && addrEl) addrEl.textContent = r.address;
 
-  if (r.directions_url && dirLink) {
-    dirLink.href = r.directions_url;
+  if (dirUrl && dirLink) {
+    dirLink.href = dirUrl;
     dirLink.classList.remove('hidden');
   }
 }
