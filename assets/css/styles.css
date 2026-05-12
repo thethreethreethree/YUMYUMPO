@@ -526,38 +526,62 @@ button, [role="button"] { cursor: pointer; }
 
 /* ── Hosted badge (top-right of image, opposite of save btn) ── */
 .card-buzz {
-  position: absolute;
-  bottom: 12px; right: 12px;
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.65rem;
-  font-weight: 800;
-  padding: 4px 9px;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 5px 12px;
   border-radius: var(--radius-full);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
   pointer-events: none;
-  backdrop-filter: blur(4px);
+  margin-bottom: 10px;
+  width: fit-content;
+  color: #fff;
+  overflow: hidden;
+  isolation: isolate;
 }
 .card-buzz.hot {
-  background: rgba(239, 68, 68, 0.95);
-  color: #fff;
+  background: linear-gradient(95deg, #ef4444 0%, #f97316 55%, #fbbf24 100%);
+  box-shadow:
+    0 6px 18px -4px rgba(239, 68, 68, 0.55),
+    0 0 0 1px rgba(255,255,255,0.18) inset;
 }
 .card-buzz.trending {
-  background: rgba(249, 115, 22, 0.95);
-  color: #fff;
+  background: linear-gradient(95deg, #f97316 0%, #fbbf24 100%);
+  box-shadow:
+    0 6px 18px -4px rgba(249, 115, 22, 0.5),
+    0 0 0 1px rgba(255,255,255,0.18) inset;
+}
+.card-buzz::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg,
+    transparent 30%,
+    rgba(255,255,255,0.55) 50%,
+    transparent 70%);
+  transform: translateX(-100%);
+  animation: buzzShine 3.2s ease-in-out infinite;
+  z-index: -1;
 }
 .card-buzz .buzz-dot {
-  width: 6px; height: 6px;
+  width: 7px; height: 7px;
   border-radius: 50%;
-  background: currentColor;
-  animation: buzzPulse 1.6s ease-in-out infinite;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(255,255,255,0.85);
+  animation: buzzPulse 1.4s ease-in-out infinite;
 }
 @keyframes buzzPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.5; transform: scale(1.4); }
+  50%      { opacity: 0.4; transform: scale(1.5); }
+}
+@keyframes buzzShine {
+  0%   { transform: translateX(-100%); }
+  60%  { transform: translateX(120%); }
+  100% { transform: translateX(120%); }
 }
 
 .card-hosted-badge {
