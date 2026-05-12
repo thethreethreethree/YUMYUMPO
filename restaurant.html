@@ -3,6 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- --- PWA --- -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#FFD54F" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="YUMYUMPO" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
 
   
   <link rel="icon" href="assets/images/YUMYUMPO.svg" type="image/svg+xml" />
@@ -440,6 +448,29 @@
         </button>
       </section>
 
+      <!-- REACTIONS — high on the page so people engage emotionally first -->
+      <section id="reactions-section" class="r-reveal">
+        <h2 class="r-section-title mb-2">What do you think?</h2>
+        <p class="text-sm text-gray-500 mb-5">Tap a reaction — it helps Fred recommend better places to you and others.</p>
+        <div id="reaction-buttons" class="reaction-row">
+          <button class="reaction-btn" data-reaction="love">
+            <span class="reaction-emoji">❤️</span>
+            <span class="reaction-label">Love this</span>
+            <span class="reaction-count" data-count="love">0</span>
+          </button>
+          <button class="reaction-btn" data-reaction="want-to-go">
+            <span class="reaction-emoji">🌟</span>
+            <span class="reaction-label">Want to go</span>
+            <span class="reaction-count" data-count="want_to_go">0</span>
+          </button>
+          <button class="reaction-btn" data-reaction="been-there">
+            <span class="reaction-emoji">✓</span>
+            <span class="reaction-label">Been there</span>
+            <span class="reaction-count" data-count="been_there">0</span>
+          </button>
+        </div>
+      </section>
+
       <!-- HOURS -->
       <section id="hours-section" class="hidden r-reveal r-delay-1">
         <div class="flex items-center justify-between mb-4">
@@ -493,29 +524,6 @@
             </svg>
             Get Directions
           </a>
-        </div>
-      </section>
-
-      <!-- REACTIONS -->
-      <section id="reactions-section" class="r-reveal">
-        <h2 class="r-section-title mb-2">What do you think?</h2>
-        <p class="text-sm text-gray-500 mb-5">Tap a reaction — it helps Fred recommend better places to you and others.</p>
-        <div id="reaction-buttons" class="reaction-row">
-          <button class="reaction-btn" data-reaction="love">
-            <span class="reaction-emoji">❤️</span>
-            <span class="reaction-label">Love this</span>
-            <span class="reaction-count" data-count="love">0</span>
-          </button>
-          <button class="reaction-btn" data-reaction="want-to-go">
-            <span class="reaction-emoji">🌟</span>
-            <span class="reaction-label">Want to go</span>
-            <span class="reaction-count" data-count="want_to_go">0</span>
-          </button>
-          <button class="reaction-btn" data-reaction="been-there">
-            <span class="reaction-emoji">✓</span>
-            <span class="reaction-label">Been there</span>
-            <span class="reaction-count" data-count="been_there">0</span>
-          </button>
         </div>
       </section>
 
@@ -656,5 +664,6 @@ window.toggleAbout = function () {
   }
 };
 </script>
+  <script src="assets/js/pwa.js"></script>
 </body>
 </html>
