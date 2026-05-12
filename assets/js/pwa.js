@@ -50,37 +50,42 @@
       const style = document.createElement('style');
       style.id = 'yyp-pwa-styles';
       style.textContent = `
-        /* ── Install button ── */
+        /* ── Install button — top-right, just under the nav ── */
         .yyp-install-btn {
           position: fixed;
           z-index: 9990;
-          bottom: calc(env(safe-area-inset-bottom, 0) + 96px);
-          right: 18px;
+          top: calc(env(safe-area-inset-top, 0) + 76px);
+          right: 14px;
           display: inline-flex; align-items: center; gap: 8px;
           background: #FFD000; color: #111;
           font-family: 'Space Grotesk', system-ui, sans-serif;
           font-weight: 800; font-size: 0.8125rem;
           letter-spacing: -0.01em;
-          padding: 10px 16px 10px 12px;
+          padding: 9px 16px 9px 12px;
           border: none; border-radius: 999px;
           box-shadow:
-            0 8px 24px rgba(255, 208, 0, 0.4),
+            0 8px 24px rgba(255, 208, 0, 0.45),
             0 0 0 1px rgba(0, 0, 0, 0.05);
           cursor: pointer;
-          opacity: 0; transform: translateY(20px) scale(.94);
+          opacity: 0; transform: translateY(-20px) scale(.94);
           transition: all .4s cubic-bezier(.34, 1.4, .64, 1);
           pointer-events: none;
         }
         .yyp-install-btn.is-in {
           opacity: 1; transform: translateY(0) scale(1);
           pointer-events: auto;
+          animation: yyp-install-pulse 2.4s ease-in-out 1s 2;
         }
-        .yyp-install-btn:hover  { transform: translateY(-2px) scale(1.02); }
+        @keyframes yyp-install-pulse {
+          0%, 100% { box-shadow: 0 8px 24px rgba(255,208,0,.45), 0 0 0 1px rgba(0,0,0,.05); }
+          50%      { box-shadow: 0 8px 24px rgba(255,208,0,.55), 0 0 0 6px rgba(255,208,0,.18); }
+        }
+        .yyp-install-btn:hover  { transform: translateY(2px) scale(1.03); }
         .yyp-install-btn:active { transform: translateY(0) scale(.97); }
         .yyp-install-btn svg    { flex-shrink: 0; }
 
         @media (min-width: 768px) {
-          .yyp-install-btn { bottom: 24px; right: 24px; }
+          .yyp-install-btn { top: calc(env(safe-area-inset-top, 0) + 92px); right: 24px; }
         }
 
         /* ── iOS install tip (slide-up sheet) ── */
