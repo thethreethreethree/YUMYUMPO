@@ -132,57 +132,60 @@
         }
         .yyp-install-banner-close:hover { background: rgba(17,17,17,.20); }
 
-        /* ── iOS install banner — matches Android, pinned to top ── */
+        /* ── iOS install tip — floating pill near the bottom (Safari Share
+              icon lives in the bottom toolbar on iPhone, so we anchor
+              near it) ── */
         .yyp-ios-tip {
           position: fixed;
           z-index: 9989;
-          top: 0; left: 0; right: 0;
-          background: linear-gradient(180deg, #FFD000 0%, #F5C800 100%);
-          color: #111;
-          padding: 10px 14px;
-          padding-top: calc(10px + env(safe-area-inset-top, 0));
-          display: flex; align-items: center; gap: 12px;
+          bottom: calc(env(safe-area-inset-bottom, 0) + 96px);
+          left: 50%;
+          transform: translateX(-50%) translateY(20px) scale(.96);
+          display: inline-flex; align-items: center; gap: 10px;
+          background: rgba(17, 17, 17, .95);
+          backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+          color: #fff;
+          border-radius: 999px;
+          padding: 9px 14px 9px 9px;
           font-family: 'Space Grotesk', system-ui, sans-serif;
-          font-size: .875rem;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, .12), 0 0 0 1px rgba(0, 0, 0, .05);
-          transform: translateY(-110%);
-          transition: transform .45s cubic-bezier(.34, 1.4, .64, 1);
+          font-size: .8125rem;
+          box-shadow: 0 14px 36px rgba(0,0,0,.32), 0 0 0 1px rgba(255,255,255,.06);
+          opacity: 0;
+          transition: opacity .35s ease, transform .45s cubic-bezier(.34, 1.4, .64, 1);
           pointer-events: none;
+          white-space: nowrap;
+          max-width: calc(100vw - 24px);
         }
-        .yyp-ios-tip.is-in { transform: translateY(0); pointer-events: auto; }
+        .yyp-ios-tip.is-in {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0) scale(1);
+          pointer-events: auto;
+        }
         .yyp-ios-tip-icon {
           flex-shrink: 0;
-          width: 36px; height: 36px;
-          background: #111; color: #FFD000;
-          border-radius: 10px;
-          display: inline-flex; align-items: center; justify-content: center;
-          font-size: 1.1rem;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
-        }
-        .yyp-ios-tip-body  { flex: 1; min-width: 0; line-height: 1.3; }
-        .yyp-ios-tip-title { font-weight: 900; color: #111; letter-spacing: -.01em; font-size: .9rem; display: block; }
-        .yyp-ios-tip-sub   { color: rgba(17, 17, 17, .68); font-size: .75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-        /* Constrain every SVG inside the iOS tip so it can never go giant */
-        .yyp-ios-tip svg { width: 14px !important; height: 14px !important; max-width: 14px; max-height: 14px; flex-shrink: 0; }
-        .yyp-ios-tip-close {
-          background: rgba(17,17,17,.08); border: none; color: #111;
-          width: 30px; height: 30px;
+          width: 26px; height: 26px;
+          background: #FFD000; color: #111;
           border-radius: 50%;
           display: inline-flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          font-size: 18px; line-height: 1;
+          font-size: .85rem;
+        }
+        .yyp-ios-tip-body  { display: inline-flex; align-items: center; gap: 6px; }
+        .yyp-ios-tip-title { font-weight: 800; color: #FFD000; letter-spacing: -.01em; font-size: .8125rem; }
+        .yyp-ios-tip-sub   { color: rgba(255,255,255,.78); font-size: .75rem; font-weight: 600; }
+        /* Constrain every SVG inside the iOS tip so it can never go giant */
+        .yyp-ios-tip svg { width: 14px !important; height: 14px !important; flex-shrink: 0; }
+        .yyp-ios-tip-close {
+          background: rgba(255,255,255,.10); border: none; color: rgba(255,255,255,.8);
+          width: 24px; height: 24px;
+          border-radius: 50%;
+          display: inline-flex; align-items: center; justify-content: center;
+          cursor: pointer; font-size: 14px; line-height: 1;
           flex-shrink: 0;
           transition: background .15s;
         }
-        .yyp-ios-tip-close:hover { background: rgba(17,17,17,.18); }
-        @media (max-width: 480px) {
-          .yyp-ios-tip-sub { font-size: .7rem; }
-          .yyp-ios-tip { padding-left: 10px; padding-right: 10px; gap: 8px; }
-          .yyp-ios-tip-icon { width: 32px; height: 32px; }
-        }
-        body.yyp-has-ios-tip { padding-top: 70px; transition: padding-top .35s ease; }
-        @media (max-width: 480px) {
-          body.yyp-has-ios-tip { padding-top: 64px; }
+        .yyp-ios-tip-close:hover { background: rgba(255,255,255,.20); color: #fff; }
+        @media (max-width: 360px) {
+          .yyp-ios-tip-sub { display: none; }
         }
 
         /* ── App-feel polish — only tap-highlight; nothing that could
@@ -192,11 +195,9 @@
           -webkit-tap-highlight-color: transparent;
         }
 
-        /* When running as installed PWA, hide the install banner + tip */
+        /* When running as installed PWA, hide both prompts */
         @media (display-mode: standalone) {
           .yyp-install-banner, .yyp-ios-tip { display: none !important; }
-          body.yyp-has-install-banner,
-          body.yyp-has-ios-tip { padding-top: 0 !important; }
         }
       `;
       document.head.appendChild(style);
@@ -235,16 +236,12 @@
     /* Respect a same-session dismiss so we don't nag */
     try { if (sessionStorage.getItem('yyp_install_dismissed') === '1') return; } catch {}
     const btn = ensureInstallButton();
-    requestAnimationFrame(() => {
-      btn.classList.add('is-in');
-      document.body.classList.add('yyp-has-install-banner');
-    });
+    requestAnimationFrame(() => btn.classList.add('is-in'));
   }
 
   function hideInstallButton() {
     if (!installBtn) return;
     installBtn.classList.remove('is-in');
-    document.body.classList.remove('yyp-has-install-banner');
   }
 
   async function triggerInstall() {
@@ -304,47 +301,33 @@
       const inChrome = isIOSChromeOrOther();
 
       if (inChrome) {
-        /* Chrome/Firefox/Edge on iOS cannot install PWAs — Apple
-           restricts this to Safari only. Show a "switch to Safari"
-           message with a Copy link helper. */
+        /* iOS Chrome / Firefox / Edge can't install PWAs — Apple only
+           allows it from Safari. Show a compact "open in Safari" pill
+           with a copy-link helper. */
         tip.innerHTML = `
           <div class="yyp-ios-tip-icon">🦊</div>
           <div class="yyp-ios-tip-body">
-            <strong class="yyp-ios-tip-title">Switch to Safari to install</strong>
-            <span class="yyp-ios-tip-sub">
-              Apple only allows installs from Safari. Tap below to copy the link, then paste in Safari.
-            </span>
+            <span class="yyp-ios-tip-title">Open in Safari to install</span>
           </div>
-          <button class="yyp-install-banner-btn" type="button" data-action="copy">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-            </svg>
-            Copy link
-          </button>
+          <button class="yyp-install-banner-btn" type="button" data-action="copy">📋 Copy link</button>
           <button class="yyp-ios-tip-close" aria-label="Dismiss">×</button>
         `;
       } else {
-        /* Native Safari path — show Share → Add to Home Screen. */
+        /* Native iOS Safari — show the Share → Add to Home Screen tip. */
         tip.innerHTML = `
           <div class="yyp-ios-tip-icon">🍽️</div>
           <div class="yyp-ios-tip-body">
-            <strong class="yyp-ios-tip-title">Install the YUMYUMPO app</strong>
-            <span class="yyp-ios-tip-sub">
-              Tap <strong>Share</strong>
+            <span class="yyp-ios-tip-title">Install:</span>
+            <span class="yyp-ios-tip-sub">Tap <strong>Share</strong>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v13"/><path d="M7 7l5-5 5 5"/><rect x="4" y="13" width="16" height="8" rx="2"/></svg>
-              → <strong>Add to Home Screen</strong>
-            </span>
+              → Add to Home Screen</span>
           </div>
           <button class="yyp-ios-tip-close" aria-label="Dismiss">×</button>
         `;
       }
 
       document.body.appendChild(tip);
-      requestAnimationFrame(() => {
-        tip.classList.add('is-in');
-        document.body.classList.add('yyp-has-ios-tip');
-      });
+      requestAnimationFrame(() => tip.classList.add('is-in'));
 
       const copyBtn = tip.querySelector('[data-action="copy"]');
       if (copyBtn) {
@@ -369,7 +352,6 @@
 
       tip.querySelector('.yyp-ios-tip-close').addEventListener('click', () => {
         tip.classList.remove('is-in');
-        document.body.classList.remove('yyp-has-ios-tip');
         setTimeout(() => tip.remove(), 400);
         try { localStorage.setItem(LS_IOS_DISMISSED, '1'); } catch {}
       });
