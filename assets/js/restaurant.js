@@ -521,11 +521,22 @@ RESTAURANTS['canton-empire']        = RESTAURANTS['ramen-tori'];
    INIT
 ══════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
-  const slug = new URLSearchParams(window.location.search).get('slug') || 'marias-kitchen';
+  const params = new URLSearchParams(window.location.search);
+  const slug = (params.get('slug') || params.get('id') || '').trim();
+
+  if (!slug) {
+    showNotFound(null);
+    return;
+  }
 
   let r = null;
   if (window.db) r = await window.db.getRestaurantBySlug(slug).catch(() => null);
-  if (!r) r = RESTAURANTS[slug] || RESTAURANTS['marias-kitchen'];
+  if (!r) r = RESTAURANTS[slug] || null;
+
+  if (!r) {
+    showNotFound(slug);
+    return;
+  }
 
   renderPage(r);
   initNavScroll();
@@ -533,6 +544,55 @@ document.addEventListener('DOMContentLoaded', async () => {
   initParallax();
   trackPageView(r);
 });
+
+
+/* ── Empty / not-found state ─────────────────────────────
+   Completely replaces the page body (except nav) with a friendly empty state.
+   This is simpler and more reliable than hiding each dynamic section by ID. */
+function showNotFound(slug) {
+  document.title = 'Restaurant Not Found — YUMYUMPO';
+
+  /* Remove every <section> on the page (hero, gallery, content, similar, etc.)
+     plus the desktop sticky sidebar and mobile action bar. The nav stays. */
+  document.querySelectorAll('section, aside, .r-mobile-bar, #r-mobile-bar')
+    .forEach(el => el.remove());
+
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const safeSlug = slug ? esc(slug) : '';
+
+  /* Restore body so it isn't constrained by the cinematic layout */
+  document.body.style.background = '#FAFAFA';
+  document.body.style.minHeight  = '100vh';
+
+  const wrap = document.createElement('main');
+  wrap.style.cssText = 'min-height:calc(100vh - 80px);display:flex;align-items:center;justify-content:center;padding:6rem 1.5rem 4rem;';
+  wrap.innerHTML = `
+    <div style="max-width:36rem;width:100%;text-align:center;">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:96px;height:96px;border-radius:28px;background:#FFD000;margin-bottom:1.5rem;font-size:2.75rem;box-shadow:0 20px 50px rgba(255,208,0,0.35);">🤔</div>
+      <p style="font-size:0.7rem;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#E6BB00;margin-bottom:0.75rem;font-family:'Space Grotesk',sans-serif;">Restaurant not found</p>
+      <h1 style="font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:clamp(2rem,5vw,3rem);color:#111;line-height:1.1;letter-spacing:-0.02em;margin-bottom:1rem;">
+        We couldn't find<br />that restaurant.
+      </h1>
+      <p style="color:#6B6B6B;font-size:1rem;line-height:1.6;margin-bottom:2rem;max-width:28rem;margin-left:auto;margin-right:auto;">
+        ${safeSlug
+          ? `<code style="background:#F3F3F3;padding:2px 8px;border-radius:6px;font-size:0.875rem;">${safeSlug}</code> doesn't match anything in our directory yet. It may have been removed, or the URL might be mistyped.`
+          : 'No restaurant was specified in the URL.'}
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+        <a href="discover.html" style="display:inline-flex;align-items:center;gap:8px;background:#111;color:#fff;font-weight:700;font-size:0.875rem;padding:14px 24px;border-radius:16px;text-decoration:none;font-family:'Space Grotesk',sans-serif;">
+          Browse All Restaurants
+        </a>
+        <a href="ai-search.html" style="display:inline-flex;align-items:center;gap:8px;background:#FFD000;color:#111;font-weight:700;font-size:0.875rem;padding:14px 24px;border-radius:16px;text-decoration:none;font-family:'Space Grotesk',sans-serif;">
+          🍽️ Ask Fred
+        </a>
+        <a href="index.html" style="display:inline-flex;align-items:center;gap:8px;background:#fff;border:2px solid #E8E8E8;color:#111;font-weight:700;font-size:0.875rem;padding:12px 24px;border-radius:16px;text-decoration:none;font-family:'Space Grotesk',sans-serif;">
+          Home
+        </a>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(wrap);
+}
 
 
 /* ══════════════════════════════════════════════════════════
@@ -673,7 +733,7 @@ function renderHero(r) {
     <div class="hero-action-row">
       ${r.website_url
         ? `<a href="${r.website_url}" target="_blank" rel="noopener noreferrer" onclick="trackAction('website_click','${r.id}')" class="hero-btn yellow">${webIcon()} Visit Official Website</a>`
-        : `<a href="admin/index.html?ref=get-listed&restaurant=${encodeURIComponent(r.name || '')}" class="hero-btn yellow">Get this restaurant a website</a>`}
+        : `<a href="admin/apply.html?ref=get-listed&restaurant=${encodeURIComponent(r.name || '')}" class="hero-btn yellow">Get this restaurant a website</a>`}
     </div>
   `;
 
@@ -958,7 +1018,7 @@ function renderActionCard(r) {
     if (heading) heading.textContent = 'No website yet?';
     if (sub)     sub.textContent     = 'YUMYUMPO can build and host a website for this restaurant.';
     buttons.innerHTML = `
-      <a href="admin/index.html?ref=get-listed&restaurant=${encodeURIComponent(r.name || '')}"
+      <a href="admin/apply.html?ref=get-listed&restaurant=${encodeURIComponent(r.name || '')}"
          class="r-action-btn yellow">
         Get this restaurant a website
       </a>
@@ -1027,7 +1087,7 @@ function renderMobileBar(r) {
     }
   } else if (claim) {
     claim.classList.remove('hidden');
-    claim.href = `admin/index.html?ref=get-listed&restaurant=${encodeURIComponent(r.name || '')}`;
+    claim.href = `admin/apply.html?ref=get-listed&restaurant=${encodeURIComponent(r.name || '')}`;
   }
 }
 

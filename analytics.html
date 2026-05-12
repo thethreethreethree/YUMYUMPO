@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Analytics — YUMYUMPO</title>
+  
+  <link rel="icon" href="assets/images/YUMYUMPO LOGO.png" type="image/png" />
+<title>Analytics — YUMYUMPO</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -177,7 +179,17 @@
 </head>
 
 <body class="font-sans text-brand-black antialiased">
-<div class="flex min-h-screen">
+
+<!-- Auth check: redirect to login if no session. Shown until verified. -->
+<div id="auth-loading" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#FAFAFA;z-index:9999;">
+  <div style="text-align:center;">
+    <div style="width:36px;height:36px;border:3px solid #E8E8E8;border-top-color:#FFD000;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 12px;"></div>
+    <p style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:#6B6B6B;">Verifying access…</p>
+  </div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg);}}</style>
+
+<div class="flex min-h-screen" id="analytics-app" style="display:none;">
 
   <!-- ══ SIDEBAR ══ -->
   <aside class="sidebar fixed top-0 left-0 bottom-0 flex flex-col py-6 px-3">
@@ -339,6 +351,28 @@
 <script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/analytics.js"></script>
 <script>
+/* ══════════════════════════════════════════════════════════
+   AUTH GATE — analytics dashboard requires Supabase session
+══════════════════════════════════════════════════════════ */
+(function enforceAuth() {
+  const enforce = async () => {
+    const client = window.YYP?.client;
+    if (!client) { window.location.href = 'admin/login.html'; return; }
+    const { data: { session } } = await client.auth.getSession();
+    if (!session) { window.location.href = 'admin/login.html'; return; }
+    /* Authorized — reveal dashboard */
+    document.getElementById('auth-loading').style.display = 'none';
+    document.getElementById('analytics-app').style.display = '';
+    /* Auto-logout on session expiry */
+    client.auth.onAuthStateChange(event => {
+      if (event === 'SIGNED_OUT') window.location.href = 'admin/login.html';
+    });
+  };
+  if (window.YYP?.ready) enforce();
+  else document.addEventListener('yyp:ready', enforce, { once: true });
+})();
+
+
 /* ══════════════════════════════════════════════════════════
    ANALYTICS DASHBOARD — Rendering Engine
 ══════════════════════════════════════════════════════════ */

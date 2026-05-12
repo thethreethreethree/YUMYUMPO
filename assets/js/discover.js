@@ -885,7 +885,7 @@ function dCardCTA(r) {
   if (r.website) {
     return `<a href="${r.website}" target="_blank" rel="noopener noreferrer" class="card-cta card-cta--external" onclick="event.stopPropagation(); if(typeof trackWebsiteClick==='function') trackWebsiteClick('external','${r.slug}')">Visit Website <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg></a>`;
   }
-  return `<a href="admin/index.html?ref=get-listed&restaurant=${encodeURIComponent(r.name)}" class="card-cta card-cta--funnel" onclick="event.stopPropagation()">Get Listed on YUMYUMPO</a>`;
+  return `<a href="admin/apply.html?ref=get-listed&restaurant=${encodeURIComponent(r.name)}" class="card-cta card-cta--funnel" onclick="event.stopPropagation()">Get Listed on YUMYUMPO</a>`;
 }
 
 /* ══════════════════════════════════════════════════════════

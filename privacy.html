@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — YUMYUMPO</title>
+  <meta name="description" content="How YUMYUMPO collects, uses, and protects your personal information." />
+  <link rel="icon" href="assets/images/YUMYUMPO LOGO.png" type="image/png" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: { 'brand-yellow': '#FFD000', 'brand-black': '#111111', 'gray-50':'#F9F9F9','gray-100':'#F3F3F3','gray-200':'#E8E8E8','gray-400':'#ABABAB','gray-600':'#6B6B6B' },
+        fontFamily: { display: ['"Space Grotesk"','Inter','system-ui','sans-serif'], sans: ['Inter','system-ui','sans-serif'] },
+      }}
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .doc-prose h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem; font-weight: 800;
+      color: #111; letter-spacing: -0.01em;
+      margin-top: 2.5rem; margin-bottom: 1rem;
+    }
+    .doc-prose h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.125rem; font-weight: 700;
+      color: #111; margin-top: 1.75rem; margin-bottom: 0.75rem;
+    }
+    .doc-prose p, .doc-prose li {
+      color: #4B4B4B; line-height: 1.7;
+      margin-bottom: 1rem; font-size: 0.95rem;
+    }
+    .doc-prose ul { padding-left: 1.5rem; list-style: disc; margin-bottom: 1rem; }
+    .doc-prose strong { color: #111; font-weight: 700; }
+    .doc-prose a { color: #111; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+    .doc-prose a:hover { color: #E6BB00; }
+  </style>
+</head>
+
+<body class="bg-white text-brand-black">
+
+<!-- Nav -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-2">
+      <img src="assets/images/YUMYUMPO LOGO.png" alt="YUMYUMPO" class="h-8 w-auto" onerror="this.style.display='none'" />
+      <span class="font-display font-extrabold text-base tracking-tight">YUMYUMPO</span>
+    </a>
+    <a href="index.html" class="text-sm font-semibold text-gray-600 hover:text-brand-black">← Back</a>
+  </div>
+</nav>
+
+<main class="max-w-3xl mx-auto px-4 sm:px-6 pt-28 pb-20">
+  <p class="text-xs font-black uppercase tracking-widest text-brand-yellow mb-2">Legal</p>
+  <h1 class="font-display font-black text-4xl sm:text-5xl text-brand-black tracking-tight leading-tight mb-3">Privacy Policy</h1>
+  <p class="text-gray-400 text-sm mb-12">Last updated: <span id="updated">January 2026</span></p>
+
+  <div class="doc-prose">
+    <p>
+      YUMYUMPO (<strong>"we"</strong>, <strong>"us"</strong>) operates a restaurant discovery platform and premium hospitality website hosting service.
+      This policy explains what information we collect, how we use it, and the choices you have. By using YUMYUMPO you agree to the terms here.
+    </p>
+
+    <h2>1. What we collect</h2>
+    <p>We collect only what we need to run the platform.</p>
+    <h3>From everyone who visits</h3>
+    <ul>
+      <li>Anonymous usage analytics — pages viewed, search queries, scroll depth, device type, approximate location based on IP region</li>
+      <li>A session identifier stored in your browser to prevent double-counting</li>
+      <li>If you ask Fred (our AI) something, we log the query text and which restaurants matched — used to improve recommendations</li>
+    </ul>
+    <h3>From restaurant applicants</h3>
+    <ul>
+      <li>Restaurant details (name, cuisine, location, description)</li>
+      <li>Your contact details (name, email, phone if provided)</li>
+      <li>Your current website URL (if you have one)</li>
+    </ul>
+    <h3>From restaurant owners with accounts</h3>
+    <ul>
+      <li>Email + password (password is hashed by Supabase; we never see it)</li>
+      <li>Restaurant content you upload — photos, menus, descriptions, hours</li>
+    </ul>
+
+    <h2>2. How we use it</h2>
+    <ul>
+      <li>To show you the right restaurant recommendations</li>
+      <li>To respond to your application and onboard you if approved</li>
+      <li>To send restaurant owners performance reports for their own listings</li>
+      <li>To improve search, AI accuracy, and the platform itself</li>
+      <li>To prevent abuse and meet legal obligations</li>
+    </ul>
+    <p>We <strong>do not</strong> sell or rent your personal data. We don't show third-party advertising. We don't share applicant or analytics data with restaurants other than their own.</p>
+
+    <h2>3. Cookies &amp; storage</h2>
+    <p>
+      We use a small amount of browser <strong>localStorage</strong> to remember your favourites, hide content you've already seen, and keep your session alive when you're signed in. No third-party advertising or tracking cookies are used.
+    </p>
+
+    <h2>4. Where your data lives</h2>
+    <p>
+      Data is stored with our processor <strong>Supabase</strong> (PostgreSQL + secure auth). When you ask Fred a question, the query may be sent to <strong>Anthropic</strong> (Claude API) to generate a natural-language response — Anthropic does not train on YUMYUMPO data per its API terms.
+    </p>
+
+    <h2>5. Your rights</h2>
+    <p>You can email us any time to:</p>
+    <ul>
+      <li>Request a copy of the data we hold about you</li>
+      <li>Correct anything that's wrong</li>
+      <li>Delete your account and associated data</li>
+      <li>Withdraw your application</li>
+      <li>Opt out of platform analytics (your browser's "Do Not Track" signal is honoured)</li>
+    </ul>
+    <p>Send requests to <a href="contact.html">our contact page</a>.</p>
+
+    <h2>6. Data retention</h2>
+    <p>
+      Analytics events are aggregated daily and individual rows older than 12 months are deleted. Applications that are rejected or unresponsive for 6 months are anonymised. Approved restaurant accounts and their content are retained as long as the account is active.
+    </p>
+
+    <h2>7. Children</h2>
+    <p>YUMYUMPO is not directed at children under 13 and we don't knowingly collect their data.</p>
+
+    <h2>8. Changes</h2>
+    <p>If we make material changes we'll update the "Last updated" date at the top and notify account holders by email. Continued use of YUMYUMPO after a change means you accept it.</p>
+
+    <h2>9. Contact</h2>
+    <p>Questions about this policy? Reach out via <a href="contact.html">our contact page</a>.</p>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-brand-black text-white/40 text-sm py-8">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <p>© <span id="year">2026</span> YUMYUMPO. All rights reserved.</p>
+    <div class="flex gap-5">
+      <a href="privacy.html" class="hover:text-white">Privacy</a>
+      <a href="terms.html"   class="hover:text-white">Terms</a>
+      <a href="contact.html" class="hover:text-white">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

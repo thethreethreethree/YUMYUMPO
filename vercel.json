@@ -28,5 +28,10 @@
   "rewrites": [
     { "source": "/restaurant/:slug", "destination": "/restaurant.html" },
     { "source": "/admin",            "destination": "/admin/index.html" }
+  ],
+  "redirects": [
+    { "source": "/signup",     "destination": "/admin/apply.html", "permanent": false },
+    { "source": "/apply",      "destination": "/admin/apply.html", "permanent": false },
+    { "source": "/login",      "destination": "/admin/login.html", "permanent": false }
   ]
 }

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Not Found — YUMYUMPO</title>
+  <meta name="description" content="The page you're looking for doesn't exist. Discover restaurants worth remembering on YUMYUMPO." />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="icon" href="assets/images/YUMYUMPO LOGO.png" type="image/png" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { 'brand-yellow': '#FFD000', 'brand-black': '#111111' },
+          fontFamily: {
+            display: ['"Space Grotesk"', 'Inter', 'system-ui', 'sans-serif'],
+            sans:    ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,208,0,0.15) 0%, transparent 55%),
+        radial-gradient(circle at 70% 70%, rgba(255,208,0,0.10) 0%, transparent 50%),
+        #FAFAFA;
+      min-height: 100vh;
+    }
+    .float {
+      animation: floatY 6s ease-in-out infinite;
+    }
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50%       { transform: translateY(-14px) rotate(3deg); }
+    }
+    .dot-grid {
+      background-image: radial-gradient(circle at 1px 1px, rgba(17,17,17,0.05) 1px, transparent 0);
+      background-size: 32px 32px;
+    }
+  </style>
+</head>
+
+<body class="text-brand-black flex items-center justify-center px-4 py-12">
+  <!-- subtle texture -->
+  <div class="absolute inset-0 dot-grid opacity-50 pointer-events-none"></div>
+
+  <div class="relative z-10 max-w-lg w-full text-center">
+
+    <!-- Logo -->
+    <a href="index.html" class="inline-flex items-center gap-2 mb-12">
+      <img src="assets/images/YUMYUMPO LOGO.png" alt="YUMYUMPO" class="h-9 w-auto" onerror="this.style.display='none'" />
+      <span class="font-display font-extrabold text-xl tracking-tight">YUMYUMPO</span>
+    </a>
+
+    <!-- Floating 404 -->
+    <div class="float inline-flex items-center justify-center w-32 h-32 rounded-3xl bg-brand-yellow mb-8 shadow-2xl shadow-yellow-400/30">
+      <span class="text-7xl">🍽️</span>
+    </div>
+
+    <p class="text-xs font-black uppercase tracking-widest text-brand-yellow mb-3" style="text-shadow: 0 1px 0 rgba(0,0,0,0.15);">Error 404</p>
+
+    <h1 class="font-display font-black text-5xl md:text-6xl text-brand-black leading-tight tracking-tight mb-4">
+      This dish<br />
+      <span class="text-brand-yellow" style="text-shadow: 0 2px 0 rgba(0,0,0,0.08)">isn't on the menu.</span>
+    </h1>
+
+    <p class="text-gray-600 text-lg leading-relaxed mb-10 max-w-md mx-auto">
+      The page you're looking for doesn't exist — maybe it was renamed, removed, or you mistyped the URL.
+    </p>
+
+    <!-- Action buttons -->
+    <div class="flex flex-col sm:flex-row gap-3 justify-center mb-12">
+      <a href="index.html" class="inline-flex items-center justify-center gap-2 bg-brand-black text-white font-bold text-sm px-6 py-3.5 rounded-2xl hover:opacity-90 transition-opacity">
+        ← Back to Home
+      </a>
+      <a href="discover.html" class="inline-flex items-center justify-center gap-2 bg-brand-yellow text-brand-black font-bold text-sm px-6 py-3.5 rounded-2xl hover:opacity-90 transition-opacity">
+        Discover Restaurants
+      </a>
+      <a href="ai-search.html" class="inline-flex items-center justify-center gap-2 bg-white border-2 border-gray-200 text-brand-black font-bold text-sm px-6 py-3 rounded-2xl hover:border-brand-yellow transition-colors">
+        🍽️ Ask Fred
+      </a>
+    </div>
+
+    <p class="text-sm text-gray-400">
+      Still lost? <a href="ai-search.html" class="font-bold text-brand-black hover:underline">Let Fred help you find what you're craving →</a>
+    </p>
+  </div>
+</body>
+</html>

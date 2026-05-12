@@ -439,7 +439,7 @@ function cardCTA(r) {
   }
   return `
     <a
-      href="admin/index.html?ref=get-listed&restaurant=${encodeURIComponent(r.name)}"
+      href="admin/apply.html?ref=get-listed&restaurant=${encodeURIComponent(r.name)}"
       class="card-cta card-cta--funnel"
       onclick="event.stopPropagation()"
     >

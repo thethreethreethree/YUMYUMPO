@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — YUMYUMPO</title>
+  <meta name="description" content="Get in touch with the YUMYUMPO team. Questions, partnerships, support, press." />
+  <link rel="icon" href="assets/images/YUMYUMPO LOGO.png" type="image/png" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: { 'brand-yellow': '#FFD000', 'brand-black': '#111111', 'yellow-light':'#FFF9D6', 'gray-50':'#F9F9F9','gray-100':'#F3F3F3','gray-200':'#E8E8E8','gray-400':'#ABABAB','gray-600':'#6B6B6B' },
+        fontFamily: { display: ['"Space Grotesk"','Inter','system-ui','sans-serif'], sans: ['Inter','system-ui','sans-serif'] },
+      }}
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .ct-input, .ct-textarea, .ct-select {
+      width: 100%; background: #F9F9F9; border: 2px solid #E8E8E8;
+      border-radius: 12px; padding: 12px 16px;
+      font-size: 0.9375rem; color: #111; outline: none;
+      transition: all 0.2s; font-family: 'Inter', sans-serif;
+    }
+    .ct-textarea { resize: vertical; min-height: 130px; }
+    .ct-input:focus, .ct-textarea:focus, .ct-select:focus {
+      border-color: #FFD000; background: #fff;
+      box-shadow: 0 0 0 4px rgba(255,208,0,0.12);
+    }
+    .ct-label { display: block; font-size: 0.8125rem; font-weight: 700; color: #111; margin-bottom: 6px; font-family: 'Space Grotesk', sans-serif; }
+    .ct-label .req { color: #EF4444; }
+    .btn-submit {
+      width: 100%; background: #FFD000; color: #111;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem; font-weight: 800;
+      padding: 15px; border-radius: 14px;
+      border: none; cursor: pointer; transition: all 0.2s ease;
+    }
+    .btn-submit:hover:not(:disabled) {
+      background: #E6BB00; transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,208,0,0.4);
+    }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .info-card {
+      background: #fff; border: 1.5px solid #F3F3F3;
+      border-radius: 18px; padding: 1.25rem;
+      transition: all 0.2s;
+    }
+    .info-card:hover {
+      border-color: #FFD000;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255,208,0,0.15);
+    }
+    .banner { border-radius: 14px; padding: 14px 16px; font-size: 0.875rem; font-weight: 600; }
+    .banner.error   { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
+    .banner.success { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
+    .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(17,17,17,0.3); border-top-color: #111; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+
+<body class="bg-gray-50 text-brand-black">
+
+<!-- Nav -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-2">
+      <img src="assets/images/YUMYUMPO LOGO.png" alt="YUMYUMPO" class="h-8 w-auto" onerror="this.style.display='none'" />
+      <span class="font-display font-extrabold text-base tracking-tight">YUMYUMPO</span>
+    </a>
+    <a href="index.html" class="text-sm font-semibold text-gray-600 hover:text-brand-black">← Back</a>
+  </div>
+</nav>
+
+<main class="max-w-5xl mx-auto px-4 sm:px-6 pt-28 pb-20">
+
+  <!-- Header -->
+  <div class="text-center mb-12">
+    <p class="text-xs font-black uppercase tracking-widest text-brand-yellow mb-3">Get in touch</p>
+    <h1 class="font-display font-black text-4xl sm:text-5xl text-brand-black tracking-tight leading-tight mb-4">
+      How can we<br />
+      <span class="text-brand-yellow" style="text-shadow: 0 2px 0 rgba(0,0,0,0.08)">help you?</span>
+    </h1>
+    <p class="text-gray-600 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
+      We read every message. Most replies go out within 48 hours.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- LEFT — quick links -->
+    <aside class="lg:col-span-1 space-y-3">
+      <div class="info-card">
+        <div class="text-2xl mb-2">🏪</div>
+        <p class="font-display font-black text-base mb-1">List your restaurant</p>
+        <p class="text-gray-600 text-sm mb-3">Apply to join YUMYUMPO — we curate every restaurant.</p>
+        <a href="admin/apply.html" class="text-sm font-bold text-brand-black hover:underline">Apply now →</a>
+      </div>
+
+      <div class="info-card">
+        <div class="text-2xl mb-2">🔑</div>
+        <p class="font-display font-black text-base mb-1">Sign in</p>
+        <p class="text-gray-600 text-sm mb-3">Already approved? Access your restaurant dashboard.</p>
+        <a href="admin/login.html" class="text-sm font-bold text-brand-black hover:underline">Sign in →</a>
+      </div>
+
+      <div class="info-card">
+        <div class="text-2xl mb-2">🍽️</div>
+        <p class="font-display font-black text-base mb-1">Ask Fred</p>
+        <p class="text-gray-600 text-sm mb-3">Looking for a restaurant? Our AI can help.</p>
+        <a href="ai-search.html" class="text-sm font-bold text-brand-black hover:underline">Chat with Fred →</a>
+      </div>
+    </aside>
+
+    <!-- RIGHT — form -->
+    <div class="lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-sm">
+
+      <h2 class="font-display font-black text-2xl text-brand-black mb-2">Send us a message</h2>
+      <p class="text-gray-600 text-sm mb-6">Pick a topic and we'll route it to the right person.</p>
+
+      <div id="error-banner"   class="banner error hidden mb-5"></div>
+      <div id="success-banner" class="banner success hidden mb-5"></div>
+
+      <form id="contact-form" onsubmit="handleSubmit(event)" novalidate class="space-y-5">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label class="ct-label" for="name">Your name <span class="req">*</span></label>
+            <input id="name" name="name" type="text" required maxlength="100" class="ct-input" autocomplete="name" />
+          </div>
+          <div>
+            <label class="ct-label" for="email">Email <span class="req">*</span></label>
+            <input id="email" name="email" type="email" required maxlength="120" class="ct-input" autocomplete="email" />
+          </div>
+        </div>
+
+        <div>
+          <label class="ct-label" for="topic">What's this about? <span class="req">*</span></label>
+          <select id="topic" name="topic" required class="ct-select">
+            <option value="">Select a topic…</option>
+            <option value="restaurant">I want to list my restaurant</option>
+            <option value="website">I want a premium hosted website</option>
+            <option value="account">Help with my account</option>
+            <option value="partnership">Partnership / press</option>
+            <option value="bug">Report a bug or issue</option>
+            <option value="privacy">Privacy / data request</option>
+            <option value="other">Something else</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="ct-label" for="message">Message <span class="req">*</span></label>
+          <textarea id="message" name="message" required maxlength="2000" class="ct-textarea" placeholder="Tell us a bit about what you need…"></textarea>
+          <p class="text-xs text-gray-400 mt-1"><span id="msg-count">2000</span> characters left.</p>
+        </div>
+
+        <!-- Honeypot (spam trap, hidden) -->
+        <div style="position:absolute;left:-9999px;" aria-hidden="true">
+          <label>Don't fill this in if you're human: <input type="text" name="_hp" tabindex="-1" autocomplete="off" /></label>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn-submit">Send Message</button>
+
+        <p class="text-center text-xs text-gray-400">
+          By sending this you agree to our <a href="privacy.html" class="font-bold text-brand-black hover:underline">Privacy Policy</a>.
+        </p>
+      </form>
+
+      <!-- Success state -->
+      <div id="success-state" class="hidden text-center py-10">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-brand-yellow mb-5 text-4xl">✉️</div>
+        <h2 class="font-display font-black text-2xl text-brand-black mb-3">Message sent!</h2>
+        <p class="text-gray-600 text-sm leading-relaxed max-w-sm mx-auto mb-6">
+          Thanks for reaching out. We'll get back to you within 48 hours.
+        </p>
+        <a href="index.html" class="inline-flex items-center justify-center gap-2 bg-brand-black text-white font-bold text-sm px-6 py-3 rounded-xl hover:opacity-90 transition-opacity">
+          Back to YUMYUMPO
+        </a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="bg-brand-black text-white/40 text-sm py-8">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <p>© <span id="year">2026</span> YUMYUMPO. All rights reserved.</p>
+    <div class="flex gap-5">
+      <a href="privacy.html" class="hover:text-white">Privacy</a>
+      <a href="terms.html"   class="hover:text-white">Terms</a>
+      <a href="contact.html" class="hover:text-white">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js"></script>
+<script>
+'use strict';
+
+const msgField = document.getElementById('message');
+const msgCount = document.getElementById('msg-count');
+msgField.addEventListener('input', () => {
+  msgCount.textContent = 2000 - msgField.value.length;
+});
+
+document.getElementById('year').textContent = new Date().getFullYear();
+
+async function handleSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const errEl = document.getElementById('error-banner');
+  errEl.classList.add('hidden');
+
+  /* Honeypot — bots fill hidden fields */
+  if (form._hp.value) {
+    /* silently succeed for bots */
+    showSuccessState();
+    return;
+  }
+
+  if (!form.checkValidity()) {
+    showError('Please fill in all required fields.');
+    return;
+  }
+
+  const data = {
+    name:    form.name.value.trim(),
+    email:   form.email.value.trim(),
+    topic:   form.topic.value,
+    message: form.message.value.trim(),
+    page_url: window.location.href,
+    user_agent: navigator.userAgent,
+  };
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>&nbsp; Sending…';
+
+  try {
+    const client = window.YYP?.client;
+    if (!client) {
+      showError('We could not send right now. Please email us directly.');
+      btn.disabled = false; btn.textContent = 'Send Message';
+      return;
+    }
+
+    /* Submit as a special application with topic prefix in admin_notes */
+    const { error } = await client.from('restaurant_applications').insert([{
+      restaurant_name:  `[Contact] ${data.topic}`,
+      contact_email:    data.email,
+      owner_name:       data.name,
+      about:            data.message,
+      source:           'contact-form',
+      referrer_url:     document.referrer || null,
+      user_agent:       data.user_agent,
+      status:           'pending',
+    }]);
+
+    if (error) {
+      console.warn('[Contact] insert error:', error);
+      showError('Something went wrong. Please try again later.');
+      btn.disabled = false; btn.textContent = 'Send Message';
+      return;
+    }
+
+    showSuccessState();
+  } catch (err) {
+    console.error('[Contact] error:', err);
+    showError('Unexpected error. Please try again.');
+    btn.disabled = false; btn.textContent = 'Send Message';
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-banner');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function showSuccessState() {
+  document.getElementById('contact-form').classList.add('hidden');
+  document.getElementById('success-state').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
