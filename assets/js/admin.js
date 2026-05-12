@@ -853,6 +853,35 @@ window.toggleFormTag = function(tag) {
 
 
 /* ══════════════════════════════════════════════════════════
+   LISTING MODE TOGGLE — Premium (YUMYUMPO-hosted) vs External
+══════════════════════════════════════════════════════════ */
+window.onModeChange = function() {
+  const form = document.getElementById('add-restaurant-form');
+  if (!form) return;
+  const mode = form.listing_mode?.value || 'premium';
+  const hostedBox  = form.querySelector('[name="has_yumyumpo_site"]');
+  const websiteUrl = form.querySelector('[name="website_url"]');
+  const featuredBox = form.querySelector('[name="is_featured"]');
+
+  // Update tile highlight
+  form.querySelectorAll('.mode-tile').forEach(t => {
+    t.classList.toggle('active', t.dataset.mode === mode);
+  });
+
+  if (mode === 'premium') {
+    if (hostedBox)  hostedBox.checked = true;
+    if (websiteUrl) { websiteUrl.value = ''; websiteUrl.disabled = true; websiteUrl.placeholder = 'Auto-generated — /restaurant/[slug]'; }
+    if (featuredBox) featuredBox.checked = true;   // Premium defaults to featured
+  } else {
+    if (hostedBox)  hostedBox.checked = false;
+    if (websiteUrl) { websiteUrl.disabled = false; websiteUrl.placeholder = 'https://yourrestaurant.com'; websiteUrl.required = true; }
+    if (featuredBox) featuredBox.checked = false;
+  }
+};
+document.addEventListener('DOMContentLoaded', () => setTimeout(window.onModeChange, 60));
+
+
+/* ══════════════════════════════════════════════════════════
    ADD RESTAURANT FORM
 ══════════════════════════════════════════════════════════ */
 window.submitRestaurant = async function(e) {
