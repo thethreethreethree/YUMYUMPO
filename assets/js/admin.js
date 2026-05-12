@@ -870,11 +870,11 @@ window.onModeChange = function() {
 
   if (mode === 'premium') {
     if (hostedBox)  hostedBox.checked = true;
-    if (websiteUrl) { websiteUrl.value = ''; websiteUrl.disabled = true; websiteUrl.placeholder = 'Auto-generated — /restaurant/[slug]'; }
-    if (featuredBox) featuredBox.checked = true;   // Premium defaults to featured
+    if (websiteUrl) { websiteUrl.disabled = false; websiteUrl.required = true; websiteUrl.placeholder = 'https://thethreethreethree.github.io/Blend-Grind/'; }
+    if (featuredBox) featuredBox.checked = true;
   } else {
     if (hostedBox)  hostedBox.checked = false;
-    if (websiteUrl) { websiteUrl.disabled = false; websiteUrl.placeholder = 'https://yourrestaurant.com'; websiteUrl.required = true; }
+    if (websiteUrl) { websiteUrl.disabled = false; websiteUrl.required = true; websiteUrl.placeholder = "https://restaurant-own-site.com"; }
     if (featuredBox) featuredBox.checked = false;
   }
 };
