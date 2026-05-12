@@ -58,7 +58,7 @@ END $$;
 
 DROP TRIGGER IF EXISTS trg_claim_restaurants_on_profile_insert ON profiles;
 CREATE TRIGGER trg_claim_restaurants_on_profile_insert
-  AFTER INSERT ON profiles
+  AFTER INSERT OR UPDATE ON profiles
   FOR EACH ROW EXECUTE FUNCTION claim_pending_restaurants();
 
 -- Also auto-link when admin SETS owner_email on a restaurant after the

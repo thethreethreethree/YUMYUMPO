@@ -471,7 +471,7 @@ window.saveEdit = function(e) {
   const isChecked = id => !!document.getElementById(id)?.checked;
 
   r.name              = getVal('edit-name');
-  r.slug              = getVal('edit-slug');
+  r.slug              = toSlug(getVal('edit-slug'));
   r.tagline           = getVal('edit-tagline');
   r.description       = getVal('edit-description');
   r.cuisine           = getVal('edit-cuisine');
@@ -558,12 +558,12 @@ async function processImageFiles(files, prefix) {
     if (window.YYP?.client) {
       const fileName = `restaurants/${Date.now()}-${file.name.replace(/[^a-z0-9.]/gi, '-')}`;
       const { data, error } = await window.YYP.client.storage
-        .from('restaurant-images')
+        .from('restaurant-photos')
         .upload(fileName, file, { cacheControl: '3600', upsert: false });
 
       if (!error && data) {
         const { data: { publicUrl } } = window.YYP.client.storage
-          .from('restaurant-images').getPublicUrl(data.path);
+          .from('restaurant-photos').getPublicUrl(data.path);
 
         // Update the cover URL input with the first uploaded image
         const coverInput = document.getElementById(`${prefix}-cover`) || document.getElementById(`${prefix}-cover-url`);

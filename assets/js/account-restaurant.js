@@ -234,7 +234,7 @@ function renderMenu() {
                 <button type="button" class="mi-photo-remove" onclick="removeItemPhoto(${ci},${ii},${pi})" aria-label="Remove">×</button>
               </div>
             `).join('')}
-            ${(it.photos || []).length < ${MAX_ITEM_PHOTOS} ? `
+            ${(it.photos || []).length < 3 ? `
               <div class="mi-photo mi-photo-add" onclick="addItemPhoto(${ci},${ii})" title="Add photo">＋</div>
             ` : ''}
           </div>
@@ -452,7 +452,7 @@ async function save() {
     is_closed:     hours[d].is_closed,
   }));
   const { error: e2 } = await c.from('operating_hours').insert(hoursRows);
-  if (e2) console.warn('hours save:', e2.message);
+  if (e2) { btn.disabled=false; btn.textContent='Save Changes'; return toast('Hours save failed: ' + e2.message); }
 
   /* 3. Menu — wipe and re-insert (items first cascade-delete, then categories) */
   await c.from('menu_items').delete().eq('restaurant_id', restaurant.id);

@@ -625,12 +625,12 @@
 ══════════════════════════════════════════════════════════ -->
 <script>(function(){var e=document.getElementById('r-year');if(e)e.textContent=new Date().getFullYear();})();</script>
 <script src="assets/js/config.js"></script>
-<script src="assets/js/supabase-client.js"></script>
+<script src="assets/js/supabase-client.js?v=owner5"></script>
   <script src="assets/js/auth-modal.js"></script>
   <script src="assets/js/account.js"></script>
   <script src="assets/js/bottom-nav.js"></script>
 <script src="assets/js/analytics.js"></script>
-<script src="assets/js/restaurant.js"></script>
+<script src="assets/js/restaurant.js?v=owner5"></script>
 
 <script>
 /* ── Share ── */
@@ -669,7 +669,8 @@ window.toggleAbout = function () {
 <!-- ── Floating contact bubbles (rendered when the restaurant has those URLs) ── -->
 <style>
   .yyp-fab-stack {
-    position:fixed; right:18px; bottom:96px;
+    position:fixed; right:18px;
+    bottom: calc(env(safe-area-inset-bottom, 0) + 96px);
     display:flex; flex-direction:column; gap:12px; z-index:60;
     pointer-events:none;
   }
@@ -687,7 +688,7 @@ window.toggleAbout = function () {
   .yyp-fab.web{ background:#111; }
   .yyp-fab svg { width:24px; height:24px; }
   @media (max-width: 640px) {
-    .yyp-fab-stack { right:14px; bottom:90px; }
+    .yyp-fab-stack { right:14px; bottom: calc(env(safe-area-inset-bottom, 0) + 110px); }
     .yyp-fab { width:50px; height:50px; }
   }
 </style>

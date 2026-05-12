@@ -92,6 +92,7 @@
   async function getRestaurantBySlug(slug) {
     const c = sb();
     if (!c) return null;
+    /* Slug match is case-insensitive so legacy capitalised slugs still resolve. */
     const { data, error } = await c
       .from('restaurants')
       .select(`
@@ -100,18 +101,43 @@
         operating_hours ( day_of_week, open_time, close_time, is_closed ),
         menu_categories (
           id, name, sort_order,
-          menu_items ( id, name, description, price, image_url, is_available, tags )
+          menu_items ( id, name, description, price, image_url, gallery_urls, tags, is_available, sort_order )
         )
       `)
-      .eq('slug', slug)
+      .ilike('slug', slug)
       .maybeSingle();
     if (error) { console.error('[YUMYUMPO] getRestaurantBySlug:', error); return null; }
     if (!data) return null;
 
-    /* Shape-adapter — make Supabase columns match the static template's field names */
+    /* Shape-adapter — bridge Supabase columns to the static template's field names. */
     if (data.gallery_urls && !data.gallery)   data.gallery = data.gallery_urls;
     if (Array.isArray(data.restaurant_tags))  data.tags    = data.restaurant_tags.map(t => t.tag_name);
     if (Array.isArray(data.operating_hours))  data.hours   = data.operating_hours;
+
+    /* Menu adapter: normalise each item so renderMenu sees a consistent shape. */
+    if (Array.isArray(data.menu_categories)) {
+      data.menu_categories.sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
+      data.menu_categories.forEach(cat => {
+        if (!Array.isArray(cat.menu_items)) return;
+        cat.menu_items.sort((a,b) => (a.sort_order||0) - (b.sort_order||0));
+        cat.items = cat.menu_items.map(it => {
+          const gallery = Array.isArray(it.gallery_urls) && it.gallery_urls.length
+            ? it.gallery_urls
+            : (it.image_url ? [it.image_url] : []);
+          return {
+            id:          it.id,
+            name:        it.name,
+            description: it.description || '',
+            price:       it.price || '',
+            image:       gallery[0] || '',          // legacy alias used by old templates
+            image_url:   gallery[0] || '',
+            gallery,
+            tags:        Array.isArray(it.tags) ? it.tags : [],
+            is_available: it.is_available !== false,
+          };
+        });
+      });
+    }
     return data;
   }
 
