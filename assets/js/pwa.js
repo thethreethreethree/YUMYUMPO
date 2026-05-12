@@ -125,16 +125,16 @@
         }
         .yyp-ios-tip-close:hover { color: #fff; }
 
-        /* ── App-feel improvements (subtle, won't hurt browser UX) ── */
+        /* ── App-feel improvements — kept minimal so desktop trackpad
+              scrolling and Windows precision touchpads aren't affected ── */
         button, .btn, .yyp-install-btn, .reaction-btn,
         .yyp-bn-tab, .yyp-toast-action {
           -webkit-tap-highlight-color: transparent;
-          -webkit-touch-callout: none;
-          -webkit-user-select: none;
-          user-select: none;
         }
-        html { -webkit-text-size-adjust: 100%; }
-        html, body { overscroll-behavior-y: contain; }
+        @media (pointer: coarse) {
+          /* Stop iOS rubber-banding only on actual touch devices */
+          html, body { overscroll-behavior-y: contain; }
+        }
 
         /* When running as installed PWA, hide the install button + tip */
         @media (display-mode: standalone) {
