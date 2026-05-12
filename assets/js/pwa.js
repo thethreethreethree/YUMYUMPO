@@ -232,7 +232,15 @@
     return installBtn;
   }
 
+  /* Only surface the install pill on the landing page — every other
+     page should be free of it so it doesn't compete with their UI. */
+  function isLandingPage() {
+    const p = location.pathname.replace(/\/+$/, '').toLowerCase();
+    return p === '' || p === '/' || p === '/index' || p === '/index.html';
+  }
+
   function showInstallButton() {
+    if (!isLandingPage()) return;
     /* Respect a same-session dismiss so we don't nag */
     try { if (sessionStorage.getItem('yyp_install_dismissed') === '1') return; } catch {}
     const btn = ensureInstallButton();
@@ -321,6 +329,7 @@
   }
 
   function maybeShowIosTip() {
+    if (!isLandingPage()) return;
     if (!isIOS() || isInStandaloneMode()) return;
     try {
       if (localStorage.getItem(LS_IOS_DISMISSED) === '1') return;
