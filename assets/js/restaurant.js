@@ -798,7 +798,7 @@ function renderHero(r) {
     if (!badge) {
       badge = document.createElement('div');
       badge.id = 'yyp-logo-badge';
-      badge.style.cssText = 'position:fixed; top:calc(env(safe-area-inset-top,0) + 76px); right:18px; width:64px; height:64px; border-radius:50%; overflow:hidden; border:3px solid rgba(255,255,255,0.9); box-shadow:0 8px 24px rgba(0,0,0,0.35); background:#fff; z-index:55; pointer-events:none;';
+      badge.style.cssText = 'position:fixed; top:calc(env(safe-area-inset-top,0) + 76px); right:18px; width:96px; height:96px; border-radius:50%; overflow:hidden; border:3px solid rgba(255,255,255,0.9); box-shadow:0 10px 28px rgba(0,0,0,0.4); background:#fff; z-index:55; pointer-events:none;';
       document.body.appendChild(badge);
     }
     badge.innerHTML = `<img src="${r.logo_image_url}" alt="${r.name} logo" style="width:100%; height:100%; object-fit:cover; display:block;" />`;
