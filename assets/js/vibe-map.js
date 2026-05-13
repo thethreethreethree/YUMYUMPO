@@ -162,7 +162,9 @@ async function ensureCoords() {
      geocoder ONCE per restaurant (one request/second cap). We cache in
      sessionStorage so a quick reload doesn't re-geocode. */
   const todo = DATASET.filter(r => (!r.latitude || !r.longitude) && r.address);
-  for (const r of todo.slice(0, 12)) { /* hard cap so we never hammer the free API */
+  /* Cap at 30 per session — Nominatim's 1 req/sec policy means 30 ≈ 33s.
+     We cache by slug in sessionStorage so revisits are instant. */
+  for (const r of todo.slice(0, 30)) {
     const cacheKey = `yyp_geo_${r.slug}`;
     let cached = null;
     try { cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null'); } catch {}
@@ -184,25 +186,73 @@ async function ensureCoords() {
 }
 
 
+/* Prominence score — drives marker size + draw order so the best places
+   are surfaced first. Combines every public-data signal we have today:
+     • Google rating (1–5)            up to 40 pts
+     • Review count (log-scaled)      up to 30 pts
+     • Buzz tier (live engagement)    up to 15 pts
+     • Featured / has YUMYUMPO site    up to 10 pts
+   Tier thresholds are percentile-aware once we have >10 restaurants,
+   so a quiet city's #1 still ranks "premium" relative to its peers. */
+function prominenceScore(r) {
+  const rating  = Number(r.google_rating) || 0;
+  const reviews = Number(r.review_count)  || 0;
+  let score = 0;
+  if (rating > 3)         score += Math.min(40, (rating - 3) * 20);
+  if (reviews > 0)        score += Math.min(30, Math.log10(reviews + 1) * 12);
+  if (r.buzz_tier === 'hot')      score += 15;
+  else if (r.buzz_tier === 'trending') score += 8;
+  if (r.is_featured)      score += 6;
+  if (r.has_yumyumpo_site) score += 4;
+  return Math.round(score);
+}
+
+function prominenceTier(score, allScores) {
+  /* Percentile-aware once the dataset is large enough; falls back to
+     absolute thresholds when fewer than 8 restaurants exist. */
+  if (allScores.length >= 8) {
+    const sorted = [...allScores].sort((a, b) => a - b);
+    const pct = sorted.indexOf(score) / (sorted.length - 1);
+    if (pct >= 0.85) return 'premium';
+    if (pct >= 0.55) return 'prominent';
+    return 'standard';
+  }
+  if (score >= 55) return 'premium';
+  if (score >= 30) return 'prominent';
+  return 'standard';
+}
+
 function buildMarkers() {
   MARKERS.forEach(m => MAP.removeLayer(m.marker));
   MARKERS = [];
-  for (const r of DATASET) {
-    if (!r.latitude || !r.longitude) continue;
-    const vibes = vibesFor(r);
+
+  /* First pass — compute prominence so we can tier + sort. */
+  const scored = DATASET
+    .filter(r => r.latitude && r.longitude)
+    .map(r => ({ row: r, score: prominenceScore(r) }));
+  const allScores = scored.map(s => s.score);
+
+  /* Higher-score markers added LAST so they layer above lesser ones. */
+  scored.sort((a, b) => a.score - b.score);
+
+  for (const { row: r, score } of scored) {
+    const vibes   = vibesFor(r);
     const primary = primaryVibe(vibes);
+    const tier    = prominenceTier(score, allScores);
     const icon = L.divIcon({
       className: '',
-      html: `<div class="vm-marker ${primary}">${VIBE_ICON[primary] || VIBE_ICON.default}</div>`,
-      iconSize:   [36, 36],
-      iconAnchor: [18, 18],
-      popupAnchor:[0, -18],
+      html: `<div class="vm-marker ${primary} tier-${tier}">${VIBE_ICON[primary] || VIBE_ICON.default}</div>`,
+      iconSize:   tier === 'premium' ? [46, 46] : tier === 'prominent' ? [40, 40] : [34, 34],
+      iconAnchor: tier === 'premium' ? [23, 23] : tier === 'prominent' ? [20, 20] : [17, 17],
+      popupAnchor: [0, -18],
     });
-    const marker = L.marker([r.latitude, r.longitude], { icon })
-      .bindPopup(popupHTML(r), { closeButton: true, autoPan: true });
+    /* zIndexOffset surfaces premium pins above any overlap. */
+    const zOffset = tier === 'premium' ? 1000 : tier === 'prominent' ? 400 : 0;
+    const marker = L.marker([r.latitude, r.longitude], { icon, zIndexOffset: zOffset })
+      .bindPopup(popupHTML(r, { score, tier }), { closeButton: true, autoPan: true });
     marker.addTo(MAP);
     MARKERS.push({
-      marker, vibes, row: r,
+      marker, vibes, row: r, score, tier,
       region: { key: regionKey(r.location), label: regionLabel(r.location) },
     });
   }
@@ -243,18 +293,24 @@ function primaryVibe(set) {
 }
 
 
-function popupHTML(r) {
+function popupHTML(r, ext = {}) {
   const cover = r.cover_image_url || `https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&auto=format&fit=crop&q=75`;
   const tags = (r.tags || []).slice(0, 3).map(t => `<span class="vm-popup-tag">${escapeHtml(t)}</span>`).join('');
   const directionsQuery = encodeURIComponent(r.address || `${r.name} ${r.location || ''}`);
+  const tierBadge = ext.tier === 'premium'
+    ? `<span class="vm-popup-tier vm-popup-tier-premium">★ Top pick</span>`
+    : ext.tier === 'prominent'
+      ? `<span class="vm-popup-tier vm-popup-tier-prominent">Recommended</span>`
+      : '';
   return `
     <img class="vm-popup-img" src="${cover}" alt="${escapeHtml(r.name)}" loading="lazy"
          onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&auto=format&fit=crop&q=75'" />
     <div class="vm-popup-body">
-      <div class="vm-popup-name">${escapeHtml(r.name)}</div>
+      <div class="vm-popup-name">${escapeHtml(r.name)} ${tierBadge}</div>
       <div class="vm-popup-meta">
         ${r.cuisine_type ? escapeHtml(r.cuisine_type) + ' · ' : ''}
         ★ ${Number(r.google_rating || 0).toFixed(1)}
+        ${r.review_count ? ` (${Number(r.review_count).toLocaleString()})` : ''}
         ${r.location ? ' · ' + escapeHtml(r.location) : ''}
       </div>
       <div class="vm-popup-tags">${tags}</div>

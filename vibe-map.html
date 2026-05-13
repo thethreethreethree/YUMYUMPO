@@ -125,6 +125,33 @@
     .vm-marker.social { background: #f97316; color: #fff; }
     .vm-marker.nightout { background: #1e1b4b; color: #FFD000; }
     .vm-marker.family { background: #22c55e; color: #fff; }
+    /* Prominence tiers — visible weight that scales with reputation. */
+    .vm-marker.tier-premium {
+      width: 46px; height: 46px; font-size: 1.25rem;
+      border-width: 4px;
+      box-shadow: 0 0 0 3px rgba(255,208,0,0.45), 0 8px 22px rgba(0,0,0,0.45);
+      animation: vmPulse 2.4s ease-in-out infinite;
+    }
+    .vm-marker.tier-prominent {
+      width: 40px; height: 40px; font-size: 1.12rem;
+      box-shadow: 0 5px 14px rgba(0,0,0,0.4);
+    }
+    .vm-marker.tier-standard {
+      width: 34px; height: 34px; font-size: 1rem;
+      opacity: 0.92;
+    }
+    @keyframes vmPulse {
+      0%,100% { box-shadow: 0 0 0 3px rgba(255,208,0,0.45), 0 8px 22px rgba(0,0,0,0.45); }
+      50%      { box-shadow: 0 0 0 7px rgba(255,208,0,0.18), 0 10px 26px rgba(0,0,0,0.5); }
+    }
+
+    .vm-popup-tier {
+      display: inline-block; font-size: 0.6rem; font-weight: 800;
+      padding: 2px 7px; border-radius: 999px; margin-left: 4px;
+      vertical-align: middle;
+    }
+    .vm-popup-tier-premium  { background: #FFD000; color: #111; }
+    .vm-popup-tier-prominent{ background: #F3F3F3; color: #111; }
 
     /* Popup */
     .leaflet-popup-content-wrapper {
