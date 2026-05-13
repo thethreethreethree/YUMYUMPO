@@ -51,6 +51,8 @@
       window.YYP.client = client;
       window.YYP.ready  = true;
       document.dispatchEvent(new Event('yyp:ready'));
+      /* Warm up the buzz tier cache (no-op if RPC isn't deployed yet). */
+      preloadBuzzTiers();
     } catch (err) {
       console.error('[YUMYUMPO] Failed to initialise Supabase client:', err);
       document.dispatchEvent(new Event('yyp:ready'));
@@ -248,16 +250,31 @@
     };
   }
 
-  /* Buzz tier — temporary heuristic based on review_count.
-     Replace with restaurant_buzz_tiers() RPC once migration-005-buzz.sql
-     is applied and real engagement signals are flowing. */
+  /* Buzz tier:
+     1) If the real `restaurant_buzz_tiers` RPC has been loaded into
+        BUZZ_BY_SLUG (see preloadBuzzTiers below) use that.
+     2) Otherwise fall back to a review-count + rating heuristic so
+        cards never look dead before real engagement data exists. */
+  let BUZZ_BY_SLUG = null;
   function computeBuzz(row) {
+    if (BUZZ_BY_SLUG && row.slug && BUZZ_BY_SLUG[row.slug]) return BUZZ_BY_SLUG[row.slug];
     const reviews = Number(row.review_count) || 0;
     const rating  = Number(row.google_rating) || 0;
     if (reviews >= 2000 && rating >= 4.7) return 'hot';
     if (reviews >= 800  && rating >= 4.6) return 'trending';
     if (row.is_featured && rating >= 4.7) return 'hot';
     return null;
+  }
+
+  async function preloadBuzzTiers() {
+    const c = sb();
+    if (!c) return;
+    try {
+      const { data, error } = await c.rpc('restaurant_buzz_tiers');
+      if (error || !Array.isArray(data) || !data.length) return;
+      BUZZ_BY_SLUG = Object.create(null);
+      data.forEach(row => { if (row.slug && row.buzz_tier) BUZZ_BY_SLUG[row.slug] = row.buzz_tier; });
+    } catch {} /* RPC may not exist yet — fall back to heuristic silently. */
   }
 
   /* Public helpers */

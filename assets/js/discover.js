@@ -340,6 +340,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (window.YYP?.ready) loadFromSupabase();
   else document.addEventListener('yyp:ready', loadFromSupabase, { once: true });
+
+  /* Refresh the dataset whenever the tab regains focus or visibility,
+     so newly-added restaurants appear without a full reload. */
+  let lastRefresh = Date.now();
+  const REFRESH_COOLDOWN = 15_000;
+  function maybeRefresh() {
+    if (document.visibilityState !== 'visible') return;
+    if (Date.now() - lastRefresh < REFRESH_COOLDOWN) return;
+    lastRefresh = Date.now();
+    loadFromSupabase();
+  }
+  document.addEventListener('visibilitychange', maybeRefresh);
+  window.addEventListener('focus', maybeRefresh);
 });
 
 async function loadFromSupabase() {

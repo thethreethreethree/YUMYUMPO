@@ -526,8 +526,12 @@ function wireGridDrop(gridId, inputId, handler) {
     grid.classList.remove('is-dragover');
   }));
   grid.addEventListener('drop', (e) => {
-    const files = [...(e.dataTransfer?.files || [])];
-    if (!files.length) return;
+    const all = [...(e.dataTransfer?.files || [])];
+    const files = all.filter(f => f.type?.startsWith('image/'));
+    if (!files.length) {
+      if (all.length) toast('Only image files are accepted.');
+      return;
+    }
     handler({ target: { files, value: '' } });
   });
 }
