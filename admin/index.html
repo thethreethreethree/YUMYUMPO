@@ -358,27 +358,27 @@
       </header>
 
       <div class="px-6 md:px-10 py-8 space-y-8">
-        <!-- KPIs -->
+        <!-- KPIs — all values come from analytics_events / restaurants. -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="stat-card border-t-4 border-brand-yellow">
             <p class="stat-value" id="stat-total">—</p>
             <p class="stat-label">Active Restaurants</p>
-            <p class="text-xs text-green-600 font-semibold mt-2">↑ 12 this month</p>
+            <p class="text-xs text-gray-400 font-semibold mt-2" id="stat-total-delta">—</p>
           </div>
           <div class="stat-card border-t-4 border-green-400">
-            <p class="stat-value">47.2k</p>
-            <p class="stat-label">Profile Views</p>
-            <p class="text-xs text-green-600 font-semibold mt-2">↑ 23% vs last month</p>
+            <p class="stat-value" id="stat-views">—</p>
+            <p class="stat-label">Profile Views (30d)</p>
+            <p class="text-xs text-gray-400 font-semibold mt-2" id="stat-views-delta">—</p>
           </div>
           <div class="stat-card border-t-4 border-blue-400">
-            <p class="stat-value">3,841</p>
-            <p class="stat-label">WhatsApp Clicks</p>
-            <p class="text-xs text-green-600 font-semibold mt-2">↑ 18% vs last month</p>
+            <p class="stat-value" id="stat-whatsapp">—</p>
+            <p class="stat-label">WhatsApp Clicks (30d)</p>
+            <p class="text-xs text-gray-400 font-semibold mt-2" id="stat-whatsapp-delta">—</p>
           </div>
           <div class="stat-card border-t-4 border-purple-400">
-            <p class="stat-value">32.7%</p>
-            <p class="stat-label">Platform CTR</p>
-            <p class="text-xs text-gray-400 font-semibold mt-2">→ Stable</p>
+            <p class="stat-value" id="stat-ctr">—</p>
+            <p class="stat-label">Platform CTR (30d)</p>
+            <p class="text-xs text-gray-400 font-semibold mt-2">website clicks ÷ views</p>
           </div>
         </div>
 
@@ -867,9 +867,9 @@
 
 
 <script src="../assets/js/config.js"></script>
-<script src="../assets/js/supabase-client.js?v=audit3"></script>
+<script src="../assets/js/supabase-client.js?v=audit4"></script>
 <script src="../assets/js/analytics.js"></script>
-<script src="../assets/js/admin.js?v=audit3"></script>
+<script src="../assets/js/admin.js?v=audit4"></script>
 <script src="../assets/js/admin-applications.js"></script>
 <script src="../assets/js/admin-announcements.js"></script>
   <script src="../assets/js/pwa.js"></script>

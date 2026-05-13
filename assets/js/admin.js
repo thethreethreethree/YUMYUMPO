@@ -216,6 +216,50 @@ function updateStatTotal() {
   if (el) el.textContent = ADMIN_RESTAURANTS.filter(r => r.active).length;
   const rc = document.getElementById('restaurant-count');
   if (rc) rc.textContent = ADMIN_RESTAURANTS.length;
+  loadKpiStats();
+}
+
+/* Pull real KPI numbers from Supabase analytics_events.
+   - Profile Views     = profile_view events in last 30 days
+   - WhatsApp Clicks   = whatsapp_click events in last 30 days
+   - Platform CTR      = website_click / profile_view × 100
+   - Active deltas     = new restaurants created in last 30 days
+   Falls back to "—" if Supabase unavailable. */
+async function loadKpiStats() {
+  const c = window.YYP?.client;
+  if (!c) return;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  const fmt = n => n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'k' : n.toLocaleString();
+  const sinceISO = new Date(Date.now() - 30 * 86400000).toISOString();
+
+  try {
+    /* Restaurants created in last 30d (delta line under "Active Restaurants") */
+    const { count: newCount } = await c
+      .from('restaurants')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', sinceISO);
+    set('stat-total-delta', `↑ ${newCount || 0} this month`);
+
+    /* Event counts in last 30d, one query per type via head:true counts. */
+    const types = ['profile_view', 'whatsapp_click', 'website_click'];
+    const counts = {};
+    await Promise.all(types.map(async (t) => {
+      const { count } = await c
+        .from('analytics_events')
+        .select('id', { count: 'exact', head: true })
+        .eq('event_type', t)
+        .gte('created_at', sinceISO);
+      counts[t] = count || 0;
+    }));
+    set('stat-views',    fmt(counts.profile_view));
+    set('stat-whatsapp', fmt(counts.whatsapp_click));
+    const views = counts.profile_view, clicks = counts.website_click;
+    set('stat-ctr', views > 0 ? ((clicks / views) * 100).toFixed(1) + '%' : '—');
+    set('stat-views-delta',    'last 30 days');
+    set('stat-whatsapp-delta', 'last 30 days');
+  } catch (err) {
+    console.warn('[Admin] KPI load failed:', err.message);
+  }
 }
 
 function renderTopRestaurants() {
