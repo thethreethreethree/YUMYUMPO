@@ -80,6 +80,52 @@
     .vibe-chip:hover  { border-color:#FFD000; color:#111; }
     .vibe-chip.active { background:#FFD000; border-color:#FFD000; color:#111; }
 
+    /* Drag-and-drop drop zones — used for cover, logo, gallery, food, menu items */
+    .dz {
+      position: relative;
+      border: 2px dashed #D4D4D4;
+      border-radius: 14px;
+      background: #FAFAFA;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .dz:hover { border-color: #FFD000; background: #FFFDF2; }
+    .dz.is-dragover {
+      border-color: #FFD000;
+      background: #FFF9D6;
+      box-shadow: 0 0 0 4px rgba(255,208,0,0.18);
+    }
+    .dz-empty {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px 12px; gap: 6px;
+      color: #6B6B6B; text-align: center; height: 100%;
+    }
+    .dz-empty .dz-icon { font-size: 1.75rem; }
+    .dz-empty .dz-title { font-weight: 700; color: #111; font-size: 0.9rem; }
+    .dz-empty .dz-hint  { font-size: 0.72rem; color: #ABABAB; }
+    .dz-img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .dz-replace {
+      position: absolute; inset: auto 0 0 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      color: #fff; font-size: 0.72rem; font-weight: 700;
+      padding: 14px 10px 8px; text-align: center;
+      opacity: 0; transition: opacity 0.15s;
+      pointer-events: none;
+    }
+    .dz:hover .dz-replace { opacity: 1; }
+
+    .preview-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 16px; border-radius: 999px;
+      background: #FFD000; color: #111;
+      font-size: 0.85rem; font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 4px 12px -2px rgba(255,208,0,0.5);
+      transition: all 0.15s;
+    }
+    .preview-btn:hover { background: #E6BB00; transform: translateY(-1px); }
   </style>
 </head>
 
@@ -123,10 +169,15 @@
 <!-- MAIN -->
 <main class="acct-container" id="main" style="display:none">
 
-  <header class="mb-6">
-    <h1 class="font-display font-black text-3xl text-brand-black" id="rest-name">—</h1>
-    <p class="text-gray-400 text-sm mt-1">Edit your public listing. Changes go live immediately when you Save.</p>
-    <p class="text-xs text-gray-400 mt-1">Public page: <a id="public-link" href="#" target="_blank" class="text-yellow-600 underline">View →</a></p>
+  <header class="mb-6 flex items-start justify-between gap-4 flex-wrap">
+    <div>
+      <h1 class="font-display font-black text-3xl text-brand-black" id="rest-name">—</h1>
+      <p class="text-gray-400 text-sm mt-1">Edit your public listing. Changes go live immediately when you Save.</p>
+    </div>
+    <a id="public-link" href="#" target="_blank" class="preview-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      View Live Page
+    </a>
   </header>
 
   <form id="owner-form" class="space-y-6 pb-24">
@@ -134,19 +185,17 @@
     <!-- 1. COVER + LOGO  →  Hero -->
     <div class="section-card space-y-4">
       <h2 class="font-display font-black text-lg">Cover & Logo</h2>
-      <p class="text-xs text-gray-500 -mt-2">▸ Powers the <strong>Hero</strong> banner at the top of your page.</p>
+      <p class="text-xs text-gray-500 -mt-2">▸ Powers the <strong>Hero</strong> banner at the top of your page. Drag & drop or click.</p>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="sm:col-span-2">
           <label class="form-label">Cover image</label>
-          <div id="cover-preview" class="photo-tile" style="aspect-ratio:16/9"></div>
+          <div id="cover-dz" class="dz" data-kind="cover" data-file-input="cover-file" style="aspect-ratio:16/9"></div>
           <input type="file" id="cover-file" accept="image/*" class="hidden" />
-          <button type="button" class="btn-secondary mt-2" onclick="document.getElementById('cover-file').click()">Upload new cover</button>
         </div>
         <div>
-          <label class="form-label">Logo</label>
-          <div id="logo-preview" class="photo-tile"></div>
+          <label class="form-label">Logo (optional)</label>
+          <div id="logo-dz" class="dz" data-kind="logo" data-file-input="logo-file" style="aspect-ratio:1/1"></div>
           <input type="file" id="logo-file" accept="image/*" class="hidden" />
-          <button type="button" class="btn-secondary mt-2" onclick="document.getElementById('logo-file').click()">Upload logo</button>
         </div>
       </div>
     </div>
@@ -367,9 +416,9 @@
 </div>
 
 <script src="../assets/js/config.js"></script>
-<script src="../assets/js/supabase-client.js?v=marias4"></script>
+<script src="../assets/js/supabase-client.js?v=dropzone1"></script>
 <script src="../assets/js/main.js"></script>
-<script src="../assets/js/account-restaurant.js?v=marias4"></script>
+<script src="../assets/js/account-restaurant.js?v=dropzone1"></script>
 <script src="../assets/js/pwa.js"></script>
 </body>
 </html>

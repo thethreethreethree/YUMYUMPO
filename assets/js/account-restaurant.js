@@ -116,15 +116,27 @@ function populateForm() {
 }
 
 function renderCover() {
-  const el = document.getElementById('cover-preview');
-  const url = restaurant.cover_image_url;
-  el.innerHTML = url ? `<img src="${url}" alt="">` : '<div class="text-gray-400 text-xs flex h-full items-center justify-center">No cover image</div>';
+  paintDropZone('cover-dz', restaurant.cover_image_url, {
+    icon: '🏞️', title: 'Drop your cover photo', hint: 'or click to choose · JPG / PNG / WebP · 16:9',
+  });
 }
 
 function renderLogo() {
-  const el = document.getElementById('logo-preview');
-  const url = restaurant.logo_image_url;
-  el.innerHTML = url ? `<img src="${url}" alt="">` : '<div class="text-gray-400 text-xs flex h-full items-center justify-center">No logo</div>';
+  paintDropZone('logo-dz', restaurant.logo_image_url, {
+    icon: '⭐', title: 'Drop your logo', hint: 'optional · square works best',
+  });
+}
+
+function paintDropZone(id, url, copy) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = url
+    ? `<img src="${url}" alt="" class="dz-img" /><div class="dz-replace">Click or drop a new image to replace</div>`
+    : `<div class="dz-empty">
+         <div class="dz-icon">${copy.icon}</div>
+         <div class="dz-title">${copy.title}</div>
+         <div class="dz-hint">${copy.hint}</div>
+       </div>`;
 }
 
 function renderGallery() {
@@ -387,6 +399,16 @@ function normalizeInstagram(v) {
 }
 
 
+/* Block the browser's default "open the file" behaviour for stray drops
+   outside our drop zones (otherwise the page navigates away and the
+   user loses unsaved edits — including a half-completed upload). */
+['dragover','drop'].forEach(ev => {
+  window.addEventListener(ev, e => {
+    if (e.target.closest('.dz, #gallery-grid, #food-gallery-grid')) return;
+    e.preventDefault();
+  });
+});
+
 /* ── Wire events ─────────────────────────────────────────── */
 function wireEvents() {
   document.getElementById('owner-form').addEventListener('input', e => {
@@ -399,6 +421,13 @@ function wireEvents() {
   document.getElementById('logo-file').addEventListener('change',  e => handleSingleUpload(e, 'logo'));
   document.getElementById('gallery-file').addEventListener('change', handleGalleryUpload);
   document.getElementById('food-gallery-file').addEventListener('change', handleFoodGalleryUpload);
+
+  /* Drag & drop on the cover/logo zones */
+  wireDropZone('cover-dz', 'cover-file', 'cover');
+  wireDropZone('logo-dz',  'logo-file',  'logo');
+  /* Drag & drop on the gallery grids too (drop anywhere in the grid) */
+  wireGridDrop('gallery-grid',      'gallery-file',      handleGalleryUpload);
+  wireGridDrop('food-gallery-grid', 'food-gallery-file', handleFoodGalleryUpload);
 
   document.getElementById('save-btn').addEventListener('click', save);
   document.getElementById('discard-btn').addEventListener('click', discard);
@@ -433,11 +462,8 @@ function markDirty() {
 /* ── Photo upload ────────────────────────────────────────── */
 async function handleSingleUpload(e, kind) {
   const file = e.target.files?.[0]; if (!file) return;
-  if (file.size > 5 * 1024 * 1024) return toast('File too big — 5MB max.');
-  const url = await uploadToBucket(file); if (!url) return;
-  if (kind === 'cover') { restaurant.cover_image_url = url; renderCover(); }
-  if (kind === 'logo')  { restaurant.logo_image_url  = url; renderLogo();  }
-  markDirty(); e.target.value = '';
+  e.target.value = '';
+  await processSingleFile(file, kind);
 }
 
 async function handleGalleryUpload(e) {
@@ -466,6 +492,54 @@ async function handleFoodGalleryUpload(e) {
     if (url) pendingFoodGallery.push(url);
   }
   renderFoodGalleryUI(); markDirty(); e.target.value = '';
+}
+
+function wireDropZone(zoneId, inputId, kind) {
+  const zone  = document.getElementById(zoneId);
+  const input = document.getElementById(inputId);
+  if (!zone || !input) return;
+  zone.addEventListener('click', () => input.click());
+  ['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => {
+    e.preventDefault(); e.stopPropagation();
+    zone.classList.add('is-dragover');
+  }));
+  ['dragleave','drop'].forEach(ev => zone.addEventListener(ev, e => {
+    e.preventDefault(); e.stopPropagation();
+    zone.classList.remove('is-dragover');
+  }));
+  zone.addEventListener('drop', async (e) => {
+    const file = e.dataTransfer?.files?.[0];
+    if (!file) return;
+    await processSingleFile(file, kind);
+  });
+}
+
+function wireGridDrop(gridId, inputId, handler) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  ['dragenter','dragover'].forEach(ev => grid.addEventListener(ev, e => {
+    e.preventDefault(); e.stopPropagation();
+    grid.classList.add('is-dragover');
+  }));
+  ['dragleave','drop'].forEach(ev => grid.addEventListener(ev, e => {
+    e.preventDefault(); e.stopPropagation();
+    grid.classList.remove('is-dragover');
+  }));
+  grid.addEventListener('drop', (e) => {
+    const files = [...(e.dataTransfer?.files || [])];
+    if (!files.length) return;
+    handler({ target: { files, value: '' } });
+  });
+}
+
+async function processSingleFile(file, kind) {
+  if (file.size > 5 * 1024 * 1024) return toast('File too big — 5MB max.');
+  if (!file.type?.startsWith('image/')) return toast('Please drop an image file.');
+  const url = await uploadToBucket(file);
+  if (!url) return;
+  if (kind === 'cover') { restaurant.cover_image_url = url; renderCover(); }
+  if (kind === 'logo')  { restaurant.logo_image_url  = url; renderLogo();  }
+  markDirty();
 }
 
 async function uploadToBucket(file) {
