@@ -520,7 +520,7 @@ RESTAURANTS['canton-empire']        = RESTAURANTS['ramen-tori'];
 /* ══════════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   const slug = (params.get('slug') || params.get('id') || '').trim();
 
@@ -529,6 +529,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  /* Wait for the Supabase client to be ready, otherwise the fetch
+     returns null and the page falsely shows "not found." */
+  if (window.YYP?.ready) {
+    boot(slug);
+  } else {
+    document.addEventListener('yyp:ready', () => boot(slug), { once: true });
+    /* Hard timeout — if the SDK never loads, fall back to static dataset */
+    setTimeout(() => { if (!window.__yypRestaurant) boot(slug); }, 6000);
+  }
+});
+
+async function boot(slug) {
   let r = null;
   if (window.db) r = await window.db.getRestaurantBySlug(slug).catch(() => null);
   if (!r) r = RESTAURANTS[slug] || null;
@@ -556,7 +568,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* Social discovery: reactions + "people also saved" */
   initReactions(r.slug);
   loadPeopleAlsoSaved(r.slug);
-});
+}
 
 
 /* ══════════════════════════════════════════════════════════
