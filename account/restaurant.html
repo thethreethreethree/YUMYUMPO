@@ -214,10 +214,45 @@
       </div>
     </div>
 
-    <!-- 2. ABOUT  →  Hero copy + About section -->
+    <!-- 2. IDENTITY  →  Hero name + cuisine + rating -->
+    <div class="section-card space-y-4">
+      <h2 class="font-display font-black text-lg">Identity</h2>
+      <p class="text-xs text-gray-500 -mt-2">▸ Drives the big <strong>name</strong>, <strong>cuisine</strong> pill, and <strong>rating</strong> shown in the Hero.</p>
+      <div>
+        <label class="form-label">Restaurant Name</label>
+        <input type="text" name="name" class="form-input" placeholder="Your restaurant name" maxlength="80" required />
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">Cuisine Type</label>
+          <select name="cuisine_type" class="form-input" required>
+            <option value="">Select cuisine…</option>
+            <option>Filipino</option><option>Japanese</option><option>Italian</option>
+            <option>Korean</option><option>Chinese</option><option>Seafood</option>
+            <option>BBQ &amp; Grill</option><option>Café</option><option>Vegan</option>
+            <option>Burgers</option><option>Mexican</option><option>Desserts</option>
+            <option>Pizza</option><option>Steakhouse</option><option>Bakery</option>
+            <option>Bar &amp; Pub</option><option>Brunch</option><option>Fusion</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">Google Rating (1–5)</label>
+          <input type="number" name="google_rating" class="form-input" min="1" max="5" step="0.1" placeholder="4.8" />
+          <p class="form-help">Reflect your real Google rating — visitors trust it.</p>
+        </div>
+        <div>
+          <label class="form-label">Review Count</label>
+          <input type="number" name="review_count" class="form-input" min="0" placeholder="1238" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. ABOUT  →  Hero tagline + About section -->
     <div class="section-card space-y-4">
       <h2 class="font-display font-black text-lg">About</h2>
-      <p class="text-xs text-gray-500 -mt-2">▸ Tagline shows in the <strong>Hero</strong>. Description fills the <strong>About</strong> block.</p>
+      <p class="text-xs text-gray-500 -mt-2">▸ Tagline shows under the name in the <strong>Hero</strong>. Description fills the <strong>About</strong> block.</p>
       <div>
         <label class="form-label">Tagline</label>
         <input type="text" name="tagline" class="form-input" placeholder="Short one-liner customers see first." maxlength="120" />
@@ -351,14 +386,11 @@
       </div>
     </div>
 
-    <!-- 10. READ-ONLY INFO -->
+    <!-- 10. PUBLIC URL -->
     <div class="section-card space-y-2">
-      <h2 class="font-display font-black text-lg">Listing Info</h2>
-      <p class="text-sm text-gray-400">Need to change these? <a href="mailto:hello@yumyumpo.com" class="underline">Contact YUMYUMPO</a>.</p>
-      <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mt-2">
-        <div><dt class="text-gray-400 text-xs">Cuisine</dt><dd class="font-semibold" id="ro-cuisine">—</dd></div>
-        <div><dt class="text-gray-400 text-xs">Slug</dt><dd class="font-semibold" id="ro-slug">—</dd></div>
-      </dl>
+      <h2 class="font-display font-black text-lg">Public URL</h2>
+      <p class="text-sm text-gray-400">Need to change the URL slug? <a href="mailto:hello@yumyumpo.com" class="underline">Contact YUMYUMPO</a>.</p>
+      <p class="text-sm mt-2">Slug: <span class="font-mono font-semibold" id="ro-slug">—</span></p>
     </div>
 
       </form>
@@ -402,9 +434,9 @@
 </div>
 
 <script src="../assets/js/config.js"></script>
-<script src="../assets/js/supabase-client.js?v=preview1"></script>
+<script src="../assets/js/supabase-client.js?v=preview2"></script>
 <script src="../assets/js/main.js"></script>
-<script src="../assets/js/account-restaurant.js?v=preview1"></script>
+<script src="../assets/js/account-restaurant.js?v=preview2"></script>
 <script src="../assets/js/pwa.js"></script>
 </body>
 </html>

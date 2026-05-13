@@ -103,14 +103,14 @@ function populateForm() {
   publicLink.href = `../restaurant.html?slug=${restaurant.slug}`;
   publicLink.textContent = `yumyumpo.vercel.app/restaurant?slug=${restaurant.slug}`;
 
-  const fields = ['tagline','description','location','address','phone','website_url','whatsapp_url','instagram_url','facebook_url','messenger_url'];
+  const fields = ['name','cuisine_type','google_rating','review_count','tagline','description','location','address','phone','website_url','whatsapp_url','instagram_url','facebook_url','messenger_url'];
   fields.forEach(name => {
     const el = document.querySelector(`[name="${name}"]`);
-    if (el) el.value = restaurant[name] || '';
+    if (el) el.value = restaurant[name] ?? '';
   });
 
-  document.getElementById('ro-cuisine').textContent = restaurant.cuisine_type || '—';
-  document.getElementById('ro-slug').textContent    = restaurant.slug || '—';
+  const slugEl = document.getElementById('ro-slug');
+  if (slugEl) slugEl.textContent = restaurant.slug || '—';
 
   renderCover();
   renderLogo();
@@ -494,6 +494,10 @@ async function save() {
   const fd = Object.fromEntries(new FormData(form));
 
   const payload = {
+    name:            (fd.name || restaurant.name || '').trim(),
+    cuisine_type:    (fd.cuisine_type || restaurant.cuisine_type || '').trim(),
+    google_rating:   fd.google_rating !== '' ? parseFloat(fd.google_rating) : null,
+    review_count:    fd.review_count  !== '' ? parseInt(fd.review_count, 10) : null,
     tagline:         fd.tagline       || null,
     description:     fd.description   || null,
     location:        fd.location      || null,
@@ -614,10 +618,10 @@ function snapshot() {
   return {
     id:                restaurant.id,
     slug:              restaurant.slug,
-    name:              restaurant.name,
-    cuisine_type:      restaurant.cuisine_type,
-    google_rating:     restaurant.google_rating,
-    review_count:      restaurant.review_count,
+    name:              fd.name || restaurant.name,
+    cuisine_type:      fd.cuisine_type || restaurant.cuisine_type,
+    google_rating:     fd.google_rating !== '' ? parseFloat(fd.google_rating) : restaurant.google_rating,
+    review_count:      fd.review_count  !== '' ? parseInt(fd.review_count, 10) : restaurant.review_count,
     is_featured:       restaurant.is_featured,
     has_yumyumpo_site: restaurant.has_yumyumpo_site,
     tagline:           fd.tagline || '',
