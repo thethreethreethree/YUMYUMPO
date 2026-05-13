@@ -232,7 +232,7 @@ async function loadMenu(c, restaurantId) {
     .eq('restaurant_id', restaurantId)
     .order('sort_order');
   const { data: items } = await c.from('menu_items')
-    .select('id, menu_category_id, name, description, price, image_url, gallery_urls, tags, sort_order, is_available')
+    .select('id, menu_category_id, name, description, price, price_note, image_url, gallery_urls, tags, sort_order, is_available')
     .eq('restaurant_id', restaurantId)
     .order('sort_order');
 

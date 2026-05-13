@@ -908,7 +908,7 @@ window.submitRestaurant = async function(e) {
   /* 1. Insert restaurant and get the new UUID back */
   const { data: inserted, error } = await window.YYP.client.from('restaurants').insert([{
     name:              data.name,
-    slug:              data.slug,
+    slug:              toSlug(data.slug),
     description:       data.description || null,
     tagline:           data.tagline     || null,
     cuisine_type:      data.cuisine_type,

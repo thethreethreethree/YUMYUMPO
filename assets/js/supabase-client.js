@@ -113,7 +113,22 @@
     if (data.gallery_urls && !data.gallery)            data.gallery      = data.gallery_urls;
     if (data.food_gallery_urls && !data.food_gallery)  data.food_gallery = data.food_gallery_urls;
     if (Array.isArray(data.restaurant_tags))           data.tags         = data.restaurant_tags.map(t => t.tag_name);
-    if (Array.isArray(data.operating_hours))           data.hours        = data.operating_hours;
+    if (Array.isArray(data.operating_hours)) {
+      const fmt = t => {
+        if (!t) return '';
+        const [hh, mm] = String(t).split(':');
+        const h = parseInt(hh, 10);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const h12 = ((h + 11) % 12) + 1;
+        return `${h12}:${mm || '00'} ${period}`;
+      };
+      data.hours = data.operating_hours.map(h => ({
+        day:    h.day_of_week,
+        open:   fmt(h.open_time),
+        close:  fmt(h.close_time),
+        closed: !!h.is_closed,
+      }));
+    }
 
     /* Menu adapter: normalise each item so renderMenu sees a consistent shape. */
     if (Array.isArray(data.menu_categories)) {
