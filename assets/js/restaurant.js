@@ -873,9 +873,12 @@ function renderGalleryMosaic(r) {
   const mosaic = document.getElementById('gallery-mosaic');
   if (!mosaic) return;
 
-  /* Use cover as tile 1, then up to 3 venue gallery photos. No "+N more"
-     overlay — all tiles render as normal photos. */
-  const imgs = [r.cover_image_url, ...(r.gallery || [])].filter(Boolean).slice(0, 4);
+  /* Prefer the 4 venue gallery photos. If gallery has fewer than 4, pad
+     with the cover so the mosaic still feels full. No "+N more" overlay. */
+  const gallery = (r.gallery || []).filter(Boolean);
+  const imgs = (gallery.length >= 4
+    ? gallery.slice(0, 4)
+    : [r.cover_image_url, ...gallery].filter(Boolean).slice(0, 4));
   if (imgs.length < 2) { mosaic.parentElement?.classList.add('hidden'); return; }
 
   const fallback = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900&auto=format&fit=crop&q=80';
