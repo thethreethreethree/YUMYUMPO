@@ -340,7 +340,7 @@
     <!-- 8. LOCATION & MAP  →  Map section -->
     <div class="section-card space-y-3">
       <h2 class="font-display font-black text-lg">Location & Map</h2>
-      <p class="text-xs text-gray-500 -mt-1">▸ Powers the <strong>Map</strong> section + "Get directions" button. We auto-generate the embed from your address.</p>
+      <p class="text-xs text-gray-500 -mt-1">▸ Powers the <strong>Map</strong> section + "Get directions" button. We auto-generate the embed from your address; the advanced fields override that when Google misplaces you.</p>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="form-label">City / Location</label>
@@ -351,6 +351,28 @@
           <input type="text" name="address" class="form-input" placeholder="123 Main Street, El Nido, Palawan 5313" />
         </div>
       </div>
+      <details class="text-sm">
+        <summary class="cursor-pointer font-bold text-gray-600 hover:text-brand-black">Advanced map overrides</summary>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+          <div>
+            <label class="form-label">Latitude</label>
+            <input type="number" step="any" name="latitude" class="form-input" placeholder="11.174" />
+          </div>
+          <div>
+            <label class="form-label">Longitude</label>
+            <input type="number" step="any" name="longitude" class="form-input" placeholder="119.407" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="form-label">Custom Google Maps embed URL</label>
+            <input type="url" name="map_embed_url" class="form-input" placeholder="https://www.google.com/maps/embed?pb=…" />
+            <p class="form-help">Paste from Google Maps → Share → Embed a map → Copy HTML and use only the src URL.</p>
+          </div>
+          <div class="sm:col-span-2">
+            <label class="form-label">Custom "Get Directions" URL</label>
+            <input type="url" name="directions_url" class="form-input" placeholder="https://maps.google.com/?q=…" />
+          </div>
+        </div>
+      </details>
     </div>
 
     <!-- 9. CONTACT & SOCIAL  →  Action card + FAB buttons -->
@@ -434,9 +456,9 @@
 </div>
 
 <script src="../assets/js/config.js"></script>
-<script src="../assets/js/supabase-client.js?v=preview2"></script>
+<script src="../assets/js/supabase-client.js?v=preview3"></script>
 <script src="../assets/js/main.js"></script>
-<script src="../assets/js/account-restaurant.js?v=preview2"></script>
+<script src="../assets/js/account-restaurant.js?v=preview3"></script>
 <script src="../assets/js/pwa.js"></script>
 </body>
 </html>

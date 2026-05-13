@@ -103,7 +103,7 @@ function populateForm() {
   publicLink.href = `../restaurant.html?slug=${restaurant.slug}`;
   publicLink.textContent = `yumyumpo.vercel.app/restaurant?slug=${restaurant.slug}`;
 
-  const fields = ['name','cuisine_type','google_rating','review_count','tagline','description','location','address','phone','website_url','whatsapp_url','instagram_url','facebook_url','messenger_url'];
+  const fields = ['name','cuisine_type','google_rating','review_count','tagline','description','location','address','latitude','longitude','map_embed_url','directions_url','phone','website_url','whatsapp_url','instagram_url','facebook_url','messenger_url'];
   fields.forEach(name => {
     const el = document.querySelector(`[name="${name}"]`);
     if (el) el.value = restaurant[name] ?? '';
@@ -502,6 +502,10 @@ async function save() {
     description:     fd.description   || null,
     location:        fd.location      || null,
     address:         fd.address       || null,
+    latitude:        fd.latitude  !== '' ? parseFloat(fd.latitude)  : null,
+    longitude:       fd.longitude !== '' ? parseFloat(fd.longitude) : null,
+    map_embed_url:   fd.map_embed_url || null,
+    directions_url:  fd.directions_url || null,
     phone:           fd.phone         || null,
     website_url:     normalizeUrl(fd.website_url)        || null,
     whatsapp_url:    normalizeWhatsapp(fd.whatsapp_url)  || null,
@@ -628,8 +632,10 @@ function snapshot() {
     description:       fd.description || '',
     location:          fd.location || '',
     address:           fd.address || '',
-    latitude:          restaurant.latitude || null,
-    longitude:         restaurant.longitude || null,
+    latitude:          fd.latitude !== '' ? parseFloat(fd.latitude)  : (restaurant.latitude  || null),
+    longitude:         fd.longitude !== '' ? parseFloat(fd.longitude) : (restaurant.longitude || null),
+    map_embed:         fd.map_embed_url  || restaurant.map_embed_url || '',
+    directions_url:    fd.directions_url || restaurant.directions_url || '',
     phone:             fd.phone || '',
     website_url:       fd.website_url || '',
     whatsapp_url:      fd.whatsapp_url || '',

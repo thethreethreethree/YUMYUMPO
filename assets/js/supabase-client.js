@@ -112,6 +112,7 @@
     /* Shape-adapter — bridge Supabase columns to the static template's field names. */
     if (data.gallery_urls && !data.gallery)            data.gallery      = data.gallery_urls;
     if (data.food_gallery_urls && !data.food_gallery)  data.food_gallery = data.food_gallery_urls;
+    if (data.map_embed_url && !data.map_embed)         data.map_embed    = data.map_embed_url;
     if (Array.isArray(data.restaurant_tags))           data.tags         = data.restaurant_tags.map(t => t.tag_name);
     if (Array.isArray(data.operating_hours)) {
       const fmt = t => {
