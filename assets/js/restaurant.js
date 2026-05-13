@@ -523,6 +523,26 @@ RESTAURANTS['canton-empire']        = RESTAURANTS['ramen-tori'];
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   const slug = (params.get('slug') || params.get('id') || '').trim();
+  const isPreview = params.get('preview') === '1';
+
+  /* Live-preview mode: don't fetch anything, just render whatever the
+     parent window posts to us via postMessage. */
+  if (isPreview) {
+    document.documentElement.classList.add('yyp-preview-mode');
+    /* Suppress the not-found splash so we render a blank shell first. */
+    const skel = document.getElementById('hero-skeleton');
+    if (skel) skel.style.opacity = '0.4';
+    window.addEventListener('message', (e) => {
+      if (!e.data || e.data.type !== 'yyp-preview') return;
+      try {
+        renderPage(e.data.payload || {});
+        if (typeof initReveal === 'function') initReveal();
+      } catch (err) { console.warn('preview render error:', err); }
+    });
+    /* Let the parent know we're ready to receive snapshots. */
+    window.parent?.postMessage({ type: 'yyp-preview-ready' }, '*');
+    return;
+  }
 
   if (!slug) {
     showNotFound(null);

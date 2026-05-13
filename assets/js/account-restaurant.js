@@ -73,6 +73,12 @@ async function init() {
   populateForm();
   wireEvents();
   showMain();
+
+  /* Point the preview iframe at the public template in preview mode.
+     restaurant.js will see ?preview=1 and listen for postMessage
+     instead of fetching from Supabase. */
+  const frame = document.getElementById('preview-frame');
+  if (frame) frame.src = `../restaurant.html?slug=${encodeURIComponent(restaurant.slug)}&preview=1`;
 }
 
 
@@ -424,7 +430,11 @@ function wireEvents() {
   window.addItem        = ci => { categories[ci].items.push({ name:'', price:'', sort_order: categories[ci].items.length }); renderMenu(); markDirty(); };
 }
 
-function markDirty() { dirty = true; document.getElementById('save-bar').style.display = 'block'; }
+function markDirty() {
+  dirty = true;
+  document.getElementById('save-bar').style.display = 'block';
+  schedulePreview();
+}
 
 
 /* ── Photo upload ────────────────────────────────────────── */
@@ -574,6 +584,97 @@ async function save() {
 function discard() {
   if (!confirm('Discard unsaved changes?')) return;
   location.reload();
+}
+
+
+/* ── Live preview (right pane) ───────────────────────────── */
+let previewReady = false;
+let previewQueued = false;
+
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'yyp-preview-ready') {
+    previewReady = true;
+    pushPreview();
+  }
+});
+
+function pushPreview() {
+  if (!previewReady || !restaurant) { previewQueued = true; return; }
+  const iframe = document.getElementById('preview-frame');
+  if (!iframe?.contentWindow) return;
+  iframe.contentWindow.postMessage({ type: 'yyp-preview', payload: snapshot() }, '*');
+}
+
+/* Build the shape that restaurant.js renderPage expects. */
+function snapshot() {
+  const form = document.getElementById('owner-form');
+  const fd = form ? Object.fromEntries(new FormData(form)) : {};
+  const photosFlat = (it) => (Array.isArray(it.photos) ? it.photos : []).filter(Boolean);
+
+  return {
+    id:                restaurant.id,
+    slug:              restaurant.slug,
+    name:              restaurant.name,
+    cuisine_type:      restaurant.cuisine_type,
+    google_rating:     restaurant.google_rating,
+    review_count:      restaurant.review_count,
+    is_featured:       restaurant.is_featured,
+    has_yumyumpo_site: restaurant.has_yumyumpo_site,
+    tagline:           fd.tagline || '',
+    description:       fd.description || '',
+    location:          fd.location || '',
+    address:           fd.address || '',
+    latitude:          restaurant.latitude || null,
+    longitude:         restaurant.longitude || null,
+    phone:             fd.phone || '',
+    website_url:       fd.website_url || '',
+    whatsapp_url:      fd.whatsapp_url || '',
+    instagram_url:     fd.instagram_url || '',
+    facebook_url:      fd.facebook_url || '',
+    messenger_url:     fd.messenger_url || '',
+    cover_image_url:   restaurant.cover_image_url || '',
+    logo_image_url:    restaurant.logo_image_url || '',
+    gallery:           [...pendingGallery],
+    gallery_urls:      [...pendingGallery],
+    food_gallery:      [...pendingFoodGallery],
+    food_gallery_urls: [...pendingFoodGallery],
+    tags:              [...pendingVibeTags],
+    hours: DAYS.map(d => ({
+      day:    d,
+      open:   hours[d].is_closed ? '' : hours[d].open_time,
+      close:  hours[d].is_closed ? '' : hours[d].close_time,
+      closed: !!hours[d].is_closed,
+    })),
+    menu_categories: categories
+      .filter(c => c.name?.trim())
+      .map((c, ci) => ({
+        id: c.id, name: c.name, sort_order: ci,
+        items: c.items
+          .filter(it => it.name?.trim())
+          .map((it, ii) => {
+            const photos = photosFlat(it);
+            return {
+              id: it.id, name: it.name,
+              description: it.description || '',
+              price: it.price || '',
+              price_note: it.price_note || '',
+              image: photos[0] || '',
+              image_url: photos[0] || '',
+              gallery: photos,
+              tags: Array.isArray(it.tags) ? it.tags : [],
+              sort_order: ii,
+              is_available: true,
+            };
+          }),
+      })),
+  };
+}
+
+/* Debounced push */
+let pushTimer;
+function schedulePreview() {
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(pushPreview, 120);
 }
 
 

@@ -79,6 +79,61 @@
     }
     .vibe-chip:hover  { border-color:#FFD000; color:#111; }
     .vibe-chip.active { background:#FFD000; border-color:#FFD000; color:#111; }
+
+    /* Split-pane editor */
+    .editor-shell {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 24px 24px 100px;
+      align-items: start;
+    }
+    .editor-pane {
+      min-width: 0;
+    }
+    .preview-pane {
+      position: sticky;
+      top: 80px;
+      height: calc(100vh - 96px);
+      background: #111;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+    }
+    .preview-frame {
+      width: 100%; height: 100%; border: 0; display: block; background: #111;
+    }
+    .preview-toolbar {
+      display: none;
+      position: sticky; top: 64px; z-index: 30;
+      background: #fff; border-bottom: 1.5px solid #F3F3F3;
+      padding: 10px 16px;
+    }
+    .preview-toolbar .tab-btn {
+      padding: 8px 16px; border-radius: 999px; border: 1.5px solid #E8E8E8;
+      background: #fff; color: #6B6B6B; font-weight: 700; font-size: 0.82rem;
+      cursor: pointer;
+    }
+    .preview-toolbar .tab-btn.active {
+      background: #111; color: #FFD000; border-color: #111;
+    }
+    @media (max-width: 1023px) {
+      .editor-shell {
+        grid-template-columns: 1fr;
+        padding: 0 16px 100px;
+      }
+      .preview-toolbar { display: flex; gap: 10px; justify-content: center; }
+      .preview-pane {
+        position: fixed; inset: 56px 0 0 0;
+        height: auto; border-radius: 0;
+        z-index: 20;
+        display: none;
+      }
+      .preview-pane.is-active { display: block; }
+      .editor-pane.is-hidden  { display: none; }
+    }
   </style>
 </head>
 
@@ -120,15 +175,24 @@
 </div>
 
 <!-- MAIN -->
-<main class="acct-container" id="main" style="display:none">
+<main id="main" style="display:none">
 
-  <header class="mb-6">
-    <h1 class="font-display font-black text-3xl text-brand-black" id="rest-name">—</h1>
-    <p class="text-gray-400 text-sm mt-1">Edit your public listing. Changes go live immediately.</p>
-    <p class="text-xs text-gray-400 mt-1">Public page: <a id="public-link" href="#" target="_blank" class="text-yellow-600 underline">View →</a></p>
-  </header>
+  <!-- Mobile-only tab switcher -->
+  <div class="preview-toolbar">
+    <button type="button" class="tab-btn active" id="tab-edit"    onclick="setPaneMode('edit')">Edit</button>
+    <button type="button" class="tab-btn"        id="tab-preview" onclick="setPaneMode('preview')">Preview</button>
+  </div>
 
-  <form id="owner-form" class="space-y-6 pb-24">
+  <div class="editor-shell">
+    <div class="editor-pane" id="editor-pane">
+
+      <header class="mb-6">
+        <h1 class="font-display font-black text-3xl text-brand-black" id="rest-name">—</h1>
+        <p class="text-gray-400 text-sm mt-1">Edit your public listing. Preview on the right updates as you type.</p>
+        <p class="text-xs text-gray-400 mt-1">Public page: <a id="public-link" href="#" target="_blank" class="text-yellow-600 underline">View →</a></p>
+      </header>
+
+      <form id="owner-form" class="space-y-6 pb-12">
 
     <!-- 1. COVER + LOGO  →  Hero -->
     <div class="section-card space-y-4">
@@ -297,8 +361,34 @@
       </dl>
     </div>
 
-  </form>
+      </form>
+    </div><!-- /.editor-pane -->
+
+    <aside class="preview-pane" id="preview-pane">
+      <iframe id="preview-frame" class="preview-frame"
+              title="Live preview of your restaurant page"
+              src="about:blank"></iframe>
+    </aside>
+
+  </div><!-- /.editor-shell -->
 </main>
+
+<script>
+  /* Mobile tab switcher between Edit and Preview panes. */
+  window.setPaneMode = function (mode) {
+    const ed = document.getElementById('editor-pane');
+    const pv = document.getElementById('preview-pane');
+    const be = document.getElementById('tab-edit');
+    const bp = document.getElementById('tab-preview');
+    if (mode === 'preview') {
+      ed.classList.add('is-hidden'); pv.classList.add('is-active');
+      bp.classList.add('active');    be.classList.remove('active');
+    } else {
+      ed.classList.remove('is-hidden'); pv.classList.remove('is-active');
+      be.classList.add('active');       bp.classList.remove('active');
+    }
+  };
+</script>
 
 <!-- STICKY SAVE BAR -->
 <div id="save-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1.5px solid #F3F3F3;padding:14px 20px;z-index:100;box-shadow:0 -6px 18px rgba(0,0,0,0.06)">
@@ -312,9 +402,9 @@
 </div>
 
 <script src="../assets/js/config.js"></script>
-<script src="../assets/js/supabase-client.js?v=marias3"></script>
+<script src="../assets/js/supabase-client.js?v=preview1"></script>
 <script src="../assets/js/main.js"></script>
-<script src="../assets/js/account-restaurant.js?v=marias3"></script>
+<script src="../assets/js/account-restaurant.js?v=preview1"></script>
 <script src="../assets/js/pwa.js"></script>
 </body>
 </html>
