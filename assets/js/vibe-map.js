@@ -93,21 +93,53 @@ async function loadRestaurants() {
   const c = window.YYP?.client;
   if (!c) { hideLoading(); return; }
   try {
-    /* Use homepage_picks view so RLS lets us read regardless of auth. */
+    /* Query `restaurants` directly — homepage_picks view omits lat/lng,
+       which silently dropped every marker. Public-read policy from
+       migration-001 allows anon SELECT on active rows. */
     const { data, error } = await c
-      .from('homepage_picks')
-      .select('*')
+      .from('restaurants')
+      .select(`
+        id, slug, name, tagline, description, cuisine_type,
+        location, address, latitude, longitude,
+        google_rating, review_count,
+        cover_image_url, logo_image_url, website_url,
+        has_yumyumpo_site, is_featured, ai_summary, rank_label, created_at,
+        restaurant_tags ( tag_name )
+      `)
+      .eq('is_active', true)
       .limit(500);
     if (error) throw error;
-    DATASET = data || [];
+    /* Fetch live buzz tiers if migration-005 is applied; silently
+       fall through if the RPC doesn't exist yet. */
+    let buzzBySlug = {};
+    try {
+      const { data: buzz, error: bErr } = await c.rpc('restaurant_buzz_tiers');
+      if (!bErr && Array.isArray(buzz)) {
+        buzz.forEach(b => { if (b.slug) buzzBySlug[b.slug] = b.buzz_tier; });
+      }
+    } catch {}
+
+    DATASET = (data || []).map(r => ({
+      ...r,
+      tags: Array.isArray(r.restaurant_tags) ? r.restaurant_tags.map(t => t.tag_name) : [],
+      buzz_tier: buzzBySlug[r.slug] || null,
+    }));
+    console.info(`[Vibe Map] loaded ${DATASET.length} active restaurants`);
   } catch (err) {
     console.warn('[Vibe Map] load failed:', err.message);
   }
 
-  /* For rows without lat/lng we'd ideally geocode, but free public
-     geocoders rate-limit aggressively. Skip silently — owners can
-     fill in lat/lng (or address-derived) in /account/restaurant. */
+  /* Geocode any rows missing lat/lng via the OSM Nominatim API. Cached
+     in sessionStorage so a quick reload doesn't re-geocode. */
   await ensureCoords();
+
+  /* Diagnostic — surface anything still un-pinnable. */
+  const skipped = DATASET.filter(r => !r.latitude || !r.longitude);
+  if (skipped.length) {
+    console.warn(`[Vibe Map] ${skipped.length} restaurants have no coords (filled neither lat/lng nor a geocodable address):`,
+      skipped.map(r => `${r.name} — "${r.address || r.location || '(none)'}"`));
+  }
+
   buildMarkers();
   buildRegions();
   applyFilter();
@@ -158,30 +190,41 @@ function buildRegions() {
 
 
 async function ensureCoords() {
-  /* If lat/lng missing but we have address, try the public Nominatim
-     geocoder ONCE per restaurant (one request/second cap). We cache in
-     sessionStorage so a quick reload doesn't re-geocode. */
-  const todo = DATASET.filter(r => (!r.latitude || !r.longitude) && r.address);
-  /* Cap at 30 per session — Nominatim's 1 req/sec policy means 30 ≈ 33s.
-     We cache by slug in sessionStorage so revisits are instant. */
+  /* If lat/lng missing, try the public Nominatim geocoder. We try several
+     query variants in order of specificity so very local addresses
+     ("Pops District, Corong-Corong") fall back to the city.
+     Nominatim policy: 1 req/sec — we wait between attempts. */
+  const todo = DATASET.filter(r => (!r.latitude || !r.longitude) && (r.address || r.location));
   for (const r of todo.slice(0, 30)) {
     const cacheKey = `yyp_geo_${r.slug}`;
     let cached = null;
     try { cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null'); } catch {}
     if (cached) { r.latitude = cached.lat; r.longitude = cached.lng; continue; }
-    try {
-      await new Promise(res => setTimeout(res, 1100));
-      const q = encodeURIComponent(r.address);
-      const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${q}`, {
-        headers: { 'Accept': 'application/json' },
-      });
-      const json = await resp.json();
-      if (json[0]) {
-        r.latitude  = parseFloat(json[0].lat);
-        r.longitude = parseFloat(json[0].lon);
-        try { sessionStorage.setItem(cacheKey, JSON.stringify({ lat: r.latitude, lng: r.longitude })); } catch {}
-      }
-    } catch { /* silent */ }
+
+    const queries = [
+      r.address,
+      r.address && r.location ? `${r.address}, ${r.location}` : null,
+      r.location,
+      r.location ? `${r.name} ${r.location}` : null,
+    ].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
+
+    for (const q of queries) {
+      try {
+        await new Promise(res => setTimeout(res, 1100));
+        const resp = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`,
+          { headers: { 'Accept': 'application/json' } }
+        );
+        const json = await resp.json();
+        if (json[0]) {
+          r.latitude  = parseFloat(json[0].lat);
+          r.longitude = parseFloat(json[0].lon);
+          try { sessionStorage.setItem(cacheKey, JSON.stringify({ lat: r.latitude, lng: r.longitude })); } catch {}
+          console.info(`[Vibe Map] geocoded "${r.name}" via "${q}" → ${r.latitude.toFixed(4)},${r.longitude.toFixed(4)}`);
+          break;
+        }
+      } catch { /* try next variant */ }
+    }
   }
 }
 
