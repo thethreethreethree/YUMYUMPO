@@ -554,9 +554,15 @@ async function processImageFiles(files, prefix) {
     const localURL = URL.createObjectURL(file);
     const itemEl   = addImagePreview(prefix, localURL, file.name);
 
-    // Upload to Supabase Storage if available
+    // Upload to Supabase Storage if available.
+    // Path = <slug>/<filename> — matches the per-restaurant convention so
+    // RLS owner policies (split_part(name,'/',1)) can find the row.
     if (window.YYP?.client) {
-      const fileName = `restaurants/${Date.now()}-${file.name.replace(/[^a-z0-9.]/gi, '-')}`;
+      const typedSlug = (document.querySelector('[name="slug"]')?.value || '').trim() ||
+                        (document.getElementById('edit-slug')?.value || '').trim() ||
+                        'unfiled';
+      const safeSlug = typedSlug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/^-+|-+$/g,'') || 'unfiled';
+      const fileName = `${safeSlug}/${Date.now()}-${file.name.replace(/[^a-z0-9.]/gi, '-')}`;
       const { data, error } = await window.YYP.client.storage
         .from('restaurant-photos')
         .upload(fileName, file, { cacheControl: '3600', upsert: false });

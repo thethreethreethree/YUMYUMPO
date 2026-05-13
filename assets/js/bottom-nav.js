@@ -13,6 +13,8 @@
   /* Skip on admin/analytics surfaces where the sidebar is the nav. */
   const path = location.pathname.toLowerCase();
   if (path.includes('/admin/') || path.endsWith('analytics.html')) return;
+  /* Skip on the owner restaurant editor — its sticky save bar owns the bottom. */
+  if (path.endsWith('/account/restaurant.html') || path.endsWith('/account/restaurant')) return;
 
   /* Inject styles once */
   if (!document.getElementById('yyp-bottom-nav-styles')) {
