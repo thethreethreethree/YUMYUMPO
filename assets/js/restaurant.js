@@ -873,27 +873,18 @@ function renderGalleryMosaic(r) {
   const mosaic = document.getElementById('gallery-mosaic');
   if (!mosaic) return;
 
-  const imgs = [r.cover_image_url, ...(r.gallery || [])].filter(Boolean).slice(0, 5);
+  /* Mosaic is the venue gallery only (cover already powers the hero).
+     Capped at 4 to match the dashboard cap. */
+  const imgs = (r.gallery || []).filter(Boolean).slice(0, 4);
   if (imgs.length < 2) { mosaic.parentElement?.classList.add('hidden'); return; }
 
   const fallback = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900&auto=format&fit=crop&q=80';
-  const extra    = imgs.length > 4 ? imgs.length - 4 : 0;
 
   mosaic.innerHTML = imgs.map((src, i) => {
     if (i === 0) {
       return `
         <div class="gm-photo gm-main" onclick="openGallery(0)">
           <img src="${src}" alt="${r.name}" loading="eager" onerror="this.src='${fallback}'" />
-        </div>`;
-    }
-    if (i === 4 && extra > 0) {
-      return `
-        <div class="gm-more gm-photo" onclick="openGallery(${i})">
-          <img src="${src}" alt="More photos" loading="lazy" onerror="this.src='${fallback}'" />
-          <div class="gm-more-overlay">
-            <span class="text-white font-black text-2xl">+${extra}</span>
-            <span class="text-white/70 text-xs font-semibold">more photos</span>
-          </div>
         </div>`;
     }
     return `
