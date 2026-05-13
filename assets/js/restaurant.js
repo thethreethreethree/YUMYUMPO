@@ -791,7 +791,7 @@ function renderHero(r) {
   if (!content) return;
 
   const logoHTML = r.logo_image_url
-    ? `<div style="position:absolute; top:max(76px, calc(env(safe-area-inset-top,0) + 76px)); left:1.5rem; width:84px; height:84px; border-radius:50%; overflow:hidden; border:3px solid rgba(255,255,255,0.85); box-shadow:0 8px 24px rgba(0,0,0,0.45); background:#fff; z-index:5;">
+    ? `<div style="position:absolute; top:max(80px, calc(env(safe-area-inset-top,0) + 80px)); right:1.5rem; width:84px; height:84px; border-radius:50%; overflow:hidden; border:3px solid rgba(255,255,255,0.85); box-shadow:0 8px 24px rgba(0,0,0,0.45); background:#fff; z-index:5;">
          <img src="${r.logo_image_url}" alt="${r.name} logo" style="width:100%; height:100%; object-fit:cover; display:block;" />
        </div>`
     : '';
