@@ -873,9 +873,9 @@ function renderGalleryMosaic(r) {
   const mosaic = document.getElementById('gallery-mosaic');
   if (!mosaic) return;
 
-  /* Mosaic is the venue gallery only (cover already powers the hero).
-     Capped at 4 to match the dashboard cap. */
-  const imgs = (r.gallery || []).filter(Boolean).slice(0, 4);
+  /* Use cover as tile 1, then up to 3 venue gallery photos. No "+N more"
+     overlay — all tiles render as normal photos. */
+  const imgs = [r.cover_image_url, ...(r.gallery || [])].filter(Boolean).slice(0, 4);
   if (imgs.length < 2) { mosaic.parentElement?.classList.add('hidden'); return; }
 
   const fallback = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900&auto=format&fit=crop&q=80';
