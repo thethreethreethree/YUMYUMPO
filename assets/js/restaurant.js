@@ -790,14 +790,23 @@ function renderHero(r) {
   const content = document.getElementById('r-hero-content');
   if (!content) return;
 
-  const logoHTML = r.logo_image_url
-    ? `<div style="position:absolute; top:max(80px, calc(env(safe-area-inset-top,0) + 80px)); right:1.5rem; width:84px; height:84px; border-radius:50%; overflow:hidden; border:3px solid rgba(255,255,255,0.85); box-shadow:0 8px 24px rgba(0,0,0,0.45); background:#fff; z-index:5;">
-         <img src="${r.logo_image_url}" alt="${r.name} logo" style="width:100%; height:100%; object-fit:cover; display:block;" />
-       </div>`
-    : '';
+  /* Render the logo as a fixed badge in the page's top-right corner
+     (above the hero, visible on the live page only — preview/iframe
+     contexts hide it via existing rules). */
+  if (r.logo_image_url) {
+    let badge = document.getElementById('yyp-logo-badge');
+    if (!badge) {
+      badge = document.createElement('div');
+      badge.id = 'yyp-logo-badge';
+      badge.style.cssText = 'position:fixed; top:calc(env(safe-area-inset-top,0) + 76px); right:18px; width:64px; height:64px; border-radius:50%; overflow:hidden; border:3px solid rgba(255,255,255,0.9); box-shadow:0 8px 24px rgba(0,0,0,0.35); background:#fff; z-index:55; pointer-events:none;';
+      document.body.appendChild(badge);
+    }
+    badge.innerHTML = `<img src="${r.logo_image_url}" alt="${r.name} logo" style="width:100%; height:100%; object-fit:cover; display:block;" />`;
+  } else {
+    document.getElementById('yyp-logo-badge')?.remove();
+  }
 
   content.innerHTML = `
-    ${logoHTML}
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="index.html">Home</a>
