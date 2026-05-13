@@ -130,9 +130,10 @@
 
   <form id="owner-form" class="space-y-6 pb-24">
 
-    <!-- COVER + LOGO -->
+    <!-- 1. COVER + LOGO  →  Hero -->
     <div class="section-card space-y-4">
       <h2 class="font-display font-black text-lg">Cover & Logo</h2>
+      <p class="text-xs text-gray-500 -mt-2">▸ Powers the <strong>Hero</strong> banner at the top of your page.</p>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="sm:col-span-2">
           <label class="form-label">Cover image</label>
@@ -149,9 +150,10 @@
       </div>
     </div>
 
-    <!-- BASICS -->
+    <!-- 2. ABOUT  →  Hero copy + About section -->
     <div class="section-card space-y-4">
       <h2 class="font-display font-black text-lg">About</h2>
+      <p class="text-xs text-gray-500 -mt-2">▸ Tagline shows in the <strong>Hero</strong>. Description fills the <strong>About</strong> block.</p>
       <div>
         <label class="form-label">Tagline</label>
         <input type="text" name="tagline" class="form-input" placeholder="Short one-liner customers see first." maxlength="120" />
@@ -162,96 +164,43 @@
         <textarea name="description" class="form-input" rows="5" placeholder="Tell your story…" maxlength="800"></textarea>
         <p class="form-help">800 characters max.</p>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="form-label">Location / City</label>
-          <input type="text" name="location" class="form-input" />
-        </div>
-        <div>
-          <label class="form-label">Full Address</label>
-          <input type="text" name="address" class="form-input" />
-        </div>
-      </div>
     </div>
 
-    <!-- CONTACT + SOCIAL -->
-    <div class="section-card space-y-4">
-      <h2 class="font-display font-black text-lg">Contact & Social</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="form-label">Phone</label>
-          <input type="tel" name="phone" class="form-input" placeholder="+63 912 345 6789" />
-        </div>
-        <div>
-          <label class="form-label">Website URL</label>
-          <input type="url" name="website_url" class="form-input" placeholder="https://yoursite.com" />
-        </div>
-        <div>
-          <label class="form-label">WhatsApp link</label>
-          <input type="url" name="whatsapp_url" class="form-input" placeholder="https://wa.me/639XXXXXXXXX" />
-          <p class="form-help">Generates a floating WhatsApp button on your page.</p>
-        </div>
-        <div>
-          <label class="form-label">Instagram URL</label>
-          <input type="url" name="instagram_url" class="form-input" placeholder="https://instagram.com/yourhandle" />
-        </div>
-        <div>
-          <label class="form-label">Facebook URL</label>
-          <input type="url" name="facebook_url" class="form-input" placeholder="https://facebook.com/yourpage" />
-        </div>
-        <div>
-          <label class="form-label">Messenger URL</label>
-          <input type="url" name="messenger_url" class="form-input" placeholder="https://m.me/yourpage" />
-        </div>
-      </div>
-    </div>
-
-    <!-- VENUE GALLERY -->
+    <!-- 3. VENUE GALLERY  →  Gallery mosaic -->
     <div class="section-card space-y-3">
       <div class="flex items-end justify-between">
         <h2 class="font-display font-black text-lg">Venue Gallery</h2>
         <p class="text-xs text-gray-400" id="gallery-count">0 / 4 photos</p>
       </div>
-      <p class="text-sm text-gray-400">Up to 4 photos of your space, interior, or vibe. Shown in the hero gallery mosaic.</p>
+      <p class="text-xs text-gray-500 -mt-1">▸ Renders as the <strong>Gallery mosaic</strong> just under the hero. Up to 4 photos of your space.</p>
       <div class="photo-grid" id="gallery-grid"></div>
       <input type="file" id="gallery-file" accept="image/*" multiple class="hidden" />
     </div>
 
-    <!-- FOOD GALLERY -->
-    <div class="section-card space-y-3">
-      <div class="flex items-end justify-between">
-        <h2 class="font-display font-black text-lg">Food Gallery</h2>
-        <p class="text-xs text-gray-400" id="food-gallery-count">0 / 6 photos</p>
-      </div>
-      <p class="text-sm text-gray-400">Up to 6 plated-food shots. Shown as a dedicated food gallery grid on your page.</p>
-      <div class="photo-grid" id="food-gallery-grid"></div>
-      <input type="file" id="food-gallery-file" accept="image/*" multiple class="hidden" />
-    </div>
-
-    <!-- VIBE TAGS -->
+    <!-- 4. VIBE TAGS  →  Hero chips + AI matching -->
     <div class="section-card space-y-3">
       <h2 class="font-display font-black text-lg">Vibe Tags</h2>
-      <p class="text-sm text-gray-400">Pick the tags that describe your place. Used by Fred and the discovery filter.</p>
+      <p class="text-xs text-gray-500 -mt-1">▸ Shown as chips in your <strong>Hero</strong>. Used by Fred and the discovery filter.</p>
       <div class="flex flex-wrap gap-2" id="vibe-tag-picker"></div>
     </div>
 
-    <!-- HOURS -->
+    <!-- 5. HOURS  →  Hours section -->
     <div class="section-card space-y-3">
       <div class="flex items-end justify-between">
         <h2 class="font-display font-black text-lg">Hours</h2>
         <button type="button" id="hours-quickfill" class="text-xs font-bold text-yellow-600 underline">Apply Mon-Fri to all weekdays</button>
       </div>
-      <p class="text-sm text-gray-400">Toggle "Closed" for any day you're shut. Otherwise pick an opening and closing time.</p>
+      <p class="text-xs text-gray-500 -mt-1">▸ Renders as the <strong>Hours</strong> table. Toggle "Closed" for any day you're shut.</p>
       <div id="hours-rows" class="space-y-2"></div>
     </div>
 
-    <!-- MENU -->
+    <!-- 6. MENU  →  Menu section -->
     <div class="section-card space-y-3">
       <div class="flex items-end justify-between">
         <h2 class="font-display font-black text-lg">Menu</h2>
         <button type="button" id="add-category-btn" class="text-xs font-bold text-yellow-600 underline">+ Add category</button>
       </div>
-      <p class="text-sm text-gray-400">Group menu items by category (Drinks, Mains, Desserts, etc.). Empty categories won't be shown on your page.</p>
+      <p class="text-xs text-gray-500 -mt-1">▸ Powers the <strong>Menu</strong> section (Signature Dishes, Crowd Favourites, etc.). Each item: name + description + price + up to 3 photos + tags.</p>
       <div id="menu-categories" class="space-y-4"></div>
       <datalist id="cat-suggestions">
         <option value="Signature Dishes"></option>
@@ -278,7 +227,67 @@
       </datalist>
     </div>
 
-    <!-- READ-ONLY INFO -->
+    <!-- 7. FOOD GALLERY  →  Food gallery grid -->
+    <div class="section-card space-y-3">
+      <div class="flex items-end justify-between">
+        <h2 class="font-display font-black text-lg">Food Gallery</h2>
+        <p class="text-xs text-gray-400" id="food-gallery-count">0 / 6 photos</p>
+      </div>
+      <p class="text-xs text-gray-500 -mt-1">▸ Renders as the <strong>Food Gallery</strong> grid below the menu. Up to 6 plated-food shots.</p>
+      <div class="photo-grid" id="food-gallery-grid"></div>
+      <input type="file" id="food-gallery-file" accept="image/*" multiple class="hidden" />
+    </div>
+
+    <!-- 8. LOCATION & MAP  →  Map section -->
+    <div class="section-card space-y-3">
+      <h2 class="font-display font-black text-lg">Location & Map</h2>
+      <p class="text-xs text-gray-500 -mt-1">▸ Powers the <strong>Map</strong> section + "Get directions" button. We auto-generate the embed from your address.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">City / Location</label>
+          <input type="text" name="location" class="form-input" placeholder="e.g., El Nido, Palawan" />
+        </div>
+        <div>
+          <label class="form-label">Full Address</label>
+          <input type="text" name="address" class="form-input" placeholder="123 Main Street, El Nido, Palawan 5313" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. CONTACT & SOCIAL  →  Action card + FAB buttons -->
+    <div class="section-card space-y-4">
+      <h2 class="font-display font-black text-lg">Contact & Social</h2>
+      <p class="text-xs text-gray-500 -mt-2">▸ Powers the <strong>Action Card</strong> on the right + the floating WhatsApp / Messenger / IG / Website bubbles.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">Phone</label>
+          <input type="tel" name="phone" class="form-input" placeholder="+63 912 345 6789" />
+        </div>
+        <div>
+          <label class="form-label">Website URL</label>
+          <input type="url" name="website_url" class="form-input" placeholder="https://yoursite.com" />
+        </div>
+        <div>
+          <label class="form-label">WhatsApp link</label>
+          <input type="url" name="whatsapp_url" class="form-input" placeholder="https://wa.me/639XXXXXXXXX" />
+          <p class="form-help">Floating green WhatsApp button on your page.</p>
+        </div>
+        <div>
+          <label class="form-label">Instagram URL</label>
+          <input type="url" name="instagram_url" class="form-input" placeholder="https://instagram.com/yourhandle" />
+        </div>
+        <div>
+          <label class="form-label">Facebook URL</label>
+          <input type="url" name="facebook_url" class="form-input" placeholder="https://facebook.com/yourpage" />
+        </div>
+        <div>
+          <label class="form-label">Messenger URL</label>
+          <input type="url" name="messenger_url" class="form-input" placeholder="https://m.me/yourpage" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. READ-ONLY INFO -->
     <div class="section-card space-y-2">
       <h2 class="font-display font-black text-lg">Listing Info</h2>
       <p class="text-sm text-gray-400">Need to change these? <a href="mailto:hello@yumyumpo.com" class="underline">Contact YUMYUMPO</a>.</p>
@@ -303,9 +312,9 @@
 </div>
 
 <script src="../assets/js/config.js"></script>
-<script src="../assets/js/supabase-client.js?v=marias2"></script>
+<script src="../assets/js/supabase-client.js?v=marias3"></script>
 <script src="../assets/js/main.js"></script>
-<script src="../assets/js/account-restaurant.js?v=marias2"></script>
+<script src="../assets/js/account-restaurant.js?v=marias3"></script>
 <script src="../assets/js/pwa.js"></script>
 </body>
 </html>
