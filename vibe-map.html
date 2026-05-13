@@ -59,6 +59,27 @@
     }
     .vm-back:hover { background: #E8E8E8; }
 
+    .vm-region-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .vm-region-label {
+      font-size: 0.78rem; font-weight: 700; color: #111;
+      white-space: nowrap;
+    }
+    .vm-region-select {
+      flex: 1; max-width: 280px;
+      padding: 7px 32px 7px 14px;
+      font-size: 0.85rem; font-weight: 700; color: #111;
+      background: #F3F3F3 url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23111' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e") no-repeat right 10px center;
+      border: 1.5px solid #E8E8E8; border-radius: 12px;
+      appearance: none; -webkit-appearance: none;
+      cursor: pointer;
+    }
+    .vm-region-select:focus { outline: none; border-color: #FFD000; box-shadow: 0 0 0 3px rgba(255,208,0,0.18); }
+    .vm-region-meta {
+      font-size: 0.7rem; color: #ABABAB; font-weight: 600;
+    }
+
     .vm-filters {
       display: flex; gap: 8px; overflow-x: auto;
       padding-bottom: 2px;
@@ -181,6 +202,14 @@
         Discover
       </a>
     </div>
+    <div class="vm-region-row">
+      <label for="vm-region" class="vm-region-label">📍 Region</label>
+      <select id="vm-region" class="vm-region-select">
+        <option value="all">All regions</option>
+      </select>
+      <span class="vm-region-meta" id="vm-region-meta"></span>
+    </div>
+
     <div class="vm-filters" id="vm-filters">
       <!-- Filter chips injected by JS -->
     </div>

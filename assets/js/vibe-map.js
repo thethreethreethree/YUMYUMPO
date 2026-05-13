@@ -35,9 +35,11 @@ const VIBE_ICON = {
 };
 
 let MAP        = null;
-let MARKERS    = [];   // [{ marker, vibes:Set, row }]
+let MARKERS    = [];   // [{ marker, vibes:Set, row, region }]
 let ACTIVE     = 'all';
+let REGION     = 'el-nido';   // default region; expands as new locations come in
 let DATASET    = [];
+let REGIONS    = [];   // [{ key, label, count }]
 
 /* El Nido default center if no markers — most of your seed restaurants
    live in the Philippines so this is a reasonable fallback. */
@@ -107,9 +109,51 @@ async function loadRestaurants() {
      fill in lat/lng (or address-derived) in /account/restaurant. */
   await ensureCoords();
   buildMarkers();
-  fitToMarkers();
-  updateCounts();
+  buildRegions();
+  applyFilter();
   hideLoading();
+}
+
+
+/* ── Region grouping ─────────────────────────────────────────
+   We derive regions from the `location` field by taking what
+   comes after the comma (or the whole string if no comma).
+   "El Nido, Palawan" → "El Nido"
+   "Coron, Palawan"   → "Coron"
+   When new restaurants are added in other cities, they appear
+   automatically — no code change required. */
+function regionKey(loc) {
+  if (!loc) return 'other';
+  const first = String(loc).split(',')[0].trim();
+  return first.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g,'') || 'other';
+}
+function regionLabel(loc) {
+  if (!loc) return 'Other';
+  return String(loc).split(',')[0].trim() || 'Other';
+}
+
+function buildRegions() {
+  const map = new Map();
+  MARKERS.forEach(({ row, region }) => {
+    const key = region.key;
+    if (!map.has(key)) map.set(key, { key, label: region.label, count: 0 });
+    map.get(key).count++;
+  });
+  REGIONS = [...map.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+
+  const sel = document.getElementById('vm-region');
+  const totalWithCoords = MARKERS.length;
+  sel.innerHTML =
+    `<option value="all">All regions (${totalWithCoords})</option>` +
+    REGIONS.map(r => `<option value="${r.key}">${r.label} (${r.count})</option>`).join('');
+
+  /* Default selection: prefer El Nido if present, else first region. */
+  if (REGIONS.some(r => r.key === 'el-nido')) REGION = 'el-nido';
+  else if (REGIONS.length)                    REGION = REGIONS[0].key;
+  else                                         REGION = 'all';
+  sel.value = REGION;
+
+  sel.onchange = () => { REGION = sel.value; applyFilter(); };
 }
 
 
@@ -157,7 +201,10 @@ function buildMarkers() {
     const marker = L.marker([r.latitude, r.longitude], { icon })
       .bindPopup(popupHTML(r), { closeButton: true, autoPan: true });
     marker.addTo(MAP);
-    MARKERS.push({ marker, vibes, row: r });
+    MARKERS.push({
+      marker, vibes, row: r,
+      region: { key: regionKey(r.location), label: regionLabel(r.location) },
+    });
   }
 }
 
@@ -226,21 +273,35 @@ function escapeHtml(s) {
 
 function applyFilter() {
   let visibleCount = 0;
-  MARKERS.forEach(({ marker, vibes }) => {
-    const show = ACTIVE === 'all' || vibes.has(ACTIVE);
+  MARKERS.forEach(({ marker, vibes, region }) => {
+    const vibeOk   = ACTIVE === 'all' || vibes.has(ACTIVE);
+    const regionOk = REGION === 'all' || region.key === REGION;
+    const show     = vibeOk && regionOk;
     if (show) { marker.addTo(MAP); visibleCount++; }
     else      marker.remove();
   });
   document.getElementById('vm-empty').classList.toggle('is-visible', visibleCount === 0);
+  /* Update region meta line */
+  const meta = document.getElementById('vm-region-meta');
+  if (meta) meta.textContent = visibleCount ? `${visibleCount} place${visibleCount > 1 ? 's' : ''} shown` : '';
+  /* Per-vibe live counts respect the selected region */
+  updateCounts();
   fitToVisible();
 }
 
 function fitToVisible() {
   const bounds = L.latLngBounds([]);
-  MARKERS.forEach(({ marker, vibes }) => {
-    if (ACTIVE === 'all' || vibes.has(ACTIVE)) bounds.extend(marker.getLatLng());
+  MARKERS.forEach(({ marker, vibes, region }) => {
+    const vibeOk   = ACTIVE === 'all' || vibes.has(ACTIVE);
+    const regionOk = REGION === 'all' || region.key === REGION;
+    if (vibeOk && regionOk) bounds.extend(marker.getLatLng());
   });
-  if (bounds.isValid()) MAP.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
+  if (bounds.isValid()) {
+    MAP.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
+  } else if (REGION === 'el-nido') {
+    /* Fallback when El Nido has no markers yet — keep the user oriented. */
+    MAP.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+  }
 }
 
 function fitToMarkers() {
@@ -252,7 +313,8 @@ function fitToMarkers() {
 
 function updateCounts() {
   const counts = { all: 0, hot: 0, atmosphere: 0, social: 0, nightout: 0, family: 0 };
-  MARKERS.forEach(({ vibes }) => {
+  MARKERS.forEach(({ vibes, region }) => {
+    if (REGION !== 'all' && region.key !== REGION) return;
     counts.all++;
     for (const v of vibes) counts[v]++;
   });
