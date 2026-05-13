@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#FFD54F" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="icon" href="assets/images/YUMYUMPO.svg" type="image/svg+xml" />
+
+  <title>Vibe Map — YUMYUMPO</title>
+  <meta name="description" content="Find restaurants by mood, atmosphere, and buzz across El Nido and beyond. Interactive vibe-aware restaurant map." />
+
+  <!-- Leaflet (no API key, OpenStreetMap tiles) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: {'brand-yellow':'#FFD000','brand-black':'#111111','yellow-light':'#FFF9D6','gray-50':'#F9F9F9','gray-100':'#F3F3F3','gray-200':'#E8E8E8','gray-400':'#ABABAB','gray-600':'#6B6B6B'},
+        fontFamily: { display:['"Space Grotesk"','Inter','system-ui','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+      }}
+    }
+  </script>
+
+  <style>
+    body { background: #111; }
+    #vm-app { position: fixed; inset: 0; display: flex; flex-direction: column; }
+
+    .vm-topbar {
+      position: relative; z-index: 30;
+      background: #fff;
+      padding: 12px 16px;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .vm-topbar .vm-title-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .vm-topbar h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800; font-size: 1.25rem; letter-spacing: -0.02em; color: #111;
+    }
+    .vm-topbar h1 .vm-sub {
+      font-family: 'Inter', sans-serif;
+      font-weight: 500; font-size: 0.75rem; color: #6B6B6B; margin-left: 8px;
+    }
+    .vm-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.82rem; font-weight: 700; color: #111;
+      padding: 6px 12px; border-radius: 999px;
+      background: #F3F3F3; text-decoration: none;
+    }
+    .vm-back:hover { background: #E8E8E8; }
+
+    .vm-filters {
+      display: flex; gap: 8px; overflow-x: auto;
+      padding-bottom: 2px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .vm-filters::-webkit-scrollbar { display: none; }
+    .vm-chip {
+      flex-shrink: 0;
+      padding: 7px 14px; border-radius: 999px;
+      font-size: 0.8rem; font-weight: 700; cursor: pointer;
+      background: #fff; color: #6B6B6B;
+      border: 1.5px solid #E8E8E8;
+      transition: all 0.15s; user-select: none;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .vm-chip:hover { border-color: #FFD000; color: #111; }
+    .vm-chip.active {
+      background: #111; border-color: #111; color: #FFD000;
+      box-shadow: 0 4px 12px -3px rgba(0,0,0,0.25);
+    }
+    .vm-chip .vm-count {
+      background: rgba(0,0,0,0.06); color: inherit;
+      font-size: 0.66rem; padding: 1px 6px; border-radius: 999px;
+      font-weight: 800;
+    }
+    .vm-chip.active .vm-count { background: rgba(255,208,0,0.25); }
+
+    #vm-map { flex: 1; min-height: 0; z-index: 0; }
+
+    /* Custom marker — yellow dot with vibe icon */
+    .vm-marker {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #FFD000; color: #111;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.05rem;
+      border: 3px solid #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      cursor: pointer; transition: transform 0.15s;
+    }
+    .vm-marker:hover { transform: scale(1.12); }
+    .vm-marker.hot { background: #ef4444; color: #fff; }
+    .vm-marker.atmosphere { background: #a855f7; color: #fff; }
+    .vm-marker.social { background: #f97316; color: #fff; }
+    .vm-marker.nightout { background: #1e1b4b; color: #FFD000; }
+    .vm-marker.family { background: #22c55e; color: #fff; }
+
+    /* Popup */
+    .leaflet-popup-content-wrapper {
+      border-radius: 16px !important;
+      padding: 0 !important;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.18) !important;
+    }
+    .leaflet-popup-content { margin: 0 !important; width: 240px !important; }
+    .vm-popup-img {
+      width: 100%; height: 120px; object-fit: cover;
+      border-radius: 16px 16px 0 0;
+    }
+    .vm-popup-body { padding: 12px 14px 14px; }
+    .vm-popup-name {
+      font-family: 'Space Grotesk', sans-serif; font-weight: 800;
+      font-size: 0.98rem; color: #111; margin-bottom: 2px;
+    }
+    .vm-popup-meta {
+      font-size: 0.74rem; color: #6B6B6B; margin-bottom: 8px;
+    }
+    .vm-popup-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+    .vm-popup-tag {
+      font-size: 0.62rem; font-weight: 800;
+      padding: 2px 8px; border-radius: 999px;
+      background: #FFF9D6; color: #8A6900;
+      border: 1px solid rgba(255,208,0,0.4);
+    }
+    .vm-popup-actions { display: flex; gap: 6px; }
+    .vm-popup-btn {
+      flex: 1; text-align: center;
+      padding: 7px 8px; border-radius: 10px;
+      font-size: 0.74rem; font-weight: 800;
+      text-decoration: none;
+    }
+    .vm-popup-btn.primary { background: #FFD000; color: #111; }
+    .vm-popup-btn.primary:hover { background: #E6BB00; }
+    .vm-popup-btn.outline { background: #fff; color: #111; border: 1.5px solid #E8E8E8; }
+    .vm-popup-btn.outline:hover { border-color: #111; }
+
+    /* Empty state */
+    .vm-empty {
+      position: absolute; inset: auto 16px 24px; z-index: 10;
+      background: rgba(17,17,17,0.92); color: #fff;
+      padding: 12px 16px; border-radius: 14px;
+      backdrop-filter: blur(8px);
+      max-width: 360px; margin: 0 auto;
+      font-size: 0.82rem; text-align: center;
+      display: none;
+    }
+    .vm-empty.is-visible { display: block; }
+
+    /* Loading overlay */
+    .vm-loading {
+      position: absolute; inset: 0; z-index: 20;
+      background: rgba(17,17,17,0.85);
+      display: flex; align-items: center; justify-content: center;
+      color: #FFD000; font-weight: 800; letter-spacing: 0.05em;
+    }
+    .vm-loading.is-hidden { display: none; }
+  </style>
+</head>
+
+<body>
+
+<div id="vm-app">
+
+  <!-- Top bar -->
+  <div class="vm-topbar">
+    <div class="vm-title-row">
+      <div>
+        <h1>Vibe Map<span class="vm-sub">Restaurants by mood + buzz</span></h1>
+      </div>
+      <a href="discover.html" class="vm-back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg>
+        Discover
+      </a>
+    </div>
+    <div class="vm-filters" id="vm-filters">
+      <!-- Filter chips injected by JS -->
+    </div>
+  </div>
+
+  <!-- Map -->
+  <div id="vm-map"></div>
+
+  <!-- Empty banner -->
+  <div class="vm-empty" id="vm-empty">No restaurants match this filter yet. Try "All".</div>
+  <div class="vm-loading" id="vm-loading">Loading map…</div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="assets/js/config.js?v=launch1"></script>
+<script src="assets/js/supabase-client.js?v=launch1"></script>
+<script src="assets/js/vibe-map.js?v=launch1"></script>
+<script src="assets/js/pwa.js?v=launch1"></script>
+</body>
+</html>
