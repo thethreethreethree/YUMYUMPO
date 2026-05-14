@@ -249,7 +249,9 @@
     const a = allApplications.find(x => x.id === id);
     if (a) {
       a.status = 'approved';
-      a.onboard_token = row?.onboard_token;
+      /* Function returns out_token now (renamed to avoid PL/pgSQL
+         column-ambiguity with restaurants.slug). */
+      a.onboard_token = row?.out_token || row?.onboard_token;
       a.reviewed_at = new Date().toISOString();
     }
     updateAppCounts();

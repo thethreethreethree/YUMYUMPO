@@ -19,7 +19,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS apps_onboard_token_uidx
 
 -- Admin-only: approve an application → spawn a restaurant draft + claim token.
 CREATE OR REPLACE FUNCTION public.approve_application(p_app_id UUID)
-RETURNS TABLE (slug TEXT, onboard_token TEXT)
+-- Output columns prefixed with out_ so they don't collide with column
+-- names referenced inside the body (Postgres treats RETURNS TABLE
+-- columns as implicit OUT parameters in PL/pgSQL).
+RETURNS TABLE (out_slug TEXT, out_token TEXT)
 LANGUAGE plpgsql SECURITY DEFINER
 -- pgcrypto lives in the `extensions` schema in Supabase, so a
 -- SECURITY DEFINER function with locked search_path can't see
