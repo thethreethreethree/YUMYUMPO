@@ -214,10 +214,47 @@
         <div>
           <label class="form-label">Cuisine Type</label>
           <select name="cuisine_type" id="edit-cuisine" class="form-input">
-            <option>Filipino</option><option>Japanese</option><option>Italian</option>
-            <option>Korean</option><option>Chinese</option><option>Seafood</option>
-            <option>BBQ & Grill</option><option>Café</option><option>Vegan</option>
-            <option>Burgers</option><option>Mexican</option><option>Desserts</option>
+            <optgroup label="Filipino">
+              <option>Filipino</option><option>Ilocano</option><option>Kapampangan</option>
+              <option>Bicolano</option><option>Visayan</option><option>Mindanaoan</option>
+              <option>Filipino-Chinese</option><option>Street Food / Carinderia</option><option>Lutong Bahay</option>
+            </optgroup>
+            <optgroup label="Asian">
+              <option>Japanese</option><option>Korean</option><option>Chinese</option>
+              <option>Thai</option><option>Vietnamese</option><option>Indian</option>
+              <option>Malaysian</option><option>Indonesian</option><option>Asian Fusion</option>
+            </optgroup>
+            <optgroup label="European">
+              <option>Italian</option><option>Pizza</option><option>Spanish</option>
+              <option>French</option><option>Greek</option><option>Mediterranean</option>
+            </optgroup>
+            <optgroup label="American & Latin">
+              <option>American</option><option>Burgers</option><option>Steakhouse</option>
+              <option>BBQ & Grill</option><option>Mexican</option><option>Tex-Mex</option><option>Latin American</option>
+            </optgroup>
+            <optgroup label="Middle Eastern & Halal">
+              <option>Middle Eastern</option><option>Halal</option><option>Turkish</option>
+            </optgroup>
+            <optgroup label="Seafood & Grill">
+              <option>Seafood</option><option>Fresh Catch / Paluto</option>
+            </optgroup>
+            <optgroup label="Plant-Based">
+              <option>Vegan</option><option>Vegetarian</option><option>Healthy / Bowls</option>
+            </optgroup>
+            <optgroup label="Café & Bakery">
+              <option>Café</option><option>Coffee Shop</option><option>Bakery</option>
+              <option>Brunch</option><option>Tea House</option>
+            </optgroup>
+            <optgroup label="Bars & Drinks">
+              <option>Bar & Pub</option><option>Cocktail Bar</option><option>Wine Bar</option>
+              <option>Brewery / Beer Garden</option><option>Sports Bar</option>
+            </optgroup>
+            <optgroup label="Sweets & Treats">
+              <option>Desserts</option><option>Ice Cream</option><option>Halo-Halo & Filipino Sweets</option>
+            </optgroup>
+            <optgroup label="Style">
+              <option>Fine Dining</option><option>Buffet</option><option>Fusion</option><option>Food Hall / Market</option>
+            </optgroup>
           </select>
         </div>
         <div><label class="form-label">Location</label><input type="text" name="location" id="edit-location" class="form-input" /></div>
@@ -496,10 +533,84 @@
             <div><label class="form-label">Cuisine Type *</label>
               <select name="cuisine_type" class="form-input" required>
                 <option value="">Select cuisine…</option>
-                <option>Filipino</option><option>Japanese</option><option>Italian</option>
-                <option>Korean</option><option>Chinese</option><option>Seafood</option>
-                <option>BBQ &amp; Grill</option><option>Café</option><option>Vegan</option>
-                <option>Burgers</option><option>Mexican</option><option>Desserts</option>
+                <optgroup label="Filipino">
+                  <option>Filipino</option>
+                  <option>Ilocano</option>
+                  <option>Kapampangan</option>
+                  <option>Bicolano</option>
+                  <option>Visayan</option>
+                  <option>Mindanaoan</option>
+                  <option>Filipino-Chinese</option>
+                  <option>Street Food / Carinderia</option>
+                  <option>Lutong Bahay</option>
+                </optgroup>
+                <optgroup label="Asian">
+                  <option>Japanese</option>
+                  <option>Korean</option>
+                  <option>Chinese</option>
+                  <option>Thai</option>
+                  <option>Vietnamese</option>
+                  <option>Indian</option>
+                  <option>Malaysian</option>
+                  <option>Indonesian</option>
+                  <option>Asian Fusion</option>
+                </optgroup>
+                <optgroup label="European">
+                  <option>Italian</option>
+                  <option>Pizza</option>
+                  <option>Spanish</option>
+                  <option>French</option>
+                  <option>Greek</option>
+                  <option>Mediterranean</option>
+                </optgroup>
+                <optgroup label="American &amp; Latin">
+                  <option>American</option>
+                  <option>Burgers</option>
+                  <option>Steakhouse</option>
+                  <option>BBQ &amp; Grill</option>
+                  <option>Mexican</option>
+                  <option>Tex-Mex</option>
+                  <option>Latin American</option>
+                </optgroup>
+                <optgroup label="Middle Eastern &amp; Halal">
+                  <option>Middle Eastern</option>
+                  <option>Halal</option>
+                  <option>Turkish</option>
+                </optgroup>
+                <optgroup label="Seafood &amp; Grill">
+                  <option>Seafood</option>
+                  <option>Fresh Catch / Paluto</option>
+                </optgroup>
+                <optgroup label="Plant-Based">
+                  <option>Vegan</option>
+                  <option>Vegetarian</option>
+                  <option>Healthy / Bowls</option>
+                </optgroup>
+                <optgroup label="Café &amp; Bakery">
+                  <option>Café</option>
+                  <option>Coffee Shop</option>
+                  <option>Bakery</option>
+                  <option>Brunch</option>
+                  <option>Tea House</option>
+                </optgroup>
+                <optgroup label="Bars &amp; Drinks">
+                  <option>Bar &amp; Pub</option>
+                  <option>Cocktail Bar</option>
+                  <option>Wine Bar</option>
+                  <option>Brewery / Beer Garden</option>
+                  <option>Sports Bar</option>
+                </optgroup>
+                <optgroup label="Sweets &amp; Treats">
+                  <option>Desserts</option>
+                  <option>Ice Cream</option>
+                  <option>Halo-Halo &amp; Filipino Sweets</option>
+                </optgroup>
+                <optgroup label="Style">
+                  <option>Fine Dining</option>
+                  <option>Buffet</option>
+                  <option>Fusion</option>
+                  <option>Food Hall / Market</option>
+                </optgroup>
               </select>
             </div>
             <div><label class="form-label">Location / City *</label><input type="text" name="location" class="form-input" placeholder="e.g., El Nido, Palawan" required /></div>
@@ -867,9 +978,9 @@
 
 
 <script src="../assets/js/config.js"></script>
-<script src="../assets/js/supabase-client.js?v=boost1"></script>
+<script src="../assets/js/supabase-client.js?v=cuisines1"></script>
 <script src="../assets/js/analytics.js"></script>
-<script src="../assets/js/admin.js?v=boost1"></script>
+<script src="../assets/js/admin.js?v=cuisines1"></script>
 <script src="../assets/js/admin-applications.js"></script>
 <script src="../assets/js/admin-announcements.js"></script>
   <script src="../assets/js/pwa.js"></script>
