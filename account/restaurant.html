@@ -180,6 +180,28 @@
     </a>
   </header>
 
+  <!-- ═════════════════════════════════════════════════════
+       ORDER REQUESTS INBOX  (Premium-only; auto-hides if none)
+       ═════════════════════════════════════════════════════ -->
+  <section id="orders-section" class="section-card mb-6" style="display:none">
+    <div class="flex items-center justify-between mb-3 gap-3 flex-wrap">
+      <div>
+        <h2 class="font-display font-black text-lg">Order Requests</h2>
+        <p class="text-xs text-gray-500">Live inbox · refreshes every 20s</p>
+      </div>
+      <label class="flex items-center gap-2 cursor-pointer text-xs font-bold">
+        <input type="checkbox" id="accepting-orders-toggle" class="accent-brand-yellow w-4 h-4" />
+        <span id="accepting-orders-label">Accepting orders</span>
+      </label>
+    </div>
+
+    <!-- Mini analytics row -->
+    <div id="orders-analytics" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4"></div>
+
+    <!-- Pending list -->
+    <div id="orders-list" class="space-y-3"></div>
+  </section>
+
   <form id="owner-form" class="space-y-6 pb-24">
 
     <!-- 1. COVER + LOGO  →  Hero -->
@@ -470,10 +492,10 @@
 </div>
 
 <script src="../assets/js/config.js"></script>
-<script src="../assets/js/supabase-client.js?v=loc2"></script>
-<script src="../assets/js/main.js?v=loc2"></script>
-<script src="../assets/js/account-restaurant.js?v=loc2"></script>
-<script src="../assets/js/vibe-map-fab.js?v=loc2"></script>
+<script src="../assets/js/supabase-client.js?v=orders1"></script>
+<script src="../assets/js/main.js?v=orders1"></script>
+<script src="../assets/js/account-restaurant.js?v=orders1"></script>
+<script src="../assets/js/vibe-map-fab.js?v=orders1"></script>
 <script src="../assets/js/pwa.js"></script>
 </body>
 </html>

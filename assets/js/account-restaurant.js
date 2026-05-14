@@ -71,6 +71,9 @@ async function init() {
   populateForm();
   wireEvents();
   showMain();
+  /* Premium-only: surface the order inbox + poll every 20s. */
+  loadOrders();
+  ORDERS_POLL = setInterval(loadOrders, 20_000);
 }
 
 
@@ -696,6 +699,167 @@ function sanitizeMapEmbed(url) {
 function discard() {
   if (!confirm('Discard unsaved changes?')) return;
   location.reload();
+}
+
+
+/* ── Order Requests Inbox (owner side) ─────────────────────
+   Loads once on init, polls every 20s. Owner can:
+     • Acknowledge ("will get back shortly")
+     • Quote a total price + message
+     • Accept / Deny
+     • Mark completed
+   Also drives the per-restaurant analytics tile row. */
+let ORDERS = [];
+let ORDERS_POLL = null;
+let LAST_PENDING_COUNT = 0;
+
+async function loadOrders() {
+  const c = window.YYP?.client;
+  if (!c || !restaurant?.id) return;
+
+  /* Premium gate — hide the section entirely on non-Premium listings. */
+  const sec = document.getElementById('orders-section');
+  if (!sec) return;
+  if (!restaurant.has_yumyumpo_site) { sec.style.display = 'none'; return; }
+  sec.style.display = '';
+
+  /* Accepting-orders toggle state */
+  const acceptingEl = document.getElementById('accepting-orders-toggle');
+  const acceptingLabel = document.getElementById('accepting-orders-label');
+  if (acceptingEl && acceptingEl.dataset.bound !== '1') {
+    acceptingEl.dataset.bound = '1';
+    acceptingEl.checked = restaurant.accepting_orders !== false;
+    acceptingLabel.textContent = acceptingEl.checked ? 'Accepting orders' : 'Paused — not taking orders';
+    acceptingEl.addEventListener('change', async () => {
+      const val = acceptingEl.checked;
+      acceptingLabel.textContent = val ? 'Accepting orders' : 'Paused — not taking orders';
+      await c.from('restaurants').update({ accepting_orders: val }).eq('id', restaurant.id);
+      restaurant.accepting_orders = val;
+    });
+  }
+
+  /* Pull orders + analytics in parallel */
+  const [{ data: orders }, { data: analytics }] = await Promise.all([
+    c.from('order_requests').select('*').eq('restaurant_id', restaurant.id).order('created_at', { ascending: false }).limit(50),
+    c.from('restaurant_order_analytics').select('*').eq('restaurant_id', restaurant.id).maybeSingle(),
+  ]);
+  ORDERS = orders || [];
+
+  renderOrderAnalytics(analytics);
+  renderOrders();
+
+  /* Browser title flash for new pending */
+  const pending = ORDERS.filter(o => o.status === 'pending').length;
+  if (pending > LAST_PENDING_COUNT && document.hidden) {
+    document.title = `🔔 (${pending}) new order — YUMYUMPO`;
+  } else if (!document.hidden) {
+    document.title = 'My Restaurant — YUMYUMPO';
+  }
+  LAST_PENDING_COUNT = pending;
+}
+
+function renderOrderAnalytics(a) {
+  const wrap = document.getElementById('orders-analytics');
+  if (!wrap) return;
+  const tiles = [
+    { label: 'All time',     value: a?.total_requests   ?? 0 },
+    { label: 'Accept rate',  value: a?.accept_pct != null ? `${a.accept_pct}%` : '—' },
+    { label: 'Avg response', value: a?.avg_response_min != null ? `${Math.round(a.avg_response_min)}m` : '—' },
+    { label: 'Avg quoted',   value: a?.avg_order_value != null ? `₱${Number(a.avg_order_value).toLocaleString()}` : '—' },
+  ];
+  wrap.innerHTML = tiles.map(t => `
+    <div style="background:#FAFAFA;border:1.5px solid #F3F3F3;border-radius:12px;padding:10px 12px">
+      <p style="font-size:0.62rem;font-weight:800;color:#ABABAB;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px">${t.label}</p>
+      <p style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:1.15rem;color:#111">${t.value}</p>
+    </div>`).join('');
+}
+
+function renderOrders() {
+  const wrap = document.getElementById('orders-list');
+  if (!wrap) return;
+  const open = ORDERS.filter(o => !['denied','paid','completed'].includes(o.status));
+  if (open.length === 0) {
+    wrap.innerHTML = `<p style="text-align:center;padding:24px 12px;color:#6B6B6B;font-size:0.85rem;font-style:italic">No open requests right now. New ones land here automatically.</p>`;
+    return;
+  }
+  wrap.innerHTML = open.map(orderRowHTML).join('');
+  wrap.querySelectorAll('[data-act]').forEach(btn => {
+    btn.addEventListener('click', () => handleOrderAction(btn.dataset.id, btn.dataset.act));
+  });
+}
+
+function orderRowHTML(o) {
+  const ageMin = Math.max(1, Math.round((Date.now() - new Date(o.created_at).getTime()) / 60000));
+  const items  = Array.isArray(o.items) ? o.items : [];
+  const itemsLine = items.map(it => `${it.qty || 1}× ${escapeHtml(it.name)}`).join(', ');
+  const allergyChips = (o.allergens || []).map(a => `<span style="background:#FEE2E2;color:#B91C1C;font-size:0.62rem;font-weight:800;padding:2px 7px;border-radius:999px">${escapeHtml(a)}</span>`).join(' ');
+  const methodIcon = o.delivery_method === 'delivery' ? '🛵' : o.delivery_method === 'dinein' ? '🍽' : '🥡';
+  const statusBg = { pending:'#FEF3C7', acknowledged:'#DBEAFE', quoted:'#FFD000', accepted:'#DCFCE7' }[o.status] || '#F3F3F3';
+
+  return `
+    <div style="border:1.5px solid #F3F3F3;border-radius:14px;padding:14px;background:#fff">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px">
+        <div>
+          <p style="font-weight:800;color:#111;font-size:0.95rem">${escapeHtml(o.customer_name)}</p>
+          <p style="font-size:0.74rem;color:#6B6B6B">${methodIcon} ${o.delivery_method} ${o.preferred_time ? ' · ' + escapeHtml(o.preferred_time) : ''} · ${ageMin}m ago</p>
+        </div>
+        <span style="background:${statusBg};color:#111;font-size:0.62rem;font-weight:800;padding:3px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap">${o.status}</span>
+      </div>
+      <p style="font-size:0.82rem;color:#111;margin:6px 0">${escapeHtml(itemsLine) || '<em>No items</em>'}</p>
+      ${o.delivery_address ? `<p style="font-size:0.74rem;color:#6B6B6B">📍 ${escapeHtml(o.delivery_address)}</p>` : ''}
+      ${allergyChips ? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">⚠️ ${allergyChips}</div>` : ''}
+      ${o.notes ? `<p style="font-size:0.78rem;color:#555;font-style:italic;margin-top:6px">"${escapeHtml(o.notes)}"</p>` : ''}
+      ${o.customer_phone ? `<p style="font-size:0.74rem;color:#6B6B6B;margin-top:4px">📞 <a href="tel:${escapeAttr(o.customer_phone)}" style="color:inherit;text-decoration:underline">${escapeHtml(o.customer_phone)}</a></p>` : ''}
+
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;border-top:1px dashed #F3F3F3;padding-top:10px">
+        ${o.status === 'pending' ? `
+          <button data-act="ack"    data-id="${o.id}" style="background:#DBEAFE;color:#1E40AF;border:none;padding:7px 12px;border-radius:8px;font-weight:800;font-size:0.78rem;cursor:pointer">📨 Got it, replying soon</button>
+        ` : ''}
+        <button data-act="quote"  data-id="${o.id}" style="background:#FFD000;color:#111;border:none;padding:7px 12px;border-radius:8px;font-weight:800;font-size:0.78rem;cursor:pointer">💬 Quote price</button>
+        ${o.status !== 'denied' ? `
+          <button data-act="accept" data-id="${o.id}" style="background:#16A34A;color:#fff;border:none;padding:7px 12px;border-radius:8px;font-weight:800;font-size:0.78rem;cursor:pointer">✓ Accept</button>
+          <button data-act="deny"   data-id="${o.id}" style="background:#FEE2E2;color:#B91C1C;border:none;padding:7px 12px;border-radius:8px;font-weight:800;font-size:0.78rem;cursor:pointer">✕ Deny</button>
+        ` : ''}
+        ${o.status === 'accepted' ? `
+          <button data-act="done"   data-id="${o.id}" style="background:#111;color:#FFD000;border:none;padding:7px 12px;border-radius:8px;font-weight:800;font-size:0.78rem;cursor:pointer">Mark completed</button>
+        ` : ''}
+      </div>
+    </div>`;
+}
+
+async function handleOrderAction(id, act) {
+  const c = window.YYP?.client;
+  let status, quoted = null, message = null;
+  if (act === 'ack') {
+    status = 'acknowledged';
+    message = prompt('Optional message to the customer:', "We got your request — we'll get back to you shortly!");
+    if (message === null) return; /* user cancelled */
+  } else if (act === 'quote') {
+    const total = prompt('Quoted total (₱) — leave blank to skip:');
+    if (total === null) return;
+    quoted = total === '' ? null : parseFloat(total);
+    if (quoted != null && Number.isNaN(quoted)) return toast('Invalid amount.');
+    message = prompt('Message about the quote (optional):', '');
+    if (message === null) return;
+    status = 'quoted';
+  } else if (act === 'accept') {
+    status = 'accepted';
+    message = prompt('Message (optional):', 'Order confirmed — see you soon!');
+    if (message === null) return;
+  } else if (act === 'deny') {
+    const reason = prompt('Reason (optional, customer sees this):', 'Sorry, we can\'t take this one today.');
+    if (reason === null) return;
+    status = 'denied'; message = reason;
+  } else if (act === 'done') {
+    status = 'completed';
+  }
+
+  const { error } = await c.rpc('update_order_status', {
+    p_order_id: id, p_new_status: status, p_quoted: quoted, p_message: message,
+  });
+  if (error) return toast('Update failed: ' + error.message);
+  toast('✓ Updated');
+  loadOrders();
 }
 
 

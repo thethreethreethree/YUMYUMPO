@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#FFD54F" />
+  <link rel="apple-touch-icon" href="../icons/icon-180.png" />
+  <link rel="icon" href="../assets/images/YUMYUMPO.svg" type="image/svg+xml" />
+  <title>My Orders — YUMYUMPO</title>
+  <meta name="robots" content="noindex" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/styles.css" />
+  <link rel="stylesheet" href="../assets/css/account.css" />
+
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: {'brand-yellow':'#FFD000','brand-black':'#111111','yellow-light':'#FFF9D6','gray-50':'#F9F9F9','gray-100':'#F3F3F3','gray-200':'#E8E8E8','gray-400':'#ABABAB','gray-600':'#6B6B6B'},
+      fontFamily: { display:['"Space Grotesk"','Inter','system-ui','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+    }}}
+  </script>
+  <style>
+    .order-card { background:#fff; border:1.5px solid #F3F3F3; border-radius:16px; padding:16px; }
+    .ord-pill { display:inline-flex; align-items:center; padding:3px 9px; border-radius:999px; font-size:0.66rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; }
+    .ord-pill.pending      { background:#FEF3C7; color:#92400E; }
+    .ord-pill.acknowledged { background:#DBEAFE; color:#1E40AF; }
+    .ord-pill.quoted       { background:#FFD000; color:#111; }
+    .ord-pill.accepted     { background:#DCFCE7; color:#15803D; }
+    .ord-pill.denied       { background:#FEE2E2; color:#B91C1C; }
+    .ord-pill.paid,.ord-pill.completed { background:#111; color:#FFD000; }
+  </style>
+</head>
+
+<body class="acct-page">
+
+<nav id="navbar" class="solid fixed top-0 left-0 right-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <a href="../index.html"><img src="../assets/images/YUMYUMPO.svg" alt="YUMYUMPO" class="nav-logo-img" /></a>
+      <div class="hidden md:flex items-center gap-7">
+        <a href="../discover.html" class="text-sm font-600 text-gray-600 hover:text-brand-black">Discover</a>
+        <a href="index.html" class="text-sm font-600 text-gray-600 hover:text-brand-black">My Profile</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div id="auth-gate" class="acct-container" style="display:none;padding-top:24px">
+  <div class="acct-empty" style="margin-top:40px">
+    <div class="acct-empty-emoji">🔐</div>
+    <h1 class="acct-empty-title">Sign in to view your orders</h1>
+    <button class="btn-primary" onclick="window.YYP.openAuthModal({intent:'Sign in to view your orders'})">Sign In</button>
+  </div>
+</div>
+
+<main class="acct-container" id="main" style="display:none">
+  <div class="acct-tabs">
+    <a class="acct-tab"           href="index.html">Profile</a>
+    <a class="acct-tab is-active" href="orders.html">My Orders</a>
+    <a class="acct-tab"           href="saved.html">Saved Places</a>
+    <a class="acct-tab"           href="history.html">Discovery History</a>
+  </div>
+
+  <header class="mb-5 mt-4">
+    <h1 class="font-display font-black text-2xl text-brand-black">Your order requests</h1>
+    <p class="text-sm text-gray-400 mt-1">Track open requests, re-order favorites, or tap to favorite a place.</p>
+  </header>
+
+  <div id="orders-wrap" class="space-y-3">
+    <p class="text-sm text-gray-400 italic">Loading…</p>
+  </div>
+</main>
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js?v=orders1"></script>
+<script src="../assets/js/main.js?v=orders1"></script>
+<script src="../assets/js/my-orders.js?v=orders1"></script>
+<script src="../assets/js/pwa.js?v=orders1"></script>
+<script src="../assets/js/bottom-nav.js?v=orders1"></script>
+<script src="../assets/js/vibe-map-fab.js?v=orders1"></script>
+</body>
+</html>

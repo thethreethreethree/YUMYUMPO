@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#FFD54F" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="icon" href="assets/images/YUMYUMPO.svg" type="image/svg+xml" />
+  <title>My Order — YUMYUMPO</title>
+  <meta name="robots" content="noindex" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: {'brand-yellow':'#FFD000','brand-black':'#111111','yellow-light':'#FFF9D6','gray-50':'#F9F9F9','gray-100':'#F3F3F3','gray-200':'#E8E8E8','gray-400':'#ABABAB','gray-600':'#6B6B6B'},
+      fontFamily: { display:['"Space Grotesk"','Inter','system-ui','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+    }}}
+  </script>
+
+  <style>
+    body { background: #F9F9F9; font-family: 'Inter', sans-serif; min-height: 100vh; }
+    .ord-shell { max-width: 600px; margin: 0 auto; padding: 24px 16px 80px; }
+    .ord-card { background: #fff; border-radius: 20px; border: 1.5px solid #F3F3F3; padding: 22px; margin-bottom: 16px; }
+    .ord-section-title { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1.05rem; color: #111; margin-bottom: 8px; }
+
+    /* Status pill */
+    .ord-status {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .ord-status.pending      { background: #FEF3C7; color: #92400E; }
+    .ord-status.acknowledged { background: #DBEAFE; color: #1E40AF; }
+    .ord-status.quoted       { background: #FFD000; color: #111; }
+    .ord-status.accepted     { background: #DCFCE7; color: #15803D; }
+    .ord-status.denied       { background: #FEE2E2; color: #B91C1C; }
+    .ord-status.paid,
+    .ord-status.completed    { background: #111; color: #FFD000; }
+
+    /* Timeline */
+    .ord-timeline { display: flex; flex-direction: column; gap: 10px; }
+    .ord-step {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 0.85rem;
+    }
+    .ord-step-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #E8E8E8; margin-top: 5px; flex-shrink: 0;
+    }
+    .ord-step.done .ord-step-dot { background: #16A34A; }
+    .ord-step.current .ord-step-dot { background: #FFD000; box-shadow: 0 0 0 4px rgba(255,208,0,0.25); }
+    .ord-step-text { flex: 1; color: #111; font-weight: 600; }
+    .ord-step.pending-step .ord-step-text { color: #ABABAB; }
+    .ord-step-time { font-size: 0.72rem; color: #6B6B6B; font-weight: 500; }
+
+    .ord-items { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+    .ord-item-row {
+      display: flex; justify-content: space-between; gap: 12px;
+      padding: 8px 0; border-bottom: 1px dashed #F3F3F3; font-size: 0.88rem;
+    }
+    .ord-item-row:last-child { border-bottom: none; }
+    .ord-item-qty { color: #6B6B6B; font-weight: 700; }
+    .ord-total {
+      display: flex; justify-content: space-between;
+      margin-top: 10px; padding-top: 10px;
+      border-top: 2px solid #111;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 1.2rem; color: #111;
+    }
+    .ord-msg {
+      background: #FFFDF2; border: 1px solid rgba(255,208,0,0.4); border-radius: 12px;
+      padding: 12px 14px; font-size: 0.85rem; color: #111; margin-top: 10px;
+      white-space: pre-wrap;
+    }
+    .ord-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 12px 18px; border-radius: 12px;
+      font-weight: 800; font-size: 0.92rem; text-decoration: none; cursor: pointer; border: none;
+      transition: all 0.15s;
+    }
+    .ord-btn.primary { background: #FFD000; color: #111; }
+    .ord-btn.primary:hover { background: #E6BB00; }
+    .ord-btn.dark { background: #111; color: #FFD000; }
+    .ord-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .ord-empty { text-align: center; padding: 40px 20px; color: #6B6B6B; }
+  </style>
+</head>
+
+<body>
+
+<nav class="bg-white border-b border-gray-100 px-4 py-3">
+  <div class="max-w-7xl mx-auto flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-2"><img src="assets/images/YUMYUMPO.svg" alt="YUMYUMPO" class="h-7" /></a>
+    <a href="account/index.html" class="text-sm font-bold text-brand-black hover:underline">My Profile →</a>
+  </div>
+</nav>
+
+<main class="ord-shell">
+  <header class="mb-5">
+    <h1 class="font-display font-black text-3xl text-brand-black">My order</h1>
+    <p class="text-sm text-gray-400 mt-1">Updates every 20 seconds while this tab is open.</p>
+  </header>
+
+  <div id="ord-content"><p class="ord-empty">Loading your order…</p></div>
+</main>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js?v=orders1"></script>
+<script src="assets/js/order-tracker.js?v=orders1"></script>
+<script src="assets/js/pwa.js?v=orders1"></script>
+</body>
+</html>
