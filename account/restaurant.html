@@ -339,7 +339,16 @@
       </div>
       <div class="rounded-xl bg-yellow-light border border-yellow-300 p-3 space-y-2">
         <label class="form-label" style="margin-bottom:0">Pin from Google Maps</label>
-        <p class="text-xs text-gray-600 -mt-1">Open your restaurant in Google Maps → tap <strong>Share</strong> → copy the link → paste it here. We'll extract your exact coordinates.</p>
+        <p class="text-xs text-gray-600 -mt-1">Open the place in <strong>Google Maps on a desktop browser</strong> → copy the URL from the address bar (it looks like <code>.../@11.18,119.42,17z</code>). Or paste a plain <code>11.181, 119.419</code> coordinate pair.</p>
+        <details class="text-xs text-gray-600">
+          <summary class="cursor-pointer font-bold">Only have a phone? Tap to expand</summary>
+          <ol class="list-decimal pl-5 mt-1 space-y-0.5">
+            <li>Open the Google Maps app, tap your place.</li>
+            <li>Long-press your exact spot on the map until a red pin appears.</li>
+            <li>The coordinates appear at the top of the screen — tap them to copy.</li>
+            <li>Paste them below as <code>lat, lng</code>.</li>
+          </ol>
+        </details>
         <div class="flex gap-2">
           <input type="text" id="gmaps-link" class="form-input flex-1" placeholder="https://www.google.com/maps/... or 11.181, 119.419" />
           <button type="button" id="gmaps-pin-btn" class="btn-yellow whitespace-nowrap">Pin it</button>

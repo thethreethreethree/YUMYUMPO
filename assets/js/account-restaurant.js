@@ -471,7 +471,11 @@ function wireEvents() {
     if (!coords) {
       result.style.display = 'block';
       result.style.color   = '#DC2626';
-      result.textContent   = 'Couldn\'t find coordinates in that link. Open the place in Google Maps, tap Share, copy the URL.';
+      if (/maps\.app\.goo\.gl|goo\.gl\/maps/.test(raw)) {
+        result.textContent = "That's a shortened share link — Google's servers hold the coordinates, your browser can't read them. Open the place in Google Maps on a desktop browser and copy the URL from the address bar (it contains @lat,lng).";
+      } else {
+        result.textContent = "Couldn't find coordinates in that input. Use a full Google Maps URL (with /@lat,lng/...) or paste a plain 'lat, lng' pair.";
+      }
       return;
     }
     const latInput = document.querySelector('[name="latitude"]');
