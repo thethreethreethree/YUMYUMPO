@@ -145,32 +145,45 @@ function initDashboard() {
 }
 
 async function loadAdminFromSupabase() {
-  if (!window.db?.getHomepagePicks) return;
+  const c = window.YYP?.client;
+  if (!c) return;
   try {
-    const data = await window.db.getHomepagePicks({ limit: 500, order: 'created' });
+    /* Query restaurants table directly — homepage_picks view excludes
+       demos and inactive rows, both of which admins need to manage.
+       Tags pulled via embedded join. */
+    const { data, error } = await c
+      .from('restaurants')
+      .select(`
+        id, slug, name, cuisine_type, location, address, description, tagline,
+        google_rating, review_count, cover_image_url, website_url, has_yumyumpo_site,
+        is_featured, is_active, is_demo, owner_email, owner_user_id, created_at,
+        restaurant_tags ( tag_name )
+      `)
+      .order('created_at', { ascending: false })
+      .limit(500);
+    if (error) { console.warn('[Admin] load failed:', error.message); return; }
     if (!data?.length) return;
 
-    /* Map Supabase rows → the shape the admin templates expect.
-       Real UUID `id` is preserved as a string. */
     ADMIN_RESTAURANTS = data.map(r => ({
-      id:                r.id,                  // UUID string
+      id:                r.id,
       slug:              r.slug,
       name:              r.name,
-      cuisine:           r.cuisine,
+      cuisine:           r.cuisine_type,
       location:          r.location,
       address:           r.address || '',
       description:       r.description || '',
       tagline:           r.tagline || '',
-      rating:            r.rating,
-      review_count:      r.reviews,
-      cover:             r.cover,
-      emoji:             getCuisineEmoji(r.cuisine),
-      featured:          r.is_featured,
-      active:            true,    /* getHomepagePicks already filters by is_active */
+      rating:            Number(r.google_rating) || 0,
+      review_count:      r.review_count || 0,
+      cover:             r.cover_image_url,
+      emoji:             getCuisineEmoji(r.cuisine_type),
+      featured:          !!r.is_featured,
+      active:            r.is_active !== false,
+      is_demo:           !!r.is_demo,
       website_url:       r.website_url,
-      has_yumyumpo_site: r.has_yumyumpo_site,
-      tags:              r.tags || [],
-      /* Analytics fields — will populate as real traffic flows */
+      has_yumyumpo_site: !!r.has_yumyumpo_site,
+      owner_email:       r.owner_email,
+      tags:              Array.isArray(r.restaurant_tags) ? r.restaurant_tags.map(t => t.tag_name) : [],
       views:             0,
       whatsapp:          0,
       website:           0,
@@ -237,7 +250,8 @@ async function loadKpiStats() {
     const { count: newCount } = await c
       .from('restaurants')
       .select('id', { count: 'exact', head: true })
-      .gte('created_at', sinceISO);
+      .gte('created_at', sinceISO)
+      .or('is_demo.is.null,is_demo.eq.false');
     set('stat-total-delta', `↑ ${newCount || 0} this month`);
 
     /* Event counts in last 30d, one query per type via head:true counts. */

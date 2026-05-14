@@ -175,10 +175,8 @@ function initMap() {
     zoomControl: true,
     scrollWheelZoom: true,
   });
-  /* Dark grayscale basemap — free, no API key, attribution required.
-     Renders YUMYUMPO yellow markers with maximum contrast. */
-  /* Soft warm basemap — clean enough that brand-yellow markers stay
-     legible without competing for attention. */
+  /* CARTO Voyager — free, no API key. Light warm canvas that keeps
+     brand-yellow markers legible without competing for attention. */
   L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
     maxZoom: 19,
     subdomains: 'abcd',
@@ -530,12 +528,26 @@ function applyFilter() {
     else      marker.remove();
   });
   document.getElementById('vm-empty').classList.toggle('is-visible', visibleCount === 0);
-  /* Update region meta line */
   const meta = document.getElementById('vm-region-meta');
   if (meta) meta.textContent = visibleCount ? `${visibleCount} place${visibleCount > 1 ? 's' : ''} shown` : '';
-  /* Per-vibe live counts respect the selected region */
   updateCounts();
   fitToVisible();
+  /* Keep the nearby banner accurate when filters change. */
+  if (USER_POS && document.getElementById('vm-nearby-banner')?.classList.contains('is-on')) {
+    refreshNearbyBanner();
+  }
+}
+
+function refreshNearbyBanner() {
+  if (!USER_POS) return;
+  const nearby = MARKERS.filter(({ marker, vibes, region }) => {
+    const vibeOk   = ACTIVE === 'all' || vibes.has(ACTIVE);
+    const regionOk = REGION === 'all' || region.key === REGION;
+    if (!vibeOk || !regionOk) return false;
+    const { lat: la, lng: ln } = marker.getLatLng();
+    return haversineKm(USER_POS, { lat: la, lng: ln }) <= 2;
+  });
+  showNearbyBanner(nearby.length);
 }
 
 function fitToVisible() {
