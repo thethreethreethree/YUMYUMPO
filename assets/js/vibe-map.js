@@ -66,7 +66,9 @@ function initMap() {
   });
   /* Dark grayscale basemap — free, no API key, attribution required.
      Renders YUMYUMPO yellow markers with maximum contrast. */
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  /* Soft warm basemap — clean enough that brand-yellow markers stay
+     legible without competing for attention. */
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
     maxZoom: 19,
     subdomains: 'abcd',
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
