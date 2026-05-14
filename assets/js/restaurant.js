@@ -705,7 +705,6 @@ function showNotFound(slug) {
 ══════════════════════════════════════════════════════════ */
 function renderPage(r) {
   window.__yypRestaurant = r;
-  document.dispatchEvent(new CustomEvent('yyp:restaurant-loaded', { detail: r }));
   updateSEO(r);
   renderHero(r);
   renderGalleryMosaic(r);
@@ -719,6 +718,9 @@ function renderPage(r) {
   renderInfoCard(r);
   renderSocialCard(r);
   renderMobileBar(r);
+  /* Fire after the DOM exists so listeners (e.g. order-request.js)
+     can find #action-buttons / #r-hero-content. */
+  document.dispatchEvent(new CustomEvent('yyp:restaurant-loaded', { detail: r }));
 }
 
 
