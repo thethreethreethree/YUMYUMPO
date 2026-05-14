@@ -48,12 +48,14 @@ const CUISINE_ICON_MAP = [
   [/burger/i,                                                '🍔'],
   [/pizza/i,                                                 '🍕'],
   [/steak/i,                                                 '🥩'],
+  /* Korean BBQ House → pork emoji, not generic fire. Korean rule
+     must run before the generic BBQ rule. */
+  [/korean|bbq house|k[ -]?grill/i,                          '🍖'],
   [/bbq|grill|smokehouse/i,                                  '🔥'],
   [/seafood|paluto|fresh catch/i,                            '🦞'],
   [/vegan|vegetarian|healthy|bowl|salad/i,                   '🥗'],
   [/sushi|japanese|izakaya/i,                                '🍣'],
   [/ramen|noodle/i,                                          '🍜'],
-  [/korean|bbq house/i,                                      '🍖'],
   [/chinese|dim sum|dumpling/i,                              '🥟'],
   [/thai/i,                                                  '🌶️'],
   [/vietnamese|pho/i,                                        '🍲'],
@@ -480,7 +482,7 @@ function buildMarkers() {
 
     const html = `<div class="vm-marker ${primary} tier-${tier}" title="${escapeHtml(r.name)}">${glyph}</div>`;
 
-    const size = tier === 'premium' ? 50 : tier === 'prominent' ? 38 : 26;
+    const size = tier === 'premium' ? 50 : tier === 'prominent' ? 38 : 32;
     const icon = L.divIcon({
       className: '',
       html,
