@@ -305,6 +305,17 @@
   function showError(msg) {
     const el = document.getElementById('yyp-auth-error');
     el.textContent = msg;
+    el.style.background = 'rgba(239, 68, 68, .12)';
+    el.style.borderColor = 'rgba(239, 68, 68, .25)';
+    el.style.color = '#FCA5A5';
+    el.style.display = '';
+  }
+  function showSuccess(msg) {
+    const el = document.getElementById('yyp-auth-error');
+    el.textContent = msg;
+    el.style.background = 'rgba(34, 197, 94, .12)';
+    el.style.borderColor = 'rgba(34, 197, 94, .3)';
+    el.style.color = '#86EFAC';
     el.style.display = '';
   }
   function clearError() {
@@ -325,7 +336,10 @@
   /* ── handlers ────────────────────────────────────────── */
   async function handleEmailSubmit(e) {
     e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
     clearError();
+    console.log('[auth-modal] submit', { mode });
     const email    = document.getElementById('yyp-auth-email').value.trim();
     const password = document.getElementById('yyp-auth-password').value;
 
@@ -345,24 +359,29 @@
     try {
       const fn = mode === 'signup' ? 'signUp' : 'signInWithPassword';
       const { data, error } = await client.auth[fn]({ email, password });
+      console.log('[auth-modal]', fn, 'result', { hasSession: !!data?.session, error });
 
       if (error) {
         showError(error.message || 'Something went wrong.');
         setLoading(false);
         return;
       }
-      /* Sign-up may need email confirmation depending on Supabase settings */
+      /* Sign-up may need email confirmation depending on Supabase settings.
+         Render this as a success notice (green), not a red error — it's the
+         happy path, just async. */
       if (mode === 'signup' && !data.session) {
-        showError('Check your email to confirm your account, then sign in.');
+        showSuccess('Account created! Check your email to confirm — then come back and sign in.');
         setMode('signin');
         setLoading(false);
         return;
       }
       close(data.session);
     } catch (err) {
-      showError('Unexpected error. Please try again.');
+      console.error('[auth-modal] exception', err);
+      showError('Unexpected error: ' + (err?.message || err));
       setLoading(false);
     }
+    return false;
   }
 
   async function signInWithGoogle() {
@@ -384,7 +403,31 @@
   function open(opts = {}) {
     ensureModal();
     clearError();
-    setMode('signin');
+    setMode(opts.mode === 'signup' ? 'signup' : 'signin');
+
+    /* signupOnly: hide the sign-in toggle + guest exit. Used by the claim
+       flow where the only valid action is creating the matching account. */
+    const togglePara = document.querySelector('.yyp-auth-toggle');
+    const guestBtn   = modalEl.querySelector('[data-action="guest"]');
+    if (opts.signupOnly) {
+      togglePara && (togglePara.style.display = 'none');
+      guestBtn   && (guestBtn.style.display   = 'none');
+    } else {
+      togglePara && (togglePara.style.display = '');
+      guestBtn   && (guestBtn.style.display   = '');
+    }
+
+    /* Pre-fill + (optionally) lock the email so claim-flow users sign
+       up with the exact address their application was approved under. */
+    const emailIn = document.getElementById('yyp-auth-email');
+    if (opts.email) {
+      emailIn.value = opts.email;
+      emailIn.readOnly = !!opts.lockEmail;
+    } else {
+      emailIn.value = '';
+      emailIn.readOnly = false;
+    }
+
     const intentEl = document.getElementById('yyp-auth-intent');
     if (opts.intent) {
       document.getElementById('yyp-auth-intent-text').textContent = opts.intent;
@@ -393,7 +436,12 @@
       intentEl.style.display = 'none';
     }
     requestAnimationFrame(() => modalEl.classList.add('is-open'));
-    setTimeout(() => document.getElementById('yyp-auth-email')?.focus(), 350);
+    setTimeout(() => {
+      const focusEl = opts.email
+        ? document.getElementById('yyp-auth-password')
+        : emailIn;
+      focusEl?.focus();
+    }, 350);
 
     return new Promise(resolve => { resolveCurrent = resolve; });
   }

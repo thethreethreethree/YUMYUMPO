@@ -73,8 +73,8 @@
 </main>
 
 <script src="assets/js/config.js"></script>
-<script src="assets/js/supabase-client.js?v=claim1"></script>
-<script src="assets/js/auth-modal.js?v=claim1"></script>
+<script src="assets/js/supabase-client.js?v=claim3"></script>
+<script src="assets/js/auth-modal.js?v=claim3"></script>
 <script>
 'use strict';
 
@@ -156,7 +156,13 @@ async function render(app, token) {
 
   document.getElementById('claim-signup-btn').addEventListener('click', () => {
     if (typeof window.YYP?.openAuthModal === 'function') {
-      window.YYP.openAuthModal({ intent: 'Create your YUMYUMPO restaurant account', email: app.contact_email });
+      window.YYP.openAuthModal({
+        intent: 'Create your YUMYUMPO restaurant account',
+        email: app.contact_email,
+        lockEmail: true,
+        mode: 'signup',
+        signupOnly: true,
+      });
     } else {
       location.href = 'admin/apply.html#signup';
     }
@@ -165,6 +171,6 @@ async function render(app, token) {
 
 function escapeHtml(s) { return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 </script>
-<script src="assets/js/pwa.js?v=claim1"></script>
+<script src="assets/js/pwa.js?v=claim3"></script>
 </body>
 </html>
