@@ -257,7 +257,7 @@
     updateAppCounts();
     renderApplications();
     /* Re-open the modal so the claim link panel is visible immediately. */
-    if (typeof window.openAppDetails === 'function' && a) window.openAppDetails(a.id);
+    if (typeof window.openAppModal === 'function' && a) window.openAppModal(a.id);
     alert('Approved! The claim link is now in the modal — copy and send it to the applicant.');
   };
 
