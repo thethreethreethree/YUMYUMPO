@@ -367,6 +367,30 @@ window.removeItemPhoto = function(ci, ii, pi) {
 
 function escapeAttr(s) { return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 
+/* Parse coordinates from a pasted Google Maps URL or "lat, lng" pair.
+   Returns {lat, lng} or null. Handles the common URL shapes:
+     /@<lat>,<lng>,<zoom>z
+     !3d<lat>!4d<lng>          (data parameter)
+     ?q=<lat>,<lng>            (older share format)
+     "11.181, 119.419"         (plain text fallback) */
+function extractGmapsCoords(text) {
+  if (!text) return null;
+  const tryPair = (a, b) => {
+    const lat = parseFloat(a), lng = parseFloat(b);
+    if (Number.isFinite(lat) && Number.isFinite(lng) &&
+        Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat, lng };
+    return null;
+  };
+  let m;
+  if ((m = text.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)))          return tryPair(m[1], m[2]);
+  if ((m = text.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)))      return tryPair(m[1], m[2]);
+  if ((m = text.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/)))     return tryPair(m[1], m[2]);
+  if ((m = text.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/)))    return tryPair(m[1], m[2]);
+  if ((m = text.match(/^\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*$/))) return tryPair(m[1], m[2]);
+  return null;
+}
+
+
 /* ── URL normalisers — convert friendly input into proper URLs ── */
 function normalizeUrl(v) {
   v = (v || '').trim();
@@ -433,6 +457,30 @@ function wireEvents() {
   document.getElementById('add-category-btn').addEventListener('click', () => {
     categories.push({ name:'', sort_order: categories.length, items:[] });
     renderMenu();
+    markDirty();
+  });
+
+  /* Google Maps link → lat/lng auto-pin. Accepts: a full Google Maps
+     URL (place/@lat,lng or !3dlat!4dlng), a shortened goo.gl/maps URL
+     resolved into the address bar, or a plain "lat, lng" pair. */
+  document.getElementById('gmaps-pin-btn')?.addEventListener('click', () => {
+    const input = document.getElementById('gmaps-link');
+    const result = document.getElementById('gmaps-result');
+    const raw = (input?.value || '').trim();
+    const coords = extractGmapsCoords(raw);
+    if (!coords) {
+      result.style.display = 'block';
+      result.style.color   = '#DC2626';
+      result.textContent   = 'Couldn\'t find coordinates in that link. Open the place in Google Maps, tap Share, copy the URL.';
+      return;
+    }
+    const latInput = document.querySelector('[name="latitude"]');
+    const lngInput = document.querySelector('[name="longitude"]');
+    if (latInput) latInput.value = coords.lat.toFixed(6);
+    if (lngInput) lngInput.value = coords.lng.toFixed(6);
+    result.style.display = 'block';
+    result.style.color   = '#15803D';
+    result.textContent   = `✓ Pinned at ${coords.lat.toFixed(5)}°, ${coords.lng.toFixed(5)}° — Save Changes to apply.`;
     markDirty();
   });
 

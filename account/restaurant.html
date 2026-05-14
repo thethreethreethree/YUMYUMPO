@@ -337,6 +337,16 @@
           <input type="text" name="address" class="form-input" placeholder="123 Main Street, El Nido, Palawan 5313" />
         </div>
       </div>
+      <div class="rounded-xl bg-yellow-light border border-yellow-300 p-3 space-y-2">
+        <label class="form-label" style="margin-bottom:0">Pin from Google Maps</label>
+        <p class="text-xs text-gray-600 -mt-1">Open your restaurant in Google Maps → tap <strong>Share</strong> → copy the link → paste it here. We'll extract your exact coordinates.</p>
+        <div class="flex gap-2">
+          <input type="text" id="gmaps-link" class="form-input flex-1" placeholder="https://www.google.com/maps/... or 11.181, 119.419" />
+          <button type="button" id="gmaps-pin-btn" class="btn-yellow whitespace-nowrap">Pin it</button>
+        </div>
+        <p id="gmaps-result" class="text-xs font-semibold" style="display:none"></p>
+      </div>
+
       <details class="text-sm">
         <summary class="cursor-pointer font-bold text-gray-600 hover:text-brand-black">Advanced map overrides</summary>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
