@@ -367,9 +367,10 @@ async function loadFromSupabase() {
   } catch (err) {
     console.warn('[Discover] Supabase load failed, using static fallback:', err);
   }
-  /* Repopulate the location filter from real data — replaces the
+  /* Repopulate the sidebar filters from real data — replaces the
      hardcoded "Palawan 8 / Boracay 6 / ..." placeholders. */
   renderLocationFilter();
+  renderTagFilter();
 }
 
 /* Build the LOCATION filter sidebar from whatever's in DATASET.
@@ -407,6 +408,35 @@ function renderLocationFilter() {
 
 function escapeHtml(s)     { return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function escapeHtmlAttr(s) { return escapeHtml(s); }
+
+/* Vibe / Tags filter — built from the actual tag set on real restaurants.
+   Shows the top ~12 tags by occurrence so the sidebar stays compact. */
+function renderTagFilter() {
+  const container = document.getElementById('tag-filter-list');
+  if (!container) return;
+  const counts = new Map();
+  for (const r of DATASET) {
+    const tags = Array.isArray(r.tags) ? r.tags : [];
+    for (const t of tags) {
+      if (!t) continue;
+      counts.set(t, (counts.get(t) || 0) + 1);
+    }
+  }
+  if (counts.size === 0) {
+    container.innerHTML = '<p class="text-xs text-gray-400 italic px-2 py-2">No tags yet</p>';
+    return;
+  }
+  const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
+  container.innerHTML = sorted.map(([tag, n]) => {
+    const checked = state.tags?.has(tag) ? 'checked' : '';
+    return `
+      <label class="filter-checkbox-row">
+        <input type="checkbox" value="${escapeHtmlAttr(tag)}" ${checked} onchange="toggleTag(this)" />
+        <span class="filter-checkbox-label">${tagEmoji(tag)}${escapeHtml(tag)}</span>
+        <span class="filter-checkbox-count">${n}</span>
+      </label>`;
+  }).join('');
+}
 
 
 /* ══════════════════════════════════════════════════════════

@@ -303,57 +303,8 @@
         <!-- Vibe / Tag filters -->
         <div class="sidebar-section">
           <p class="sidebar-section-title">Vibe / Tags</p>
-          <div class="space-y-1">
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="Budget-Friendly"     onchange="toggleTag(this)" />
-              <span class="filter-checkbox-label">💸 Budget-Friendly</span>
-              <span class="filter-checkbox-count">12</span>
-            </label>
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="Hidden Gem"          onchange="toggleTag(this)" />
-              <span class="filter-checkbox-label">💎 Hidden Gem</span>
-              <span class="filter-checkbox-count">8</span>
-            </label>
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="Backpacker-Approved" onchange="toggleTag(this)" />
-              <span class="filter-checkbox-label">🎒 Backpacker-Approved</span>
-              <span class="filter-checkbox-count">15</span>
-            </label>
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="Romantic"            onchange="toggleTag(this)" />
-              <span class="filter-checkbox-label">🕯️ Romantic</span>
-              <span class="filter-checkbox-count">9</span>
-            </label>
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="Local Favorite"      onchange="toggleTag(this)" />
-              <span class="filter-checkbox-label">❤️ Local Favorite</span>
-              <span class="filter-checkbox-count">21</span>
-            </label>
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="Late Night"          onchange="toggleTag(this)" />
-              <span class="filter-checkbox-label">🌙 Late Night</span>
-              <span class="filter-checkbox-count">7</span>
-            </label>
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="Beach Dining"        onchange="toggleTag(this)" />
-              <span class="filter-checkbox-label">🏖️ Beach Dining</span>
-              <span class="filter-checkbox-count">6</span>
-            </label>
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="Scenic View"         onchange="toggleTag(this)" />
-              <span class="filter-checkbox-label">🌅 Scenic View</span>
-              <span class="filter-checkbox-count">11</span>
-            </label>
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="Family-Friendly"     onchange="toggleTag(this)" />
-              <span class="filter-checkbox-label">👨‍👩‍👧 Family-Friendly</span>
-              <span class="filter-checkbox-count">14</span>
-            </label>
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="Instagrammable"      onchange="toggleTag(this)" />
-              <span class="filter-checkbox-label">📸 Instagrammable</span>
-              <span class="filter-checkbox-count">18</span>
-            </label>
+          <div class="space-y-1" id="tag-filter-list">
+            <p class="text-xs text-gray-400 italic px-2 py-2">Loading…</p>
           </div>
         </div>
 
@@ -546,13 +497,13 @@
 
 
 <script src="assets/js/config.js"></script>
-<script src="assets/js/supabase-client.js?v=loc1"></script>
+<script src="assets/js/supabase-client.js?v=loc2"></script>
   <script src="assets/js/auth-modal.js"></script>
   <script src="assets/js/account.js"></script>
   <script src="assets/js/bottom-nav.js"></script>
 <script src="assets/js/analytics.js"></script>
-<script src="assets/js/discover.js?v=loc1"></script>
-  <script src="assets/js/vibe-map-fab.js?v=loc1"></script>
+<script src="assets/js/discover.js?v=loc2"></script>
+  <script src="assets/js/vibe-map-fab.js?v=loc2"></script>
 <script src="assets/js/pwa.js"></script>
 </body>
 </html>
