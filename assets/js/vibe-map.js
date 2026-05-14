@@ -96,6 +96,10 @@ async function loadRestaurants() {
     /* Query `restaurants` directly — homepage_picks view omits lat/lng,
        which silently dropped every marker. Public-read policy from
        migration-001 allows anon SELECT on active rows. */
+    /* Exclude demo entries (Maria's Kitchen reference page) so the public
+       Vibe Map shows only real restaurants created by admins or owners.
+       `or('is_demo.is.null,is_demo.eq.false')` handles rows pre-dating
+       migration 014 where the column may still be NULL. */
     const { data, error } = await c
       .from('restaurants')
       .select(`
@@ -107,6 +111,7 @@ async function loadRestaurants() {
         restaurant_tags ( tag_name )
       `)
       .eq('is_active', true)
+      .or('is_demo.is.null,is_demo.eq.false')
       .limit(500);
     if (error) throw error;
     /* Fetch live buzz tiers if migration-005 is applied; silently
