@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#FFD54F" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="icon" href="assets/images/YUMYUMPO.svg" type="image/svg+xml" />
+  <title>Claim your listing — YUMYUMPO</title>
+  <meta name="robots" content="noindex" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: {'brand-yellow':'#FFD000','brand-black':'#111111','yellow-light':'#FFF9D6'},
+      fontFamily: { display:['"Space Grotesk"','Inter','system-ui','sans-serif'], sans:['Inter','system-ui','sans-serif'] },
+    }}}
+  </script>
+
+  <style>
+    body { background:#FAFAFA; min-height:100vh; font-family:'Inter',sans-serif; }
+    .claim-shell {
+      max-width:520px; margin:0 auto; padding:48px 20px 80px;
+    }
+    .claim-card {
+      background:#fff; border-radius:24px; border:1.5px solid #F3F3F3;
+      padding:32px 28px; text-align:center;
+      box-shadow:0 12px 40px -8px rgba(0,0,0,0.08);
+    }
+    .claim-celebrate {
+      width:72px; height:72px; border-radius:50%;
+      background:#FFD000; color:#111;
+      display:flex; align-items:center; justify-content:center;
+      font-size:2rem; margin:0 auto 14px;
+      box-shadow:0 8px 24px rgba(255,208,0,0.4);
+      animation: bounce 1.2s ease-out;
+    }
+    @keyframes bounce { 0%{transform:scale(0.5);opacity:0} 60%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1} }
+    .claim-step { display:flex; gap:12px; padding:14px; border:1.5px solid #F3F3F3; border-radius:14px; text-align:left; margin-bottom:8px; }
+    .claim-step-num { flex-shrink:0; width:28px; height:28px; border-radius:50%; background:#111; color:#FFD000; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem; }
+    .claim-step-text { font-size:0.86rem; color:#333; line-height:1.45; }
+    .claim-btn {
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:14px 24px; border-radius:14px;
+      font-family:'Space Grotesk',sans-serif; font-weight:800;
+      font-size:0.95rem; text-decoration:none; cursor:pointer; border:none;
+      transition:all 0.15s; width:100%;
+    }
+    .claim-btn.primary { background:#FFD000; color:#111; }
+    .claim-btn.primary:hover { background:#E6BB00; transform:translateY(-2px); }
+    .claim-btn.dark { background:#111; color:#FFD000; }
+  </style>
+</head>
+
+<body>
+
+<nav class="bg-white border-b border-gray-100 px-4 py-3">
+  <div class="max-w-7xl mx-auto flex items-center justify-between">
+    <a href="index.html"><img src="assets/images/YUMYUMPO.svg" alt="YUMYUMPO" class="h-7" /></a>
+  </div>
+</nav>
+
+<main class="claim-shell">
+  <div id="claim-content" class="claim-card">
+    <p class="text-sm text-gray-400 italic">Verifying your claim link…</p>
+  </div>
+</main>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js?v=claim1"></script>
+<script src="assets/js/auth-modal.js?v=claim1"></script>
+<script>
+'use strict';
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.YYP?.ready) init();
+  else document.addEventListener('yyp:ready', init, { once: true });
+});
+
+async function init() {
+  const token = new URLSearchParams(location.search).get('token');
+  const wrap = document.getElementById('claim-content');
+  if (!token) {
+    wrap.innerHTML = `<h2 class="font-display font-black text-xl mb-2">Missing claim link</h2><p class="text-sm text-gray-600">Use the URL the YUMYUMPO team sent you — it has a token at the end.</p>`;
+    return;
+  }
+  const { data, error } = await window.YYP.client.rpc('get_application_by_token', { p_token: token });
+  const app = Array.isArray(data) ? data[0] : data;
+  if (error || !app) {
+    wrap.innerHTML = `<h2 class="font-display font-black text-xl mb-2">Link not recognised</h2><p class="text-sm text-gray-600">This claim link is invalid or has expired. Reach out to YUMYUMPO and we'll resend.</p>`;
+    return;
+  }
+  render(app, token);
+}
+
+async function render(app, token) {
+  const wrap = document.getElementById('claim-content');
+  const { data: { user } } = await window.YYP.client.auth.getUser();
+
+  if (app.status !== 'approved') {
+    wrap.innerHTML = `
+      <h2 class="font-display font-black text-xl mb-2">Application status: ${escapeHtml(app.status)}</h2>
+      <p class="text-sm text-gray-600">We're still reviewing <strong>${escapeHtml(app.restaurant_name)}</strong>. We'll email you as soon as it's approved.</p>`;
+    return;
+  }
+
+  /* Already signed in with the matching email → straight to the dashboard. */
+  if (user && user.email && user.email.toLowerCase() === (app.contact_email || '').toLowerCase()) {
+    /* Wait a moment for the trigger to link if they just signed up, then go. */
+    setTimeout(() => location.href = `account/restaurant.html?slug=${encodeURIComponent(app.restaurant_slug || '')}`, 600);
+    wrap.innerHTML = `
+      <div class="claim-celebrate">✨</div>
+      <h2 class="font-display font-black text-2xl mb-2">Welcome, ${escapeHtml(app.restaurant_name)}</h2>
+      <p class="text-sm text-gray-600 mb-4">Taking you to your dashboard…</p>`;
+    return;
+  }
+
+  /* Signed in as the WRONG email — block. */
+  if (user && user.email && user.email.toLowerCase() !== (app.contact_email || '').toLowerCase()) {
+    wrap.innerHTML = `
+      <h2 class="font-display font-black text-xl mb-2">Wrong account</h2>
+      <p class="text-sm text-gray-600 mb-4">This claim link is for <strong>${escapeHtml(app.contact_email)}</strong> but you're signed in as <strong>${escapeHtml(user.email)}</strong>.</p>
+      <button class="claim-btn dark" onclick="window.YYP.client.auth.signOut().then(()=>location.reload())">Sign out and try again</button>`;
+    return;
+  }
+
+  /* Not signed in — prompt sign-up with the matching email pre-filled. */
+  wrap.innerHTML = `
+    <div class="claim-celebrate">🎉</div>
+    <h2 class="font-display font-black text-2xl text-brand-black mb-1">${escapeHtml(app.restaurant_name)}</h2>
+    <p class="text-xs uppercase tracking-wider text-yellow-700 font-bold mb-3">Approved — welcome to YUMYUMPO</p>
+    <p class="text-sm text-gray-600 mb-5">Create your account using <strong>${escapeHtml(app.contact_email)}</strong> and we'll instantly link this listing to you.</p>
+
+    <div class="text-left mb-5">
+      <div class="claim-step">
+        <div class="claim-step-num">1</div>
+        <div class="claim-step-text"><strong>Sign up</strong> with the exact email above. We'll match it to your application automatically.</div>
+      </div>
+      <div class="claim-step">
+        <div class="claim-step-num">2</div>
+        <div class="claim-step-text"><strong>Build your page</strong> — upload photos, set hours, write your menu. Live the moment you save.</div>
+      </div>
+      <div class="claim-step">
+        <div class="claim-step-num">3</div>
+        <div class="claim-step-text"><strong>Get discovered</strong> — diners find you via Discover, Vibe Map, and Fred's AI recommendations.</div>
+      </div>
+    </div>
+
+    <button class="claim-btn primary" id="claim-signup-btn">Create my account →</button>`;
+
+  document.getElementById('claim-signup-btn').addEventListener('click', () => {
+    if (typeof window.YYP?.openAuthModal === 'function') {
+      window.YYP.openAuthModal({ intent: 'Create your YUMYUMPO restaurant account', email: app.contact_email });
+    } else {
+      location.href = 'admin/apply.html#signup';
+    }
+  });
+}
+
+function escapeHtml(s) { return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+</script>
+<script src="assets/js/pwa.js?v=claim1"></script>
+</body>
+</html>

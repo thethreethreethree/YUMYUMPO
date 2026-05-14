@@ -279,6 +279,37 @@
       <div id="error-banner"   class="banner error hidden mb-6"></div>
       <div id="success-banner" class="banner success hidden mb-6"></div>
 
+      <!-- Self-service status check for returning applicants. -->
+      <details class="mb-6 text-sm">
+        <summary class="cursor-pointer font-bold text-brand-black">Already applied? Check your status</summary>
+        <div class="mt-3 flex gap-2">
+          <input type="email" id="status-email" class="ap-input" placeholder="your@email.com" style="flex:1" />
+          <button type="button" id="status-check-btn" class="btn-submit" style="width:auto;padding:12px 20px;font-size:0.875rem">Check</button>
+        </div>
+        <p id="status-result" class="text-xs mt-2" style="display:none"></p>
+      </details>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          document.getElementById('status-check-btn')?.addEventListener('click', async () => {
+            const email = document.getElementById('status-email').value.trim();
+            const out   = document.getElementById('status-result');
+            out.style.display = 'block';
+            if (!email) { out.style.color = '#B91C1C'; out.textContent = 'Enter your email.'; return; }
+            if (!window.YYP?.client) { out.style.color = '#B91C1C'; out.textContent = 'Loading… try again in a sec.'; return; }
+            const { data, error } = await window.YYP.client.rpc('get_my_application_status', { p_email: email });
+            const row = Array.isArray(data) ? data[0] : data;
+            if (error || !row) { out.style.color = '#6B6B6B'; out.textContent = "We don't have an application from that email yet."; return; }
+            if (row.status === 'approved' && row.onboard_token) {
+              out.innerHTML = `<span style="color:#15803D">✓ Approved!</span> <a href="../claim.html?token=${encodeURIComponent(row.onboard_token)}" style="color:#111;text-decoration:underline;font-weight:700">Claim your listing →</a>`;
+            } else {
+              out.style.color = '#1E40AF';
+              out.textContent = `Status: ${row.status} — submitted ${new Date(row.created_at).toLocaleDateString()}`;
+            }
+          });
+        });
+      </script>
+
 
       <!-- ── FORM ── -->
       <form id="apply-form" onsubmit="handleSubmit(event)" class="space-y-6" novalidate>
@@ -603,7 +634,7 @@ function showError(msg) {
 
 <script src="../assets/js/analytics.js"></script>
 
-  <script src="../assets/js/vibe-map-fab.js?v=orders2"></script>
+  <script src="../assets/js/vibe-map-fab.js?v=claim1"></script>
 <script src="../assets/js/pwa.js"></script>
 </body>
 </html>

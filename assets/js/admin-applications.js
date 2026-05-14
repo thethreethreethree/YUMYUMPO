@@ -174,10 +174,18 @@
 
         <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
           <button onclick="updateAppStatus('${a.id}','reviewing')" class="apps-filter-btn">Mark as Reviewing</button>
-          <button onclick="updateAppStatus('${a.id}','approved')"  class="apps-filter-btn" style="background:#D1FAE5;border-color:#A7F3D0;color:#065F46">✓ Approve</button>
+          <button onclick="approveAndOnboard('${a.id}')" class="apps-filter-btn" style="background:#FFD000;border-color:#FFD000;color:#111;font-weight:800">✨ Approve &amp; Onboard</button>
           <button onclick="updateAppStatus('${a.id}','rejected')"  class="apps-filter-btn" style="background:#FEE2E2;border-color:#FECACA;color:#991B1B">✕ Reject</button>
           <a href="mailto:${esc(a.contact_email)}?subject=Your%20YUMYUMPO%20application" class="apps-filter-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px">✉ Reply</a>
         </div>
+        ${a.onboard_token ? `
+        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mt-3">
+          <p class="text-xs font-black text-yellow-800 uppercase tracking-wider mb-1">Claim link (share with applicant)</p>
+          <div class="flex gap-2 items-center">
+            <input type="text" readonly value="${esc(location.origin)}/claim?token=${esc(a.onboard_token)}" class="form-input text-xs" style="flex:1" id="claim-link-${a.id}" />
+            <button class="apps-filter-btn" onclick="copyClaimLink('${a.id}')">Copy</button>
+          </div>
+        </div>` : ''}
       </div>
     `;
 
@@ -224,6 +232,40 @@
     updateAppCounts();
     renderApplications();
     closeAppModal();
+  };
+
+  /* Approve + spawn the restaurant draft + generate a claim link.
+     Calls the migration-021 RPC then re-renders the modal so the
+     admin can copy the link to share with the applicant. */
+  window.approveAndOnboard = async function (id) {
+    const client = window.YYP?.client;
+    if (!client) return;
+    if (!confirm("Approve this applicant? We'll spawn their restaurant draft and generate a claim link.")) return;
+
+    const { data, error } = await client.rpc('approve_application', { p_app_id: id });
+    if (error) { alert('Failed: ' + error.message); return; }
+    const row = Array.isArray(data) ? data[0] : data;
+
+    const a = allApplications.find(x => x.id === id);
+    if (a) {
+      a.status = 'approved';
+      a.onboard_token = row?.onboard_token;
+      a.reviewed_at = new Date().toISOString();
+    }
+    updateAppCounts();
+    renderApplications();
+    /* Re-open the modal so the claim link panel is visible immediately. */
+    if (typeof window.openAppDetails === 'function' && a) window.openAppDetails(a.id);
+    alert('Approved! The claim link is now in the modal — copy and send it to the applicant.');
+  };
+
+  window.copyClaimLink = function (id) {
+    const el = document.getElementById('claim-link-' + id);
+    if (!el) return;
+    el.select();
+    try { navigator.clipboard.writeText(el.value); } catch { document.execCommand('copy'); }
+    el.nextElementSibling && (el.nextElementSibling.textContent = 'Copied ✓');
+    setTimeout(() => { if (el.nextElementSibling) el.nextElementSibling.textContent = 'Copy'; }, 1500);
   };
 
   function esc(s) {
