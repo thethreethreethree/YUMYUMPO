@@ -34,12 +34,14 @@ const VIBE_ICON = {
   default:    '🍽',
 };
 
-let MAP        = null;
-let MARKERS    = [];   // [{ marker, vibes:Set, row, region }]
-let ACTIVE     = 'all';
-let REGION     = 'el-nido';   // default region; expands as new locations come in
-let DATASET    = [];
-let REGIONS    = [];   // [{ key, label, count }]
+let MAP         = null;
+let MARKERS     = [];   // [{ marker, vibes:Set, row, region }]
+let ACTIVE      = 'all';
+let REGION      = 'el-nido';   // default region; expands as new locations come in
+let DATASET     = [];
+let REGIONS     = [];   // [{ key, label, count }]
+let USER_POS    = null; // {lat, lng}
+let USER_MARKER = null;
 
 /* El Nido default center if no markers — most of your seed restaurants
    live in the Philippines so this is a reasonable fallback. */
@@ -50,11 +52,80 @@ const DEFAULT_ZOOM   = 12;
 document.addEventListener('DOMContentLoaded', () => {
   initMap();
   renderFilters();
+  wireLocateBtn();
   if (window.YYP?.ready) loadRestaurants();
   else document.addEventListener('yyp:ready', loadRestaurants, { once: true });
   /* Hard fallback in case Supabase never loads. */
   setTimeout(() => { if (!DATASET.length) hideLoading(); }, 5000);
 });
+
+
+/* ── Geolocation ─────────────────────────────────────────── */
+function wireLocateBtn() {
+  const btn = document.getElementById('vm-locate');
+  if (!btn || !navigator.geolocation) { if (btn) btn.style.display = 'none'; return; }
+  btn.addEventListener('click', () => {
+    btn.disabled = true;
+    btn.textContent = 'Locating…';
+    navigator.geolocation.getCurrentPosition(
+      pos => { setUserPosition(pos.coords.latitude, pos.coords.longitude); btn.textContent = '📍 Me'; btn.disabled = false; },
+      err => {
+        btn.disabled = false; btn.textContent = '📍 Show my location';
+        const msg = err.code === 1 ? 'Location permission denied' : 'Could not get your location';
+        const empty = document.getElementById('vm-empty');
+        if (empty) { empty.textContent = msg; empty.classList.add('is-visible'); setTimeout(() => empty.classList.remove('is-visible'), 2500); }
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60_000 }
+    );
+  });
+}
+
+function setUserPosition(lat, lng) {
+  USER_POS = { lat, lng };
+  if (USER_MARKER) USER_MARKER.remove();
+  const icon = L.divIcon({
+    className: '',
+    html: `<div class="vm-user-marker"><div class="vm-user-dot"></div><div class="vm-user-pulse"></div></div>`,
+    iconSize: [24, 24], iconAnchor: [12, 12],
+  });
+  USER_MARKER = L.marker([lat, lng], { icon, zIndexOffset: 2000, interactive: false }).addTo(MAP);
+
+  /* Re-render popups so distances reflect the new origin. */
+  MARKERS.forEach(({ marker, row }) => marker.bindPopup(popupHTML(row, scoreContextFor(row))));
+
+  /* Frame the user + visible markers. */
+  fitToVisible();
+}
+
+function scoreContextFor(row) {
+  const found = MARKERS.find(m => m.row.id === row.id);
+  return found ? { score: found.score, tier: found.tier } : {};
+}
+
+/* Haversine — straight-line km between two coords. */
+function haversineKm(a, b) {
+  const R = 6371, toRad = d => d * Math.PI / 180;
+  const dLat = toRad(b.lat - a.lat), dLng = toRad(b.lng - a.lng);
+  const h = Math.sin(dLat/2)**2 + Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat))*Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+function formatDistance(km) {
+  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(km < 10 ? 1 : 0)} km`;
+}
+function formatMins(mins) {
+  if (mins < 1) return '<1 min';
+  if (mins < 60) return `${Math.round(mins)} min`;
+  const h = Math.floor(mins / 60), m = Math.round(mins % 60);
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+
+function travelEstimates(km) {
+  /* Rough averages: walking 4.8 km/h, transport (motorbike/trike in PH town) ~25 km/h. */
+  const walkMins  = (km / 4.8) * 60;
+  const driveMins = (km / 25)  * 60;
+  return { walkMins, driveMins };
+}
 
 
 function initMap() {
@@ -364,8 +435,21 @@ function popupHTML(r, ext = {}) {
   const dirQ = [r.address, r.location, r.name].filter(Boolean).join(' ').trim();
   const directionsLink = dirQ
     ? `<a class="vm-popup-btn outline" target="_blank" rel="noopener noreferrer"
-         href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dirQ)}">Directions</a>`
+         href="https://www.google.com/maps/dir/?api=1${USER_POS ? `&origin=${USER_POS.lat},${USER_POS.lng}` : ''}&destination=${encodeURIComponent(dirQ)}">Directions</a>`
     : '';
+
+  /* Distance + walk/drive estimates from the user's location (if shared). */
+  let distRow = '';
+  if (USER_POS && r.latitude && r.longitude) {
+    const km = haversineKm(USER_POS, { lat: r.latitude, lng: r.longitude });
+    const { walkMins, driveMins } = travelEstimates(km);
+    distRow = `
+      <div class="vm-popup-dist">
+        <span>📍 ${formatDistance(km)} away</span>
+        <span>🚶 ${formatMins(walkMins)}</span>
+        <span>🛵 ${formatMins(driveMins)}</span>
+      </div>`;
+  }
   const tierBadge = ext.tier === 'premium'
     ? `<span class="vm-popup-tier vm-popup-tier-premium">★ Top pick</span>`
     : ext.tier === 'prominent'
@@ -383,6 +467,7 @@ function popupHTML(r, ext = {}) {
         ${r.location ? ' · ' + escapeHtml(r.location) : ''}
       </div>
       <div class="vm-popup-tags">${tags}</div>
+      ${distRow}
       <div class="vm-popup-actions">
         <a class="vm-popup-btn primary" href="restaurant.html?slug=${encodeURIComponent(r.slug)}">View profile</a>
         ${directionsLink}
@@ -420,6 +505,8 @@ function fitToVisible() {
     const regionOk = REGION === 'all' || region.key === REGION;
     if (vibeOk && regionOk) bounds.extend(marker.getLatLng());
   });
+  /* Include the user's pin so they can see themselves relative to picks. */
+  if (USER_POS) bounds.extend([USER_POS.lat, USER_POS.lng]);
   if (bounds.isValid()) {
     MAP.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
   } else {

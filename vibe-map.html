@@ -59,6 +59,45 @@
     }
     .vm-back:hover { background: #E8E8E8; }
 
+    .vm-locate-btn {
+      font-size: 0.78rem; font-weight: 800; color: #111;
+      padding: 7px 12px; border-radius: 999px;
+      background: #FFD000; border: 1.5px solid #FFD000;
+      cursor: pointer; white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .vm-locate-btn:hover  { background: #E6BB00; border-color: #E6BB00; }
+    .vm-locate-btn:disabled { opacity: 0.6; cursor: wait; }
+
+    /* User location marker — pulsing blue dot */
+    .vm-user-marker {
+      position: relative; width: 24px; height: 24px;
+    }
+    .vm-user-dot {
+      position: absolute; inset: 6px; border-radius: 50%;
+      background: #2563EB; border: 2.5px solid #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+      z-index: 2;
+    }
+    .vm-user-pulse {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: rgba(37,99,235,0.35);
+      animation: vmUserPulse 1.8s ease-out infinite;
+    }
+    @keyframes vmUserPulse {
+      0%   { transform: scale(0.4); opacity: 0.9; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    /* Distance/time row inside popups */
+    .vm-popup-dist {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      font-size: 0.72rem; font-weight: 700; color: #111;
+      padding: 7px 10px; margin-bottom: 10px;
+      background: #FFFDF2; border: 1px solid rgba(255,208,0,0.45);
+      border-radius: 10px;
+    }
+
     .vm-region-row {
       display: flex; align-items: center; gap: 10px;
     }
@@ -224,10 +263,13 @@
       <div>
         <h1>Vibe Map<span class="vm-sub">Restaurants by mood + buzz</span></h1>
       </div>
-      <a href="discover.html" class="vm-back">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg>
-        Discover
-      </a>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button type="button" id="vm-locate" class="vm-locate-btn">📍 Show my location</button>
+        <a href="discover.html" class="vm-back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg>
+          Discover
+        </a>
+      </div>
     </div>
     <div class="vm-region-row">
       <label for="vm-region" class="vm-region-label">📍 Region</label>
