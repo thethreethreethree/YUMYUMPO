@@ -374,9 +374,7 @@
          Render this as a success notice (green), not a red error — it's the
          happy path, just async. */
       if (mode === 'signup' && !data.session) {
-        showSuccess('Account created! Check your email to confirm — then come back and sign in.');
-        setMode('signin');
-        setLoading(false);
+        renderCheckEmailState(email);
         return;
       }
       close(data.session);
@@ -386,6 +384,34 @@
       setLoading(false);
     }
     return false;
+  }
+
+  /* After a sign-up that needs email confirmation, swap the modal body
+     for a single, unmissable "Check your email" panel. No form, no
+     toggle — just the next step. */
+  function renderCheckEmailState(email) {
+    const body = modalEl.querySelector('.yyp-auth-body');
+    if (!body) return;
+    body.innerHTML = `
+      <div style="text-align:center;padding:8px 4px 4px">
+        <div style="font-size:3rem;margin-bottom:12px">📬</div>
+        <h3 style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:1.25rem;color:#fff;margin-bottom:8px;letter-spacing:-.01em">
+          Check your email
+        </h3>
+        <p style="font-size:.875rem;color:rgba(255,255,255,.65);line-height:1.55;margin-bottom:20px">
+          We sent a confirmation link to<br/>
+          <strong style="color:#FFD000">${escapeText(email)}</strong>.<br/>
+          Click it to activate your account, then come back here.
+        </p>
+        <button class="yyp-auth-btn yyp-auth-btn-ghost" type="button" data-action="close-check">
+          Close
+        </button>
+      </div>`;
+    body.querySelector('[data-action="close-check"]')?.addEventListener('click', () => close(null));
+  }
+
+  function escapeText(s) {
+    return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   }
 
   async function signInWithGoogle() {
