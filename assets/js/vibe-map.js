@@ -85,8 +85,16 @@ function setUserPosition(lat, lng) {
   if (USER_MARKER) USER_MARKER.remove();
   const icon = L.divIcon({
     className: '',
-    html: `<div class="vm-user-marker"><div class="vm-user-dot"></div><div class="vm-user-pulse"></div></div>`,
-    iconSize: [24, 24], iconAnchor: [12, 12],
+    html: `
+      <div class="vm-user-marker">
+        <div class="vm-user-pulse"></div>
+        <div class="vm-user-pin">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 11c4.5 0 8 2.6 8 5.6V21H4v-2.4C4 15.6 7.5 13 12 13z"/>
+          </svg>
+        </div>
+      </div>`,
+    iconSize: [44, 44], iconAnchor: [22, 22],
   });
   USER_MARKER = L.marker([lat, lng], { icon, zIndexOffset: 2000, interactive: false }).addTo(MAP);
 
