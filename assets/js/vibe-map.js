@@ -34,6 +34,51 @@ const VIBE_ICON = {
   default:    '🍽',
 };
 
+/* Cuisine → emoji map. Used to give every marker a glance-able identity
+   instead of an anonymous yellow dot. Keys are matched case-insensitively
+   against `restaurants.cuisine_type`. */
+const CUISINE_ICON_MAP = [
+  [/sports? ?bar|pub|brewery|beer/i,                        '🍺'],
+  [/cocktail/i,                                              '🍸'],
+  [/wine/i,                                                  '🍷'],
+  [/bar(?!becue)/i,                                          '🍻'],
+  [/coffee|café|cafe|tea house/i,                            '☕'],
+  [/bakery|brunch/i,                                         '🥐'],
+  [/dessert|sweets|halo-halo|ice cream/i,                    '🍰'],
+  [/burger/i,                                                '🍔'],
+  [/pizza/i,                                                 '🍕'],
+  [/steak/i,                                                 '🥩'],
+  [/bbq|grill|smokehouse/i,                                  '🔥'],
+  [/seafood|paluto|fresh catch/i,                            '🦞'],
+  [/vegan|vegetarian|healthy|bowl|salad/i,                   '🥗'],
+  [/sushi|japanese|izakaya/i,                                '🍣'],
+  [/ramen|noodle/i,                                          '🍜'],
+  [/korean|bbq house/i,                                      '🍖'],
+  [/chinese|dim sum|dumpling/i,                              '🥟'],
+  [/thai/i,                                                  '🌶️'],
+  [/vietnamese|pho/i,                                        '🍲'],
+  [/indian|curry/i,                                          '🍛'],
+  [/malaysian|indonesian|asian fusion/i,                     '🍱'],
+  [/mexican|tex-mex|latin/i,                                 '🌮'],
+  [/spanish|tapas|paella/i,                                  '🥘'],
+  [/french|bistro/i,                                         '🥐'],
+  [/greek|mediterranean/i,                                   '🫒'],
+  [/middle eastern|turkish|halal/i,                          '🥙'],
+  [/american|diner/i,                                        '🍟'],
+  [/fine dining/i,                                           '🍷'],
+  [/buffet|food hall/i,                                      '🍱'],
+  [/street food|carinderia|lutong bahay/i,                   '🍢'],
+  [/filipino|ilocano|kapampangan|bicolano|visayan|mindanao/i,'🍛'],
+  [/fusion/i,                                                '🍱'],
+];
+function cuisineIcon(cuisine) {
+  if (!cuisine) return '🍽';
+  for (const [re, emoji] of CUISINE_ICON_MAP) {
+    if (re.test(cuisine)) return emoji;
+  }
+  return '🍽';
+}
+
 let MAP         = null;
 let MARKERS     = [];   // [{ marker, vibes:Set, row, region }]
 let ACTIVE      = 'all';
@@ -423,23 +468,25 @@ function buildMarkers() {
   for (const { row: r, score } of scored) {
     const vibes   = vibesFor(r);
     const primary = primaryVibe(vibes);
-    /* Admin "boost" override force-bumps the marker to premium so editorial
-       picks / paid placements / new launches stay visible regardless of score. */
     const tier    = r.boost ? 'premium' : prominenceTier(score, allScores);
 
-    /* Premium + prominent render as full icon markers. Standard renders
-       as a tiny yellow dot — keeps dense maps scannable. */
-    const isDot = tier === 'standard';
-    const html = isDot
-      ? `<div class="vm-dot" title="${escapeHtml(r.name)}"></div>`
-      : `<div class="vm-marker ${primary} tier-${tier}">${VIBE_ICON[primary] || VIBE_ICON.default}</div>`;
+    /* Every marker now carries an icon representing what the place serves —
+       no more anonymous yellow dots. Premium uses the vibe icon for visual
+       differentiation; prominent + standard use the cuisine icon. */
+    const cIcon = cuisineIcon(r.cuisine_type);
+    const glyph = tier === 'premium'
+      ? (VIBE_ICON[primary] || cIcon)
+      : cIcon;
 
+    const html = `<div class="vm-marker ${primary} tier-${tier}" title="${escapeHtml(r.name)}">${glyph}</div>`;
+
+    const size = tier === 'premium' ? 50 : tier === 'prominent' ? 38 : 26;
     const icon = L.divIcon({
       className: '',
       html,
-      iconSize:    tier === 'premium' ? [50, 50] : tier === 'prominent' ? [38, 38] : [14, 14],
-      iconAnchor:  tier === 'premium' ? [25, 25] : tier === 'prominent' ? [19, 19] : [7, 7],
-      popupAnchor: isDot ? [0, -10] : [0, -18],
+      iconSize:    [size, size],
+      iconAnchor:  [size / 2, size / 2],
+      popupAnchor: [0, -size / 2],
     });
     /* zIndexOffset surfaces premium pins above any overlap. */
     const zOffset = tier === 'premium' ? 1000 : tier === 'prominent' ? 400 : 0;
