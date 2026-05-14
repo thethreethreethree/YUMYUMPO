@@ -324,6 +324,13 @@ function escapeHtml(s) {
 }
 
 async function loadRealStats() {
+  /* Wait for the Supabase client — DOMContentLoaded fires before the
+     SDK script finishes loading, so without this guard the very first
+     call silently no-ops and the stats stay at 0. */
+  if (!window.YYP?.ready) {
+    document.addEventListener('yyp:ready', loadRealStats, { once: true });
+    return;
+  }
   if (!window.db?.getHomepageStats) return;
   try {
     const s = await window.db.getHomepageStats();
@@ -332,7 +339,9 @@ async function loadRealStats() {
       'stat-restaurants':  s.active_restaurants,
       'stat-cities':       s.total_cities,
       'stat-discoveries':  s.total_discoveries_30d,
-      'stat-applications': s.total_applications,
+      /* migration 017 renamed the 4th field. Fall back to the legacy key
+         for safety if the migration hasn't been run yet. */
+      'stat-applications': s.happy_travelers ?? s.total_applications,
     };
     for (const [id, value] of Object.entries(map)) {
       const el = document.getElementById(id);
