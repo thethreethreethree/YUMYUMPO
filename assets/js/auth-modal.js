@@ -265,6 +265,10 @@
     modalEl.querySelector('[data-action="google"]').addEventListener('click', signInWithGoogle);
     modalEl.querySelector('[data-action="toggle-mode"]').addEventListener('click', toggleMode);
     modalEl.querySelector('#yyp-auth-form').addEventListener('submit', handleEmailSubmit);
+    /* Defensive: also handle direct click on submit button in case the
+       form's submit event is being swallowed by a nested-form or hijacked
+       page handler. Either path calls handleEmailSubmit and preventDefault. */
+    modalEl.querySelector('#yyp-auth-submit').addEventListener('click', handleEmailSubmit);
 
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && modalEl?.classList.contains('is-open')) close(null);
