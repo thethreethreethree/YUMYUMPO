@@ -382,8 +382,11 @@ function extractGmapsCoords(text) {
     return null;
   };
   let m;
-  if ((m = text.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)))          return tryPair(m[1], m[2]);
+  /* Prefer !3d!4d (the actual place pin) over @lat,lng (viewport center)
+     — when both are present in a Google Maps URL they can differ by
+     ~100m and !3d!4d is the accurate one. */
   if ((m = text.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/)))      return tryPair(m[1], m[2]);
+  if ((m = text.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)))          return tryPair(m[1], m[2]);
   if ((m = text.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/)))     return tryPair(m[1], m[2]);
   if ((m = text.match(/[?&]ll=(-?\d+\.\d+),(-?\d+\.\d+)/)))    return tryPair(m[1], m[2]);
   if ((m = text.match(/^\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*$/))) return tryPair(m[1], m[2]);

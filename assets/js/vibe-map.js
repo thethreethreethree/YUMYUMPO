@@ -64,16 +64,28 @@ document.addEventListener('DOMContentLoaded', () => {
 function wireLocateBtn() {
   const btn = document.getElementById('vm-locate');
   if (!btn || !navigator.geolocation) { if (btn) btn.style.display = 'none'; return; }
+  let lastFixAt = 0;
   btn.addEventListener('click', () => {
+    /* If we already located within the last 60s, just re-center the map
+       on the cached position — no need to spin up GPS again. */
+    if (USER_POS && Date.now() - lastFixAt < 60_000) {
+      setUserPosition(USER_POS.lat, USER_POS.lng);
+      return;
+    }
     btn.disabled = true;
     btn.textContent = 'Locating…';
     navigator.geolocation.getCurrentPosition(
-      pos => { setUserPosition(pos.coords.latitude, pos.coords.longitude); btn.textContent = '📍 Re-center'; btn.disabled = false; },
+      pos => {
+        lastFixAt = Date.now();
+        setUserPosition(pos.coords.latitude, pos.coords.longitude);
+        btn.textContent = '📍 Re-center';
+        btn.disabled = false;
+      },
       err => {
         btn.disabled = false; btn.textContent = '📍 What\'s near me';
         const msg = err.code === 1 ? 'Location permission denied' : 'Could not get your location';
         const empty = document.getElementById('vm-empty');
-        if (empty) { empty.textContent = msg; empty.classList.add('is-visible'); setTimeout(() => empty.classList.remove('is-visible'), 2500); }
+        if (empty) { empty.textContent = msg; empty.classList.add('is-visible'); setTimeout(() => empty.classList.remove('is-visible'), 4500); }
       },
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 60_000 }
     );
