@@ -1059,16 +1059,32 @@ function renderMap(r) {
 
   if (embedUrl || r.address) section.classList.remove('hidden');
 
-  if (embedUrl && embed) {
+  /* Only ever embed Google Maps. An owner-supplied override is rejected
+     unless it looks like an official google.com/maps URL — blocks
+     attribute injection and javascript: schemes. */
+  const safeEmbed = (() => {
+    if (!embedUrl) return '';
+    try {
+      const u = new URL(embedUrl, location.origin);
+      if (u.protocol !== 'https:') return '';
+      if (!/^(www\.)?google\.[a-z.]+$/i.test(u.hostname)) return '';
+      if (!u.pathname.startsWith('/maps')) return '';
+      return u.toString();
+    } catch { return ''; }
+  })();
+
+  if (safeEmbed && embed) {
     embed.style.padding = '0';
-    embed.innerHTML = `
-      <iframe
-        src="${embedUrl}"
-        width="100%" height="320"
-        style="border:0; display:block; border-radius: 1rem;"
-        allowfullscreen loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade"
-      ></iframe>`;
+    embed.replaceChildren();
+    const iframe = document.createElement('iframe');
+    iframe.src = safeEmbed;
+    iframe.width = '100%';
+    iframe.height = '320';
+    iframe.loading = 'lazy';
+    iframe.referrerPolicy = 'no-referrer-when-downgrade';
+    iframe.allowFullscreen = true;
+    iframe.style.cssText = 'border:0; display:block; border-radius: 1rem;';
+    embed.appendChild(iframe);
   }
 
   if (r.address && addrEl) addrEl.textContent = r.address;

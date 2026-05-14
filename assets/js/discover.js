@@ -344,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* Refresh the dataset whenever the tab regains focus or visibility,
      so newly-added restaurants appear without a full reload. */
   let lastRefresh = Date.now();
-  const REFRESH_COOLDOWN = 15_000;
+  const REFRESH_COOLDOWN = 5_000;
   function maybeRefresh() {
     if (document.visibilityState !== 'visible') return;
     if (Date.now() - lastRefresh < REFRESH_COOLDOWN) return;

@@ -124,26 +124,25 @@ async function loadRestaurants() {
       tags: Array.isArray(r.restaurant_tags) ? r.restaurant_tags.map(t => t.tag_name) : [],
       buzz_tier: buzzBySlug[r.slug] || null,
     }));
-    console.info(`[Vibe Map] loaded ${DATASET.length} active restaurants`);
+    if (window.YYP?.mode !== 'production') console.info(`[Vibe Map] loaded ${DATASET.length} active restaurants`);
   } catch (err) {
     console.warn('[Vibe Map] load failed:', err.message);
   }
 
-  /* Geocode any rows missing lat/lng via the OSM Nominatim API. Cached
-     in sessionStorage so a quick reload doesn't re-geocode. */
-  await ensureCoords();
-
-  /* Diagnostic — surface anything still un-pinnable. */
-  const skipped = DATASET.filter(r => !r.latitude || !r.longitude);
-  if (skipped.length) {
-    console.warn(`[Vibe Map] ${skipped.length} restaurants have no coords (filled neither lat/lng nor a geocodable address):`,
-      skipped.map(r => `${r.name} — "${r.address || r.location || '(none)'}"`));
-  }
-
+  /* Show whatever pins we can right away, then geocode the rest in the
+     background. Free Nominatim policy is 1 req/sec so the wait-loop
+     used to block the whole UI for up to ~33s on first load. */
   buildMarkers();
   buildRegions();
   applyFilter();
   hideLoading();
+
+  ensureCoords(() => {
+    /* Each successful geocode re-renders markers and refreshes regions. */
+    buildMarkers();
+    buildRegions();
+    applyFilter();
+  });
 }
 
 
@@ -154,14 +153,22 @@ async function loadRestaurants() {
    "Coron, Palawan"   → "Coron"
    When new restaurants are added in other cities, they appear
    automatically — no code change required. */
+/* Province / state suffixes we drop from a free-text location so
+   "El Nido, Palawan", "El Nido Palawan", and "El Nido" all collapse
+   to the same region key. Extend this list as we expand. */
+const REGION_SUFFIX_RE = /\b(palawan|metro\s+manila|cebu|bohol|siargao|mindoro|batangas|laguna|rizal|bulacan|philippines|ph)\b/gi;
+function regionPrimary(loc) {
+  if (!loc) return '';
+  const head = String(loc).split(',')[0];
+  return head.replace(REGION_SUFFIX_RE, '').replace(/\s+/g, ' ').trim();
+}
 function regionKey(loc) {
-  if (!loc) return 'other';
-  const first = String(loc).split(',')[0].trim();
-  return first.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g,'') || 'other';
+  const p = regionPrimary(loc);
+  if (!p) return 'other';
+  return p.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g,'') || 'other';
 }
 function regionLabel(loc) {
-  if (!loc) return 'Other';
-  return String(loc).split(',')[0].trim() || 'Other';
+  return regionPrimary(loc) || 'Other';
 }
 
 function buildRegions() {
@@ -189,17 +196,17 @@ function buildRegions() {
 }
 
 
-async function ensureCoords() {
-  /* If lat/lng missing, try the public Nominatim geocoder. We try several
-     query variants in order of specificity so very local addresses
-     ("Pops District, Corong-Corong") fall back to the city.
-     Nominatim policy: 1 req/sec — we wait between attempts. */
+async function ensureCoords(onResolved) {
+  /* Geocode every row missing lat/lng. localStorage cache survives reloads
+     (sessionStorage didn't — uncached rows were never persisted), so a
+     dataset that's too big for one session keeps making progress over time.
+     Nominatim policy: 1 req/sec. */
   const todo = DATASET.filter(r => (!r.latitude || !r.longitude) && (r.address || r.location));
-  for (const r of todo.slice(0, 30)) {
+  for (const r of todo) {
     const cacheKey = `yyp_geo_${r.slug}`;
     let cached = null;
-    try { cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null'); } catch {}
-    if (cached) { r.latitude = cached.lat; r.longitude = cached.lng; continue; }
+    try { cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); } catch {}
+    if (cached) { r.latitude = cached.lat; r.longitude = cached.lng; onResolved?.(); continue; }
 
     const queries = [
       r.address,
@@ -219,8 +226,8 @@ async function ensureCoords() {
         if (json[0]) {
           r.latitude  = parseFloat(json[0].lat);
           r.longitude = parseFloat(json[0].lon);
-          try { sessionStorage.setItem(cacheKey, JSON.stringify({ lat: r.latitude, lng: r.longitude })); } catch {}
-          console.info(`[Vibe Map] geocoded "${r.name}" via "${q}" → ${r.latitude.toFixed(4)},${r.longitude.toFixed(4)}`);
+          try { localStorage.setItem(cacheKey, JSON.stringify({ lat: r.latitude, lng: r.longitude })); } catch {}
+          onResolved?.();
           break;
         }
       } catch { /* try next variant */ }
@@ -252,10 +259,12 @@ function prominenceScore(r) {
 
 function prominenceTier(score, allScores) {
   /* Percentile-aware once the dataset is large enough; falls back to
-     absolute thresholds when fewer than 8 restaurants exist. */
+     absolute thresholds when fewer than 8 restaurants exist.
+     Uses lastIndexOf so a cluster of tied scores all share the higher
+     percentile bucket instead of all being demoted to the lowest. */
   if (allScores.length >= 8) {
     const sorted = [...allScores].sort((a, b) => a - b);
-    const pct = sorted.indexOf(score) / (sorted.length - 1);
+    const pct = sorted.lastIndexOf(score) / (sorted.length - 1);
     if (pct >= 0.85) return 'premium';
     if (pct >= 0.55) return 'prominent';
     return 'standard';
@@ -315,7 +324,9 @@ function vibesFor(r) {
   const lateTags = ['late night','beer & cocktails','bar & pub','bar','wine'];
   if (tags.some(t => lateTags.some(l => t.includes(l)))) set.add('nightout');
 
-  const socialTags = ['group-friendly','late night','beer','bar','social'];
+  /* Social = explicitly social tags only — `late night` and `beer` belong to
+     the Night-Out bucket and were double-counted before. */
+  const socialTags = ['group-friendly','social','tourist favorite'];
   if (tags.some(t => socialTags.some(l => t.includes(l)))) set.add('social');
 
   const vibeTags = ['romantic','scenic view','instagrammable','fine dining','date spot','hidden gem'];
@@ -339,7 +350,12 @@ function primaryVibe(set) {
 function popupHTML(r, ext = {}) {
   const cover = r.cover_image_url || `https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&auto=format&fit=crop&q=75`;
   const tags = (r.tags || []).slice(0, 3).map(t => `<span class="vm-popup-tag">${escapeHtml(t)}</span>`).join('');
-  const directionsQuery = encodeURIComponent(r.address || `${r.name} ${r.location || ''}`);
+  /* Only build the Directions URL when we actually have something to send. */
+  const dirQ = [r.address, r.location, r.name].filter(Boolean).join(' ').trim();
+  const directionsLink = dirQ
+    ? `<a class="vm-popup-btn outline" target="_blank" rel="noopener noreferrer"
+         href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dirQ)}">Directions</a>`
+    : '';
   const tierBadge = ext.tier === 'premium'
     ? `<span class="vm-popup-tier vm-popup-tier-premium">★ Top pick</span>`
     : ext.tier === 'prominent'
@@ -359,8 +375,7 @@ function popupHTML(r, ext = {}) {
       <div class="vm-popup-tags">${tags}</div>
       <div class="vm-popup-actions">
         <a class="vm-popup-btn primary" href="restaurant.html?slug=${encodeURIComponent(r.slug)}">View profile</a>
-        <a class="vm-popup-btn outline" target="_blank" rel="noopener noreferrer"
-           href="https://www.google.com/maps/dir/?api=1&destination=${directionsQuery}">Directions</a>
+        ${directionsLink}
       </div>
     </div>`;
 }
@@ -397,16 +412,11 @@ function fitToVisible() {
   });
   if (bounds.isValid()) {
     MAP.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
-  } else if (REGION === 'el-nido') {
-    /* Fallback when El Nido has no markers yet — keep the user oriented. */
+  } else {
+    /* Empty result — always re-centre on El Nido so the map never lands
+       stranded somewhere irrelevant. */
     MAP.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
   }
-}
-
-function fitToMarkers() {
-  const bounds = L.latLngBounds([]);
-  MARKERS.forEach(({ marker }) => bounds.extend(marker.getLatLng()));
-  if (bounds.isValid()) MAP.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
 }
 
 

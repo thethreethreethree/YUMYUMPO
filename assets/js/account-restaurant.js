@@ -20,7 +20,6 @@ const BUCKET = 'restaurant-photos';
 const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
 let restaurant = null;
-let originalSnapshot = null;
 let pendingGallery = [];
 let pendingFoodGallery = [];
 let pendingVibeTags = new Set();   // selected lifestyle tag names
@@ -62,7 +61,6 @@ async function init() {
   if (!row) return showNoRestaurant();
 
   restaurant = row;
-  originalSnapshot = JSON.stringify(row);
   pendingGallery     = Array.isArray(row.gallery_urls)      ? [...row.gallery_urls]      : [];
   pendingFoodGallery = Array.isArray(row.food_gallery_urls) ? [...row.food_gallery_urls] : [];
 
@@ -564,100 +562,80 @@ async function save() {
   const form = document.getElementById('owner-form');
   const fd = Object.fromEntries(new FormData(form));
 
+  /* Build the transactional payload for save_owner_restaurant().
+     One Postgres transaction — partial failures roll back cleanly. */
   const payload = {
-    name:            (fd.name || restaurant.name || '').trim(),
-    cuisine_type:    (fd.cuisine_type || restaurant.cuisine_type || '').trim(),
-    google_rating:   fd.google_rating !== '' ? parseFloat(fd.google_rating) : null,
-    review_count:    fd.review_count  !== '' ? parseInt(fd.review_count, 10) : null,
-    tagline:         fd.tagline       || null,
-    description:     fd.description   || null,
-    location:        fd.location      || null,
-    address:         fd.address       || null,
-    latitude:        fd.latitude  !== '' ? parseFloat(fd.latitude)  : null,
-    longitude:       fd.longitude !== '' ? parseFloat(fd.longitude) : null,
-    map_embed_url:   fd.map_embed_url || null,
-    directions_url:  fd.directions_url || null,
-    phone:           fd.phone         || null,
-    website_url:     normalizeUrl(fd.website_url)        || null,
-    whatsapp_url:    normalizeWhatsapp(fd.whatsapp_url)  || null,
-    instagram_url:   normalizeInstagram(fd.instagram_url)|| null,
-    facebook_url:    normalizeUrl(fd.facebook_url)       || null,
-    messenger_url:   normalizeUrl(fd.messenger_url)      || null,
-    cover_image_url:   restaurant.cover_image_url || null,
-    logo_image_url:    restaurant.logo_image_url  || null,
-    gallery_urls:      pendingGallery,
-    food_gallery_urls: pendingFoodGallery,
+    restaurant_id: restaurant.id,
+    fields: {
+      name:            (fd.name || restaurant.name || '').trim(),
+      cuisine_type:    (fd.cuisine_type || restaurant.cuisine_type || '').trim(),
+      google_rating:   fd.google_rating || '',
+      review_count:    fd.review_count  || '',
+      tagline:         fd.tagline       || null,
+      description:     fd.description   || null,
+      location:        fd.location      || null,
+      address:         fd.address       || null,
+      latitude:        fd.latitude  || '',
+      longitude:       fd.longitude || '',
+      map_embed_url:   sanitizeMapEmbed(fd.map_embed_url),
+      directions_url:  fd.directions_url || null,
+      phone:           fd.phone         || null,
+      website_url:     normalizeUrl(fd.website_url)        || null,
+      whatsapp_url:    normalizeWhatsapp(fd.whatsapp_url)  || null,
+      instagram_url:   normalizeInstagram(fd.instagram_url)|| null,
+      facebook_url:    normalizeUrl(fd.facebook_url)       || null,
+      messenger_url:   normalizeUrl(fd.messenger_url)      || null,
+      cover_image_url: restaurant.cover_image_url || null,
+      logo_image_url:  restaurant.logo_image_url  || null,
+      gallery_urls:      pendingGallery,
+      food_gallery_urls: pendingFoodGallery,
+    },
+    hours: DAYS.map(d => ({
+      day_of_week: d,
+      open_time:   hours[d].is_closed ? '' : hours[d].open_time,
+      close_time:  hours[d].is_closed ? '' : hours[d].close_time,
+      is_closed:   !!hours[d].is_closed,
+    })),
+    categories: categories.map(cat => ({
+      name: (cat.name || '').trim(),
+      items: (cat.items || []).map(it => {
+        const photos = Array.isArray(it.photos) ? it.photos.slice(0, 3) : [];
+        return {
+          name:         (it.name || '').trim(),
+          description:  it.description || null,
+          price:        it.price || null,
+          price_note:   it.price_note || null,
+          image_url:    photos[0] || null,
+          gallery_urls: photos,
+          tags:         Array.isArray(it.tags) ? it.tags : [],
+          is_available: it.is_available !== false,
+        };
+      }),
+    })),
+    vibe_tags: [...pendingVibeTags],
   };
 
   const btn = document.getElementById('save-btn');
   btn.disabled = true; btn.textContent = 'Saving…';
 
-  /* 1. Restaurant fields */
-  const { error: e1 } = await c.from('restaurants').update(payload).eq('id', restaurant.id);
-  if (e1) { btn.disabled=false; btn.textContent='Save Changes'; return toast('Save failed: ' + e1.message); }
-
-  /* 2. Hours — wipe and re-insert (idempotent, small N=7) */
-  await c.from('operating_hours').delete().eq('restaurant_id', restaurant.id);
-  const hoursRows = DAYS.map(d => ({
-    restaurant_id: restaurant.id,
-    day_of_week:   d,
-    open_time:     hours[d].is_closed ? null : hours[d].open_time,
-    close_time:    hours[d].is_closed ? null : hours[d].close_time,
-    is_closed:     hours[d].is_closed,
-  }));
-  const { error: e2 } = await c.from('operating_hours').insert(hoursRows);
-  if (e2) { btn.disabled=false; btn.textContent='Save Changes'; return toast('Hours save failed: ' + e2.message); }
-
-  /* 3. Menu — wipe and re-insert (items first cascade-delete, then categories) */
-  await c.from('menu_items').delete().eq('restaurant_id', restaurant.id);
-  await c.from('menu_categories').delete().eq('restaurant_id', restaurant.id);
-  for (let ci = 0; ci < categories.length; ci++) {
-    const cat = categories[ci];
-    if (!cat.name?.trim()) continue;
-    const { data: insertedCat, error: ec } = await c.from('menu_categories').insert({
-      restaurant_id: restaurant.id,
-      name: cat.name.trim(),
-      sort_order: ci,
-    }).select().single();
-    if (ec) { console.warn('cat save:', ec.message); continue; }
-    const itemRows = cat.items
-      .filter(it => it.name?.trim())
-      .map((it, ii) => {
-        const photos = Array.isArray(it.photos) ? it.photos.slice(0, MAX_ITEM_PHOTOS) : [];
-        return {
-          restaurant_id:    restaurant.id,
-          menu_category_id: insertedCat.id,
-          name:             it.name.trim(),
-          description:      it.description || null,
-          price:            it.price || null,
-          price_note:       it.price_note || null,
-          image_url:        photos[0] || null,
-          gallery_urls:     photos,
-          tags:             Array.isArray(it.tags) ? it.tags : [],
-          sort_order:       ii,
-          is_available:     it.is_available !== false,
-        };
-      });
-    if (itemRows.length) {
-      const { error: ei } = await c.from('menu_items').insert(itemRows);
-      if (ei) console.warn('items save:', ei.message);
-    }
-  }
-
-  /* 4. Vibe tags — wipe and re-insert */
-  await c.from('restaurant_tags').delete().eq('restaurant_id', restaurant.id);
-  const tagRows = [...pendingVibeTags].map(tag_name => ({ restaurant_id: restaurant.id, tag_name }));
-  if (tagRows.length) {
-    const { error: et } = await c.from('restaurant_tags').insert(tagRows);
-    if (et) console.warn('tags save:', et.message);
-  }
-
+  const { error } = await c.rpc('save_owner_restaurant', { payload });
   btn.disabled = false; btn.textContent = 'Save Changes';
-  Object.assign(restaurant, payload);
-  originalSnapshot = JSON.stringify(restaurant);
+  if (error) return toast('Save failed: ' + error.message);
+
+  Object.assign(restaurant, payload.fields);
   dirty = false;
   document.getElementById('save-bar').style.display = 'none';
   toast('✓ Saved');
+}
+
+/* Whitelist map_embed_url to a known-safe Google Maps embed origin
+   so an owner can't sneak attribute injection or javascript: URLs into
+   the iframe on the public profile. */
+function sanitizeMapEmbed(url) {
+  if (!url) return null;
+  const trimmed = String(url).trim();
+  if (!/^https:\/\/www\.google\.com\/maps\//i.test(trimmed)) return null;
+  return trimmed;
 }
 
 function discard() {
