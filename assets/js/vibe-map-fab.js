@@ -17,6 +17,9 @@
   if (path.includes('/admin/'))                                         return;
   if (path.endsWith('/account/restaurant.html') ||
       path.endsWith('/account/restaurant'))                             return;
+  /* /discover already has a Vibe Map pill in the hero — the FAB would
+     overlap the location filter sidebar on desktop. */
+  if (path.endsWith('/discover.html') || path.endsWith('/discover'))   return;
 
   /* Resolve relative href so it works from any directory depth. */
   const isNested = path.includes('/admin/') || path.includes('/account/');

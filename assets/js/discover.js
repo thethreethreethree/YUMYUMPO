@@ -367,7 +367,46 @@ async function loadFromSupabase() {
   } catch (err) {
     console.warn('[Discover] Supabase load failed, using static fallback:', err);
   }
+  /* Repopulate the location filter from real data — replaces the
+     hardcoded "Palawan 8 / Boracay 6 / ..." placeholders. */
+  renderLocationFilter();
 }
+
+/* Build the LOCATION filter sidebar from whatever's in DATASET.
+   Groups by the comma-separated city/area (so "Coron, Palawan" and
+   "El Nido, Palawan" both count toward "Palawan" — drop the segment
+   before the comma if a province segment exists, otherwise the head). */
+function renderLocationFilter() {
+  const container = document.getElementById('location-filter-list');
+  if (!container) return;
+  const counts = new Map();
+  for (const r of DATASET) {
+    const loc = (r.location || '').trim();
+    if (!loc) continue;
+    /* "El Nido, Palawan" → ["El Nido","Palawan"] — prefer the LAST
+       segment so multiple barangays roll up to one province/city. */
+    const parts = loc.split(',').map(s => s.trim()).filter(Boolean);
+    const key = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  if (counts.size === 0) {
+    container.innerHTML = '<p class="text-xs text-gray-400 italic px-2 py-2">No locations yet</p>';
+    return;
+  }
+  const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  container.innerHTML = sorted.map(([loc, n]) => {
+    const checked = state.locations?.has(loc) ? 'checked' : '';
+    return `
+      <label class="filter-checkbox-row">
+        <input type="checkbox" value="loc:${escapeHtmlAttr(loc)}" ${checked} onchange="toggleLocation(this)" />
+        <span class="filter-checkbox-label">${escapeHtml(loc)}</span>
+        <span class="filter-checkbox-count">${n}</span>
+      </label>`;
+  }).join('');
+}
+
+function escapeHtml(s)     { return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function escapeHtmlAttr(s) { return escapeHtml(s); }
 
 
 /* ══════════════════════════════════════════════════════════

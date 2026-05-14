@@ -357,40 +357,11 @@
           </div>
         </div>
 
-        <!-- Location filter -->
+        <!-- Location filter — populated from real restaurant data -->
         <div class="sidebar-section">
           <p class="sidebar-section-title">Location</p>
-          <div class="space-y-1">
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="loc:Palawan"     onchange="toggleLocation(this)" />
-              <span class="filter-checkbox-label">Palawan</span>
-              <span class="filter-checkbox-count">8</span>
-            </label>
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="loc:Boracay"     onchange="toggleLocation(this)" />
-              <span class="filter-checkbox-label">Boracay</span>
-              <span class="filter-checkbox-count">6</span>
-            </label>
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="loc:Siargao"     onchange="toggleLocation(this)" />
-              <span class="filter-checkbox-label">Siargao</span>
-              <span class="filter-checkbox-count">5</span>
-            </label>
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="loc:Manila"      onchange="toggleLocation(this)" />
-              <span class="filter-checkbox-label">Metro Manila</span>
-              <span class="filter-checkbox-count">12</span>
-            </label>
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="loc:Cebu"        onchange="toggleLocation(this)" />
-              <span class="filter-checkbox-label">Cebu</span>
-              <span class="filter-checkbox-count">7</span>
-            </label>
-            <label class="filter-checkbox-row">
-              <input type="checkbox" value="loc:Bohol"       onchange="toggleLocation(this)" />
-              <span class="filter-checkbox-label">Bohol</span>
-              <span class="filter-checkbox-count">4</span>
-            </label>
+          <div class="space-y-1" id="location-filter-list">
+            <p class="text-xs text-gray-400 italic px-2 py-2">Loading…</p>
           </div>
         </div>
 
@@ -575,13 +546,13 @@
 
 
 <script src="assets/js/config.js"></script>
-<script src="assets/js/supabase-client.js?v=stats4"></script>
+<script src="assets/js/supabase-client.js?v=loc1"></script>
   <script src="assets/js/auth-modal.js"></script>
   <script src="assets/js/account.js"></script>
   <script src="assets/js/bottom-nav.js"></script>
 <script src="assets/js/analytics.js"></script>
-<script src="assets/js/discover.js?v=stats4"></script>
-  <script src="assets/js/vibe-map-fab.js?v=stats4"></script>
+<script src="assets/js/discover.js?v=loc1"></script>
+  <script src="assets/js/vibe-map-fab.js?v=loc1"></script>
 <script src="assets/js/pwa.js"></script>
 </body>
 </html>
