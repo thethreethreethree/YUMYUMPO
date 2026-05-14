@@ -93,12 +93,10 @@ function setUserPosition(lat, lng) {
   /* Re-render popups so distances reflect the new origin. */
   MARKERS.forEach(({ marker, row }) => marker.bindPopup(popupHTML(row, scoreContextFor(row))));
 
-  /* Zoom into the user's neighbourhood — visitors immediately see what's
-     within a comfortable walk, can pan out for more. */
-  MAP.setView([lat, lng], 15, { animate: true });
+  /* Zoom in tight so the user actually sees their street + nearby pins. */
+  MAP.setView([lat, lng], 17, { animate: true });
 
-  /* Surface a count of nearby places (<= 2 km) so the action feels useful
-     even before they open a popup. */
+  /* Loud, prominent banner summarising what's nearby. */
   const nearby = MARKERS.filter(({ marker, vibes, region }) => {
     const vibeOk   = ACTIVE === 'all' || vibes.has(ACTIVE);
     const regionOk = REGION === 'all' || region.key === REGION;
@@ -106,10 +104,29 @@ function setUserPosition(lat, lng) {
     const { lat: la, lng: ln } = marker.getLatLng();
     return haversineKm({ lat, lng }, { lat: la, lng: ln }) <= 2;
   });
-  const meta = document.getElementById('vm-region-meta');
-  if (meta) meta.textContent = nearby.length
-    ? `${nearby.length} within a 2km walk`
-    : 'Nothing within 2km — try zooming out';
+  showNearbyBanner(nearby.length);
+}
+
+function showNearbyBanner(count) {
+  let banner = document.getElementById('vm-nearby-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'vm-nearby-banner';
+    banner.className = 'vm-nearby-banner';
+    document.getElementById('vm-app').appendChild(banner);
+  }
+  banner.innerHTML = count
+    ? `<span class="vm-nearby-emoji">📍</span>
+       <span><strong>${count}</strong> ${count === 1 ? 'place' : 'places'} within a 2 km walk</span>
+       <button class="vm-nearby-close" onclick="this.parentElement.classList.remove('is-on')" aria-label="Dismiss">×</button>`
+    : `<span class="vm-nearby-emoji">🤷</span>
+       <span>Nothing within 2 km — try zooming out</span>
+       <button class="vm-nearby-close" onclick="this.parentElement.classList.remove('is-on')" aria-label="Dismiss">×</button>`;
+  /* Re-trigger animation if banner already existed */
+  banner.classList.remove('is-on');
+  // eslint-disable-next-line no-unused-expressions
+  banner.offsetHeight;
+  banner.classList.add('is-on');
 }
 
 function scoreContextFor(row) {

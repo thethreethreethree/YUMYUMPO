@@ -89,6 +89,43 @@
       100% { transform: scale(1.6); opacity: 0; }
     }
 
+    /* Loud banner shown after "What's near me" */
+    .vm-nearby-banner {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.92);
+      z-index: 40;
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 22px;
+      background: #FFD000; color: #111;
+      border: 3px solid #111;
+      border-radius: 18px;
+      font-size: 1rem; font-weight: 800;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.34,1.5,0.64,1);
+      max-width: 90vw;
+    }
+    .vm-nearby-banner.is-on {
+      opacity: 1; pointer-events: auto;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .vm-nearby-banner .vm-nearby-emoji {
+      font-size: 1.6rem; line-height: 1;
+    }
+    .vm-nearby-banner strong {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.35rem; font-weight: 900;
+    }
+    .vm-nearby-close {
+      background: rgba(0,0,0,0.08); border: none;
+      width: 26px; height: 26px; border-radius: 50%;
+      font-size: 1rem; font-weight: 800; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1; padding: 0; color: #111;
+    }
+    .vm-nearby-close:hover { background: rgba(0,0,0,0.16); }
+
     /* Distance/time row inside popups */
     .vm-popup-dist {
       display: flex; gap: 10px; flex-wrap: wrap;
