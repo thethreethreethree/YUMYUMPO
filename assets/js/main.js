@@ -346,8 +346,11 @@ async function loadRealStats() {
     for (const [id, value] of Object.entries(map)) {
       const el = document.getElementById(id);
       if (el && typeof value === 'number') {
-        el.dataset.target = value;
-        el.textContent    = value.toLocaleString();
+        /* Write to data-count (what initStatsCounter reads) AND to
+           textContent (so the number shows even if the observer has
+           already fired on the static 0). */
+        el.dataset.count = value;
+        el.textContent   = value.toLocaleString() + '+';
       }
     }
   } catch (err) {
