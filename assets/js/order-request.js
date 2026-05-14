@@ -19,36 +19,30 @@ document.addEventListener('yyp:restaurant-loaded', (e) => {
 
 
 function injectOrderUi(r) {
-  if (document.getElementById('yyp-order-cta')) return;
+  if (document.querySelector('.yyp-order-cta')) return;
+  injectStyles();
 
   const accepting = r.accepting_orders !== false;
-  const cta = document.createElement('button');
-  cta.id = 'yyp-order-cta';
-  cta.type = 'button';
-  cta.className = 'yyp-order-cta';
-  cta.innerHTML = accepting
+  const html = accepting
     ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
         Request an order`
     : `🌙 Not accepting orders right now`;
-  cta.disabled = !accepting;
-  cta.addEventListener('click', () => openOrderModal(r));
 
-  /* Insert next to the website CTA in the action card (desktop) and
-     under the hero on mobile. */
-  const actionButtons = document.getElementById('action-buttons');
-  if (actionButtons) actionButtons.appendChild(cta.cloneNode(true));
+  const targets = [
+    document.getElementById('action-buttons'),
+    document.getElementById('r-hero-content'),
+  ].filter(Boolean);
 
-  /* Also drop a yellow pill version into the hero so mobile sees it
-     without scrolling to the sidebar. */
-  const hero = document.getElementById('r-hero-content');
-  if (hero) hero.appendChild(cta);
-
-  injectStyles();
-
-  /* Re-bind clicks after cloneNode (cloned element lost its listener) */
-  document.querySelectorAll('#yyp-order-cta, [data-yyp-order-cta]').forEach(el => {
-    el.removeEventListener('click', () => {});
-    el.addEventListener('click', () => openOrderModal(r));
+  /* Build a fresh button per target so each carries its own listener —
+     cloneNode would have stripped them. */
+  targets.forEach(parent => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'yyp-order-cta';
+    btn.innerHTML = html;
+    btn.disabled = !accepting;
+    if (accepting) btn.addEventListener('click', () => openOrderModal(r));
+    parent.appendChild(btn);
   });
 }
 

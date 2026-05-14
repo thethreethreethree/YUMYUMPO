@@ -738,12 +738,29 @@ async function loadOrders() {
     });
   }
 
-  /* Pull orders + analytics in parallel */
-  const [{ data: orders }, { data: analytics }] = await Promise.all([
-    c.from('order_requests').select('*').eq('restaurant_id', restaurant.id).order('created_at', { ascending: false }).limit(50),
-    c.from('restaurant_order_analytics').select('*').eq('restaurant_id', restaurant.id).maybeSingle(),
-  ]);
-  ORDERS = orders || [];
+  /* Inbox: only fetch open orders (status not in done/denied/paid) and
+     cap at 30. The Analytics view is heavier — refresh every 5th tick
+     (≈100s) instead of every poll. */
+  const fetchAnalytics = !window._yypOrdersTick || window._yypOrdersTick % 5 === 0;
+  window._yypOrdersTick = (window._yypOrdersTick || 0) + 1;
+
+  const inboxQ = c
+    .from('order_requests')
+    .select('id, status, customer_name, customer_phone, items, allergens, notes, delivery_method, delivery_address, preferred_time, created_at')
+    .eq('restaurant_id', restaurant.id)
+    .in('status', ['pending', 'acknowledged', 'quoted', 'accepted'])
+    .order('created_at', { ascending: false })
+    .limit(30);
+
+  const promises = [inboxQ];
+  if (fetchAnalytics) {
+    promises.push(c.from('restaurant_order_analytics').select('*').eq('restaurant_id', restaurant.id).maybeSingle());
+  }
+
+  const results = await Promise.all(promises);
+  ORDERS = results[0].data || [];
+  const analytics = fetchAnalytics ? (results[1]?.data || null) : window._yypOrdersAnalyticsCache;
+  if (fetchAnalytics) window._yypOrdersAnalyticsCache = analytics;
 
   renderOrderAnalytics(analytics);
   renderOrders();

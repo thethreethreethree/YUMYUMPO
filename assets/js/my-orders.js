@@ -49,12 +49,20 @@ async function init() {
   wrap.querySelectorAll('[data-fav]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const slug = btn.dataset.fav;
-      const filled = btn.dataset.state === 'on';
-      btn.dataset.state = filled ? 'off' : 'on';
-      btn.innerHTML = btn.dataset.state === 'on' ? '❤️ Favorited' : '🤍 Favorite';
+      btn.disabled = true;
       try {
-        await c.rpc('set_reaction', { p_slug: slug, p_reaction: 'love' });
-      } catch (err) { console.warn(err); }
+        /* set_reaction toggles: returns the current reactions list.
+           Use the response to render the new state honestly. */
+        const { data } = await c.rpc('set_reaction', { p_slug: slug, p_reaction: 'love' });
+        const myReactions = data?.my_reactions || [];
+        const nowFav = Array.isArray(myReactions) && myReactions.includes('love');
+        btn.dataset.state = nowFav ? 'on' : 'off';
+        btn.innerHTML = nowFav ? '❤️ Favorited' : '🤍 Favorite';
+      } catch (err) {
+        console.warn(err);
+      } finally {
+        btn.disabled = false;
+      }
     });
   });
 

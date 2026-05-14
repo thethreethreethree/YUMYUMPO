@@ -47,20 +47,29 @@ async function init() {
 async function loadOrder(token) {
   const c = window.YYP?.client;
   if (!c) return;
-  const { data, error } = await c
-    .from('order_requests')
-    .select(`*, restaurants ( name, slug, cover_image_url, whatsapp_url, phone )`)
-    .eq('tracking_token', token)
-    .maybeSingle();
+  /* Use the SECURITY DEFINER RPC so the link works for anyone with the
+     token — signed in or not — without exposing the whole table. */
+  const { data, error } = await c.rpc('get_order_by_token', { p_token: token });
 
   const wrap = document.getElementById('ord-content');
-  if (error || !data) {
-    wrap.innerHTML = '<div class="ord-empty">Couldn\'t find this order. The link may be invalid, or you might need to sign in with the account that placed it.</div>';
+  const row = Array.isArray(data) ? data[0] : data;
+  if (error || !row) {
+    wrap.innerHTML = '<div class="ord-empty">Couldn\'t find this order. The link may be invalid.</div>';
     clearInterval(POLL_TIMER);
     return;
   }
-  ORDER = data;
-  render(data);
+  /* Re-shape the flat RPC row into the nested form render() expects. */
+  ORDER = {
+    ...row,
+    restaurants: {
+      name:             row.restaurant_name,
+      slug:             row.restaurant_slug,
+      cover_image_url:  row.restaurant_cover,
+      whatsapp_url:     row.restaurant_whatsapp,
+      phone:            row.restaurant_phone,
+    },
+  };
+  render(ORDER);
 }
 
 
@@ -141,10 +150,12 @@ function render(o) {
     ${actionFor(o, r)}
   `;
 
-  /* Wire Mark-as-paid */
+  /* Mark-as-paid goes through the narrow RPC so a customer can't mutate
+     anything else (status / items / quoted_total). */
   document.getElementById('ord-mark-paid')?.addEventListener('click', async () => {
     if (!confirm('Confirm you\'ve paid the restaurant?')) return;
-    await window.YYP.client.from('order_requests').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('id', o.id);
+    const { error } = await window.YYP.client.rpc('mark_order_paid', { p_order_id: o.id });
+    if (error) return alert('Could not mark paid: ' + error.message);
     loadOrder(new URLSearchParams(location.search).get('token'));
   });
 }
