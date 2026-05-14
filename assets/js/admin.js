@@ -156,7 +156,7 @@ async function loadAdminFromSupabase() {
       .select(`
         id, slug, name, cuisine_type, location, address, description, tagline,
         google_rating, review_count, cover_image_url, website_url, has_yumyumpo_site,
-        is_featured, is_active, is_demo, owner_email, owner_user_id, created_at,
+        is_featured, is_active, is_demo, boost, owner_email, owner_user_id, created_at,
         restaurant_tags ( tag_name )
       `)
       .order('created_at', { ascending: false })
@@ -180,6 +180,7 @@ async function loadAdminFromSupabase() {
       featured:          !!r.is_featured,
       active:            r.is_active !== false,
       is_demo:           !!r.is_demo,
+      boost:             !!r.boost,
       website_url:       r.website_url,
       has_yumyumpo_site: !!r.has_yumyumpo_site,
       owner_email:       r.owner_email,
@@ -393,6 +394,9 @@ function renderRestaurantList(list) {
           <button onclick="toggleDemo('${r.id}')" class="p-2 rounded-lg ${r.is_demo?'bg-gray-100 text-gray-700':'hover:bg-gray-100 text-gray-300 hover:text-gray-500'} transition-colors" title="${r.is_demo?'Currently a DEMO (hidden from public). Click to make real.':'Mark as demo (hides from public surfaces)'}">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>${r.is_demo?'<line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>':''}</svg>
           </button>
+          <button onclick="toggleBoost('${r.id}')" class="p-2 rounded-lg ${r.boost?'bg-yellow-50 text-yellow-700':'hover:bg-yellow-50 text-gray-400 hover:text-yellow-600'} transition-colors" title="${r.boost?'Boosted — locked to premium tier on Vibe Map. Click to remove.':'Boost — force premium tier on Vibe Map (editorial / paid placement)'}">
+            <svg class="w-4 h-4" fill="${r.boost?'currentColor':'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </button>
           <button onclick="deleteRestaurant('${r.id}')" class="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors" title="Delete">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
           </button>
@@ -463,6 +467,19 @@ window.toggleDemo = async function(id) {
     if (error) { alert('Update failed: ' + error.message); return; }
   }
   r.is_demo = newVal;
+  renderRestaurantList(filteredRestaurants);
+};
+
+window.toggleBoost = async function(id) {
+  const r = ADMIN_RESTAURANTS.find(x => x.id === id);
+  if (!r) return;
+  const newVal = !r.boost;
+  const client = window.YYP?.client;
+  if (client) {
+    const { error } = await client.from('restaurants').update({ boost: newVal }).eq('id', id);
+    if (error) { alert('Update failed: ' + error.message); return; }
+  }
+  r.boost = newVal;
   renderRestaurantList(filteredRestaurants);
 };
 

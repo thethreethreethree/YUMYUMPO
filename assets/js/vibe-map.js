@@ -233,7 +233,7 @@ async function loadRestaurants() {
         location, address, latitude, longitude,
         google_rating, review_count,
         cover_image_url, logo_image_url, website_url,
-        has_yumyumpo_site, is_featured, ai_summary, rank_label, created_at,
+        has_yumyumpo_site, is_featured, boost, ai_summary, rank_label, created_at,
         restaurant_tags ( tag_name )
       `)
       .eq('is_active', true)
@@ -389,10 +389,12 @@ function prominenceScore(r) {
 }
 
 function prominenceTier(score, allScores) {
-  /* Percentile-aware once the dataset is large enough; falls back to
-     absolute thresholds when fewer than 8 restaurants exist.
-     Uses lastIndexOf so a cluster of tied scores all share the higher
-     percentile bucket instead of all being demoted to the lowest. */
+  /* Tier widths chosen to keep the map readable as the dataset grows:
+       premium ≈ top 15%   — big icon marker, brand colour, pulses
+       prominent ≈ next 30% — medium icon marker
+       standard = everything else — tiny yellow dot, no emoji
+     Falls back to absolute thresholds at small N so a 2-restaurant
+     city still gets a "premium" pick. */
   if (allScores.length >= 8) {
     const sorted = [...allScores].sort((a, b) => a - b);
     const pct = sorted.lastIndexOf(score) / (sorted.length - 1);
@@ -421,13 +423,23 @@ function buildMarkers() {
   for (const { row: r, score } of scored) {
     const vibes   = vibesFor(r);
     const primary = primaryVibe(vibes);
-    const tier    = prominenceTier(score, allScores);
+    /* Admin "boost" override force-bumps the marker to premium so editorial
+       picks / paid placements / new launches stay visible regardless of score. */
+    const tier    = r.boost ? 'premium' : prominenceTier(score, allScores);
+
+    /* Premium + prominent render as full icon markers. Standard renders
+       as a tiny yellow dot — keeps dense maps scannable. */
+    const isDot = tier === 'standard';
+    const html = isDot
+      ? `<div class="vm-dot" title="${escapeHtml(r.name)}"></div>`
+      : `<div class="vm-marker ${primary} tier-${tier}">${VIBE_ICON[primary] || VIBE_ICON.default}</div>`;
+
     const icon = L.divIcon({
       className: '',
-      html: `<div class="vm-marker ${primary} tier-${tier}">${VIBE_ICON[primary] || VIBE_ICON.default}</div>`,
-      iconSize:   tier === 'premium' ? [46, 46] : tier === 'prominent' ? [40, 40] : [34, 34],
-      iconAnchor: tier === 'premium' ? [23, 23] : tier === 'prominent' ? [20, 20] : [17, 17],
-      popupAnchor: [0, -18],
+      html,
+      iconSize:    tier === 'premium' ? [50, 50] : tier === 'prominent' ? [38, 38] : [14, 14],
+      iconAnchor:  tier === 'premium' ? [25, 25] : tier === 'prominent' ? [19, 19] : [7, 7],
+      popupAnchor: isDot ? [0, -10] : [0, -18],
     });
     /* zIndexOffset surfaces premium pins above any overlap. */
     const zOffset = tier === 'premium' ? 1000 : tier === 'prominent' ? 400 : 0;
