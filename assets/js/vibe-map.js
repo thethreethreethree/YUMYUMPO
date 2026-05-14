@@ -68,9 +68,9 @@ function wireLocateBtn() {
     btn.disabled = true;
     btn.textContent = 'Locating…';
     navigator.geolocation.getCurrentPosition(
-      pos => { setUserPosition(pos.coords.latitude, pos.coords.longitude); btn.textContent = '📍 Me'; btn.disabled = false; },
+      pos => { setUserPosition(pos.coords.latitude, pos.coords.longitude); btn.textContent = '📍 Re-center'; btn.disabled = false; },
       err => {
-        btn.disabled = false; btn.textContent = '📍 Show my location';
+        btn.disabled = false; btn.textContent = '📍 What\'s near me';
         const msg = err.code === 1 ? 'Location permission denied' : 'Could not get your location';
         const empty = document.getElementById('vm-empty');
         if (empty) { empty.textContent = msg; empty.classList.add('is-visible'); setTimeout(() => empty.classList.remove('is-visible'), 2500); }
@@ -93,8 +93,23 @@ function setUserPosition(lat, lng) {
   /* Re-render popups so distances reflect the new origin. */
   MARKERS.forEach(({ marker, row }) => marker.bindPopup(popupHTML(row, scoreContextFor(row))));
 
-  /* Frame the user + visible markers. */
-  fitToVisible();
+  /* Zoom into the user's neighbourhood — visitors immediately see what's
+     within a comfortable walk, can pan out for more. */
+  MAP.setView([lat, lng], 15, { animate: true });
+
+  /* Surface a count of nearby places (<= 2 km) so the action feels useful
+     even before they open a popup. */
+  const nearby = MARKERS.filter(({ marker, vibes, region }) => {
+    const vibeOk   = ACTIVE === 'all' || vibes.has(ACTIVE);
+    const regionOk = REGION === 'all' || region.key === REGION;
+    if (!vibeOk || !regionOk) return false;
+    const { lat: la, lng: ln } = marker.getLatLng();
+    return haversineKm({ lat, lng }, { lat: la, lng: ln }) <= 2;
+  });
+  const meta = document.getElementById('vm-region-meta');
+  if (meta) meta.textContent = nearby.length
+    ? `${nearby.length} within a 2km walk`
+    : 'Nothing within 2km — try zooming out';
 }
 
 function scoreContextFor(row) {
