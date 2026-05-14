@@ -346,11 +346,10 @@ async function loadRealStats() {
     for (const [id, value] of Object.entries(map)) {
       const el = document.getElementById(id);
       if (el && typeof value === 'number') {
-        /* Write to data-count (what initStatsCounter reads) AND to
-           textContent (so the number shows even if the observer has
-           already fired on the static 0). */
         el.dataset.count = value;
-        el.textContent   = value.toLocaleString() + '+';
+        /* Re-trigger animation so the counter visibly ramps up to the
+           new real value (cancels any stale 0→0 animation in flight). */
+        animateCount(el, value);
       }
     }
   } catch (err) {
@@ -778,23 +777,27 @@ function initStatsCounter() {
 }
 
 function animateCount(el, target) {
+  /* Cancel any prior animation on this element so a fresh value (set by
+     loadRealStats after the SDK loaded) takes over cleanly. */
+  if (el._yypRAF) cancelAnimationFrame(el._yypRAF);
   const duration = 1800;
   const startTime = performance.now();
-  // Read suffix directly from the element's original text (set in HTML as e.g. "0+" or "0%")
   const originalText = el.textContent || '';
   const suffix = originalText.includes('%') ? '%' : '+';
 
   const tick = (now) => {
+    /* Re-read target each frame so loadRealStats updates land mid-flight. */
+    const currentTarget = parseInt(el.dataset.count) || target;
     const elapsed  = now - startTime;
     const progress = Math.min(elapsed / duration, 1);
     const eased    = 1 - Math.pow(1 - progress, 3);
-    const value    = Math.floor(eased * target);
+    const value    = Math.floor(eased * currentTarget);
     el.textContent = value.toLocaleString() + suffix;
-    if (progress < 1) requestAnimationFrame(tick);
-    else el.textContent = target.toLocaleString() + suffix;
+    if (progress < 1) el._yypRAF = requestAnimationFrame(tick);
+    else el.textContent = currentTarget.toLocaleString() + suffix;
   };
 
-  requestAnimationFrame(tick);
+  el._yypRAF = requestAnimationFrame(tick);
 }
 
 
