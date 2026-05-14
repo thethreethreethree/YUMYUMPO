@@ -21,14 +21,17 @@ CREATE UNIQUE INDEX IF NOT EXISTS apps_onboard_token_uidx
 CREATE OR REPLACE FUNCTION public.approve_application(p_app_id UUID)
 RETURNS TABLE (slug TEXT, onboard_token TEXT)
 LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = public, auth
+-- pgcrypto lives in the `extensions` schema in Supabase, so a
+-- SECURITY DEFINER function with locked search_path can't see
+-- gen_random_bytes by default. Include it explicitly.
+SET search_path = public, auth, extensions
 AS $$
 DECLARE
   v_app restaurant_applications%ROWTYPE;
   v_slug TEXT;
   v_base TEXT;
   v_suffix INT := 0;
-  v_token TEXT := encode(gen_random_bytes(18), 'hex');
+  v_token TEXT := encode(extensions.gen_random_bytes(18), 'hex');
   v_rest_id UUID;
 BEGIN
   IF NOT is_admin() THEN
