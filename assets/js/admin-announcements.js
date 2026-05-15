@@ -93,7 +93,7 @@
 
     const { data, error } = await client
       .from('venue_announcements')
-      .select('id, title, body, type, starts_at, ends_at, is_published, created_at, restaurants(name, slug)')
+      .select('id, title, body, type, status, payment_status, price_php, admin_notes, starts_at, ends_at, is_published, created_at, restaurants(name, slug)')
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -110,31 +110,122 @@
     }
     empty.classList.add('hidden');
 
+    /* Sort: pending requests first (need attention), then awaiting-payment,
+       then everything else by created_at. */
+    const priority = a => {
+      if (a.status === 'pending') return 0;
+      if (a.status === 'approved' && a.payment_status === 'unpaid') return 1;
+      return 2;
+    };
+    data.sort((a, b) => priority(a) - priority(b) || (b.created_at || '').localeCompare(a.created_at || ''));
+
     list.innerHTML = data.map(a => {
       const date = new Date(a.starts_at || a.created_at);
       const dateStr = date.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+
+      let pill, actions;
+      if (a.status === 'pending') {
+        pill = '<span class="app-status pending">PENDING REVIEW</span>';
+        actions = `
+          <button class="apps-filter-btn" style="background:#FFD000;border-color:#FFD000;color:#111;font-weight:800" data-review-approve="${esc(a.id)}">✓ Approve · ₱${a.price_php || 200}</button>
+          <button class="apps-filter-btn" style="background:#FEE2E2;border-color:#FECACA;color:#991B1B" data-review-reject="${esc(a.id)}">✕ Reject</button>`;
+      } else if (a.status === 'approved' && a.payment_status === 'unpaid') {
+        pill = `<span class="app-status reviewing">AWAITING PAYMENT · ₱${a.price_php}</span>`;
+        actions = `
+          <button class="apps-filter-btn" style="background:#FFD000;border-color:#FFD000;color:#111;font-weight:800" data-mark-paid="${esc(a.id)}">💰 Mark paid</button>
+          <button class="apps-filter-btn" data-waive="${esc(a.id)}">Waive fee</button>
+          <button class="apps-filter-btn" style="background:#FEE2E2;border-color:#FECACA;color:#991B1B" data-delete="${esc(a.id)}">Delete</button>`;
+      } else if (a.status === 'rejected') {
+        pill = '<span class="app-status rejected">REJECTED</span>';
+        actions = `<button class="apps-filter-btn" style="background:#FEE2E2;border-color:#FECACA;color:#991B1B" data-delete="${esc(a.id)}">Delete</button>`;
+      } else if (a.is_published) {
+        pill = '<span class="app-status approved">LIVE</span>';
+        actions = `<button class="apps-filter-btn" style="background:#FEE2E2;border-color:#FECACA;color:#991B1B" data-delete="${esc(a.id)}">Delete</button>`;
+      } else {
+        pill = '<span class="app-status approved">APPROVED</span>';
+        actions = `<button class="apps-filter-btn" style="background:#FEE2E2;border-color:#FECACA;color:#991B1B" data-delete="${esc(a.id)}">Delete</button>`;
+      }
+
       return `
         <div class="app-card" style="cursor:default">
-          <div class="flex items-start justify-between gap-4 mb-1">
+          <div class="flex items-start justify-between gap-4 mb-1 flex-wrap">
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-1 flex-wrap">
-                <span class="app-status pending">${esc(a.type || 'announcement')}</span>
-                ${!a.is_published ? '<span class="app-status rejected">DRAFT</span>' : ''}
+                ${pill}
+                <span class="text-xs font-bold text-gray-500">${esc(a.type || 'announcement')}</span>
               </div>
               <h3 class="font-display font-black text-base text-brand-black">${esc(a.title)}</h3>
               <p class="text-sm text-gray-500 mt-1">${esc(a.restaurants?.name || '—')} · ${esc(dateStr)}</p>
               ${a.body ? `<p class="text-sm text-gray-600 mt-2 line-clamp-2">${esc(a.body)}</p>` : ''}
+              ${a.admin_notes ? `<p class="text-xs text-gray-400 mt-2"><strong>Note:</strong> ${esc(a.admin_notes)}</p>` : ''}
             </div>
-            <button class="apps-filter-btn" style="background:#FEE2E2;border-color:#FECACA;color:#991B1B" data-delete="${esc(a.id)}">Delete</button>
+            <div class="flex flex-col gap-1 items-stretch shrink-0">${actions}</div>
           </div>
         </div>
       `;
     }).join('');
 
+    /* Wire delete buttons (legacy + new). */
     list.querySelectorAll('[data-delete]').forEach(btn => {
       btn.addEventListener('click', async () => {
         if (!confirm('Delete this announcement?')) return;
         await client.from('venue_announcements').delete().eq('id', btn.dataset.delete);
+        loadAnnouncements();
+      });
+    });
+
+    /* Approve pending owner request. Prompts for price + optional note. */
+    list.querySelectorAll('[data-review-approve]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.reviewApprove;
+        const priceStr = prompt('Price in PHP (blank = ₱200):', '200');
+        if (priceStr === null) return;
+        const price = parseInt(priceStr, 10) || 200;
+        const note  = prompt('Optional note for the owner (blank = none):') || null;
+        const { error } = await client.rpc('review_announcement', {
+          p_id: id, p_decision: 'approved', p_notes: note, p_price_php: price,
+        });
+        if (error) return alert('Failed: ' + error.message);
+        loadAnnouncements();
+      });
+    });
+
+    /* Reject pending owner request — note required. */
+    list.querySelectorAll('[data-review-reject]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.reviewReject;
+        const note = prompt('Why is this being rejected? (the owner will see this)');
+        if (!note) return;
+        const { error } = await client.rpc('review_announcement', {
+          p_id: id, p_decision: 'rejected', p_notes: note, p_price_php: null,
+        });
+        if (error) return alert('Failed: ' + error.message);
+        loadAnnouncements();
+      });
+    });
+
+    /* Mark payment received (offline GCash/bank/manual). */
+    list.querySelectorAll('[data-mark-paid]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.markPaid;
+        const method = prompt('Payment method (gcash/bank/manual):', 'gcash') || 'manual';
+        const { error } = await client.rpc('record_announcement_payment', {
+          p_id: id, p_status: 'paid', p_method: method,
+        });
+        if (error) return alert('Failed: ' + error.message);
+        loadAnnouncements();
+      });
+    });
+
+    /* Waive fee (free announcement — e.g. partnership, comp). */
+    list.querySelectorAll('[data-waive]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.waive;
+        if (!confirm('Waive the fee for this announcement?')) return;
+        const { error } = await client.rpc('record_announcement_payment', {
+          p_id: id, p_status: 'waived', p_method: 'waived',
+        });
+        if (error) return alert('Failed: ' + error.message);
         loadAnnouncements();
       });
     });

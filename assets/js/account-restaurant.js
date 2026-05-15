@@ -74,6 +74,7 @@ async function init() {
   /* Premium-only: surface the order inbox + poll every 20s. */
   loadOrders();
   ORDERS_POLL = setInterval(loadOrders, 20_000);
+  loadPromos();
 }
 
 
@@ -877,6 +878,177 @@ async function handleOrderAction(id, act) {
   if (error) return toast('Update failed: ' + error.message);
   toast('✓ Updated');
   loadOrders();
+}
+
+
+/* ── Promotions (owner-requested announcements) ──────────────
+   Owner submits a request → status='pending' + payment_status='unpaid'.
+   Admin reviews + collects payment offline (GCash/bank). Once
+   approved + paid, migration 023's trigger flips is_published
+   and the announcement appears in followers' feed. */
+
+const PROMO_TYPE_LABEL = {
+  'announcement': '📣 Announcement',
+  'promo':        '💸 Promo',
+  'event':        '📅 Event',
+  'happy-hour':   '🍻 Happy hour',
+  'live-music':   '🎵 Live music',
+  'menu':         '🍽️ New menu item',
+};
+
+async function loadPromos() {
+  const c = window.YYP?.client;
+  const sec = document.getElementById('promos-section');
+  if (!c || !restaurant?.id || !sec) return;
+  sec.style.display = '';
+
+  const newBtn  = document.getElementById('promo-new-btn');
+  const form    = document.getElementById('promo-form');
+  const cancel  = document.getElementById('promo-cancel');
+  if (newBtn && newBtn.dataset.bound !== '1') {
+    newBtn.dataset.bound = '1';
+    newBtn.addEventListener('click', () => { form.style.display = ''; newBtn.style.display = 'none'; });
+    cancel.addEventListener('click', () => { form.reset(); form.style.display = 'none'; newBtn.style.display = ''; hidePromoMsg(); });
+    form.addEventListener('submit', submitPromoRequest);
+  }
+
+  const { data, error } = await c
+    .from('venue_announcements')
+    .select('id, title, body, type, status, payment_status, price_php, starts_at, ends_at, admin_notes, created_at, is_published')
+    .eq('restaurant_id', restaurant.id)
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  const list  = document.getElementById('promo-list');
+  const empty = document.getElementById('promo-empty');
+  if (error) { console.warn('[promos]', error.message); return; }
+  if (!data?.length) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+
+  list.innerHTML = data.map(promoCardHTML).join('');
+  list.querySelectorAll('[data-withdraw]').forEach(b => {
+    b.addEventListener('click', async () => {
+      if (!confirm('Withdraw this request? It will be removed.')) return;
+      const { error } = await c.from('venue_announcements').delete().eq('id', b.dataset.withdraw);
+      if (error) return toast('Could not withdraw: ' + error.message);
+      toast('Request withdrawn');
+      loadPromos();
+    });
+  });
+}
+
+function promoCardHTML(a) {
+  const created = new Date(a.created_at).toLocaleDateString(undefined, { month:'short', day:'numeric' });
+  const dates = (a.starts_at || a.ends_at)
+    ? `${a.starts_at ? new Date(a.starts_at).toLocaleDateString(undefined,{month:'short',day:'numeric'}) : '—'} → ${a.ends_at ? new Date(a.ends_at).toLocaleDateString(undefined,{month:'short',day:'numeric'}) : 'open'}`
+    : '';
+
+  /* Status pill + helper text. */
+  let pill, helper;
+  if (a.status === 'pending') {
+    pill = '<span class="app-status pending">PENDING REVIEW</span>';
+    helper = "We're reviewing your request. Approval typically within 24h.";
+  } else if (a.status === 'rejected') {
+    pill = '<span class="app-status rejected">REJECTED</span>';
+    helper = a.admin_notes ? `<strong>Admin note:</strong> ${esc(a.admin_notes)}` : 'Reach out if you have questions.';
+  } else if (a.status === 'approved' && a.payment_status === 'unpaid') {
+    pill = '<span class="app-status reviewing">AWAITING PAYMENT</span>';
+    helper = `Approved! Pay ₱${a.price_php} via GCash/bank to publish. We'll send instructions by email.`;
+  } else if (a.is_published) {
+    pill = '<span class="app-status approved">LIVE</span>';
+    helper = 'Now showing in followers\' feed.';
+  } else {
+    pill = '<span class="app-status approved">APPROVED</span>';
+    helper = 'Approved (no payment required).';
+  }
+
+  const canWithdraw = a.status === 'pending';
+
+  return `
+    <div class="app-card" style="cursor:default">
+      <div class="flex items-start justify-between gap-3 mb-2 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            ${pill}
+            <span class="text-xs font-bold text-gray-500">${esc(PROMO_TYPE_LABEL[a.type] || a.type)}</span>
+          </div>
+          <h3 class="font-display font-black text-base text-brand-black">${esc(a.title)}</h3>
+          ${a.body ? `<p class="text-sm text-gray-600 mt-1 line-clamp-2">${esc(a.body)}</p>` : ''}
+          <p class="text-xs text-gray-400 mt-2">Requested ${created}${dates ? ' · ' + esc(dates) : ''}</p>
+          <p class="text-xs text-gray-600 mt-2" style="line-height:1.5">${helper}</p>
+        </div>
+        ${canWithdraw ? `<button class="apps-filter-btn" style="background:#FEE2E2;border-color:#FECACA;color:#991B1B" data-withdraw="${esc(a.id)}">Withdraw</button>` : ''}
+      </div>
+    </div>`;
+}
+
+async function submitPromoRequest(e) {
+  e.preventDefault();
+  const c = window.YYP?.client;
+  if (!c || !restaurant?.id) return;
+
+  const msg    = document.getElementById('promo-msg');
+  const btn    = document.getElementById('promo-submit');
+  hidePromoMsg();
+  btn.disabled = true; btn.textContent = 'Submitting…';
+
+  const startsRaw = document.getElementById('promo-starts').value;
+  const endsRaw   = document.getElementById('promo-ends').value;
+
+  /* Default ends_at to +7 days from starts_at (or now) when owner leaves blank. */
+  const starts = startsRaw ? new Date(startsRaw) : null;
+  const ends   = endsRaw
+    ? new Date(endsRaw)
+    : (starts ? new Date(starts.getTime() + 7 * 24 * 3600 * 1000)
+              : new Date(Date.now() + 7 * 24 * 3600 * 1000));
+
+  const { data: { session } } = await c.auth.getSession();
+
+  const payload = {
+    restaurant_id: restaurant.id,
+    type:    document.getElementById('promo-type').value,
+    title:   document.getElementById('promo-title').value.trim(),
+    body:    document.getElementById('promo-body').value.trim() || null,
+    link_url: document.getElementById('promo-link').value.trim() || null,
+    starts_at: starts ? starts.toISOString() : new Date().toISOString(),
+    ends_at:   ends.toISOString(),
+    /* RLS forbids overriding these — but include them so the row is correct. */
+    status: 'pending',
+    payment_status: 'unpaid',
+    requested_by: session?.user?.id || null,
+    posted_by:    session?.user?.id || null,
+  };
+
+  const { error } = await c.from('venue_announcements').insert([payload]);
+  btn.disabled = false; btn.textContent = 'Submit request';
+
+  if (error) {
+    showPromoMsg('Error: ' + error.message, 'error');
+    return;
+  }
+  showPromoMsg('✓ Request submitted! We\'ll review within 24h.', 'success');
+  document.getElementById('promo-form').reset();
+  setTimeout(() => {
+    document.getElementById('promo-form').style.display = 'none';
+    document.getElementById('promo-new-btn').style.display = '';
+    hidePromoMsg();
+  }, 2200);
+  loadPromos();
+}
+
+function showPromoMsg(text, kind) {
+  const el = document.getElementById('promo-msg');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'text-sm font-semibold ' + (kind === 'error' ? 'text-red-600' : 'text-green-600');
+  el.classList.remove('hidden');
+}
+function hidePromoMsg() {
+  document.getElementById('promo-msg')?.classList.add('hidden');
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 
