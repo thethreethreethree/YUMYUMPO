@@ -102,8 +102,10 @@
       function reveal() {
         const c = window.YYP?.client;
         if (!c) return;
-        c.rpc('get_my_restaurant').then(({ data }) => {
+        c.rpc('get_my_restaurant').then(({ data, error }) => {
+          if (error) { console.warn('[my-restaurant] RPC error:', error.message); return; }
           const row = Array.isArray(data) ? data[0] : data;
+          console.log('[my-restaurant] result:', row ? row.name : 'no restaurant');
           if (row) {
             document.getElementById('my-restaurant-tab').style.display = '';
             const banner = document.getElementById('my-restaurant-banner');
@@ -111,7 +113,7 @@
             if (banner) banner.style.display = '';
             if (name && row.name) name.textContent = row.name;
           }
-        }).catch(() => {});
+        }).catch(err => console.warn('[my-restaurant] exception:', err));
       }
       if (window.YYP?.ready) reveal();
       else document.addEventListener('yyp:ready', reveal, { once: true });
