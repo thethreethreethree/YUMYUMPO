@@ -104,7 +104,13 @@
         if (!c) return;
         c.rpc('get_my_restaurant').then(({ data }) => {
           const row = Array.isArray(data) ? data[0] : data;
-          if (row) document.getElementById('my-restaurant-tab').style.display = '';
+          if (row) {
+            document.getElementById('my-restaurant-tab').style.display = '';
+            const banner = document.getElementById('my-restaurant-banner');
+            const name   = document.getElementById('my-restaurant-banner-name');
+            if (banner) banner.style.display = '';
+            if (name && row.name) name.textContent = row.name;
+          }
         }).catch(() => {});
       }
       if (window.YYP?.ready) reveal();
@@ -115,6 +121,19 @@
 
   <!-- PROFILE VIEW -->
   <section id="profile-view">
+
+    <!-- Owner banner — only shows if user owns a restaurant -->
+    <a href="restaurant.html" id="my-restaurant-banner" class="block mb-6" style="display:none;text-decoration:none">
+      <div style="background:linear-gradient(135deg,#FFD000 0%,#FFB800 100%);border-radius:20px;padding:18px 22px;display:flex;align-items:center;gap:16px;box-shadow:0 8px 24px rgba(255,208,0,.25)">
+        <div style="width:52px;height:52px;background:#111;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">🍽️</div>
+        <div style="flex:1;min-width:0">
+          <p style="font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7a5a00;margin:0 0 2px">Restaurant Owner</p>
+          <p id="my-restaurant-banner-name" class="font-display" style="font-weight:800;font-size:1.05rem;color:#111;margin:0;line-height:1.2">Manage my restaurant</p>
+          <p style="font-size:.78rem;color:#5a4500;margin:2px 0 0">Edit menu · view orders · request promos →</p>
+        </div>
+        <div style="font-size:1.5rem;color:#111;flex-shrink:0">›</div>
+      </div>
+    </a>
 
     <!-- Quick links -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
