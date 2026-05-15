@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/css/styles.css" />
-  <link rel="stylesheet" href="../assets/css/account.css" />
+  <link rel="stylesheet" href="../assets/css/account.css?v=profile1" />
 
   <script>
     tailwind.config = {
@@ -76,7 +76,7 @@
     </div>
     <div class="flex-1 min-w-0">
       <h1 class="acct-name" id="display-name">—</h1>
-      <p class="acct-handle"><span id="username-display"></span><span id="city-display"></span></p>
+      <p class="acct-handle"><span id="username-display"></span><span id="city-display"></span><span id="nationality-display"></span></p>
       <p class="acct-bio" id="bio-display"></p>
       <div class="acct-meta">
         <span><strong id="meta-saved">0</strong> saved</span>
@@ -189,6 +189,33 @@
         <input id="edit-city" class="acct-input" maxlength="80" placeholder="e.g. Makati, Philippines" />
       </div>
       <div>
+        <label class="acct-label" for="edit-nationality">Nationality <span style="color:#DC2626">*</span></label>
+        <select id="edit-nationality" class="acct-input" required>
+          <option value="">Select your nationality…</option>
+          <option>Filipino</option>
+          <option>American</option><option>Australian</option><option>British</option>
+          <option>Canadian</option><option>Chinese</option><option>French</option>
+          <option>German</option><option>Indian</option><option>Indonesian</option>
+          <option>Italian</option><option>Japanese</option><option>Korean</option>
+          <option>Malaysian</option><option>Dutch</option><option>New Zealander</option>
+          <option>Russian</option><option>Singaporean</option><option>Spanish</option>
+          <option>Swiss</option><option>Taiwanese</option><option>Thai</option>
+          <option>Vietnamese</option>
+          <option>Argentine</option><option>Austrian</option><option>Bangladeshi</option>
+          <option>Belgian</option><option>Brazilian</option><option>Cambodian</option>
+          <option>Chilean</option><option>Colombian</option><option>Czech</option>
+          <option>Danish</option><option>Egyptian</option><option>Emirati</option>
+          <option>Finnish</option><option>Greek</option><option>Hong Konger</option>
+          <option>Hungarian</option><option>Irish</option><option>Israeli</option>
+          <option>Mexican</option><option>Nepalese</option><option>Norwegian</option>
+          <option>Pakistani</option><option>Polish</option><option>Portuguese</option>
+          <option>Saudi</option><option>South African</option><option>Swedish</option>
+          <option>Turkish</option><option>Ukrainian</option>
+          <option value="Other">Other</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-1">Required — helps us tailor recommendations to your taste.</p>
+      </div>
+      <div>
         <label class="acct-label" for="edit-bio">Short bio</label>
         <textarea id="edit-bio" class="acct-textarea" maxlength="280" placeholder="What you're about — food obsessions, travel style, etc."></textarea>
       </div>
@@ -210,7 +237,7 @@
 <script src="../assets/js/supabase-client.js?v=claim1"></script>
 <script src="../assets/js/analytics.js"></script>
 <script src="../assets/js/auth-modal.js"></script>
-<script src="../assets/js/account.js"></script>
+<script src="../assets/js/account.js?v=profile1"></script>
 <script src="../assets/js/bottom-nav.js"></script>
 
 <script>
@@ -253,6 +280,7 @@ async function hydrate() {
   document.getElementById('display-name').textContent  = name;
   document.getElementById('username-display').textContent = p.username ? `@${p.username}` : '';
   document.getElementById('city-display').textContent     = p.city ? ` · 📍 ${p.city}` : '';
+  document.getElementById('nationality-display').textContent = p.nationality ? ` · 🌐 ${p.nationality}` : '';
   document.getElementById('bio-display').textContent      = p.bio || '';
 
   /* Taste tags */
@@ -288,7 +316,18 @@ async function hydrate() {
   document.getElementById('edit-display-name').value = p.display_name || '';
   document.getElementById('edit-username').value     = p.username || '';
   document.getElementById('edit-city').value         = p.city || '';
+  document.getElementById('edit-nationality').value  = p.nationality || '';
   document.getElementById('edit-bio').value          = p.bio || '';
+
+  /* Nationality is mandatory — if missing, open the edit form and
+     nudge the user to complete it before doing anything else. */
+  if (!p.nationality) {
+    document.getElementById('profile-view').style.display = 'none';
+    document.getElementById('profile-edit').style.display = '';
+    const err = document.getElementById('edit-error');
+    err.textContent = 'Please set your nationality to complete your profile.';
+    err.classList.remove('hidden');
+  }
 }
 
 
@@ -390,10 +429,18 @@ document.getElementById('edit-form').addEventListener('submit', async (e) => {
     return;
   }
 
+  const nationality = document.getElementById('edit-nationality').value;
+  if (!nationality) {
+    err.textContent = 'Nationality is required.';
+    err.classList.remove('hidden');
+    return;
+  }
+
   const result = await window.YYP.account.updateProfile({
     display_name: document.getElementById('edit-display-name').value.trim() || null,
     username:     username || null,
     city:         document.getElementById('edit-city').value.trim() || null,
+    nationality:  nationality,
     bio:          document.getElementById('edit-bio').value.trim() || null,
   });
 
