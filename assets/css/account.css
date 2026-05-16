@@ -173,6 +173,19 @@
 }
 .acct-avatar-lg img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
+/* Country flag badge — circular, pinned to the avatar's bottom-right.
+   Lives outside the avatar's overflow:hidden circle so it isn't clipped. */
+.acct-avatar-stack { position: relative; flex-shrink: 0; }
+.acct-avatar-flag {
+  position: absolute; bottom: 0; right: 0;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #fff;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(0,0,0,.25);
+}
+
 /* Click-to-upload overlay on the big avatar */
 .avatar-upload-wrap { position: relative; cursor: pointer; overflow: hidden; }
 .avatar-content {

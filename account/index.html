@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/css/styles.css" />
-  <link rel="stylesheet" href="../assets/css/account.css?v=profile1" />
+  <link rel="stylesheet" href="../assets/css/account.css?v=flag1" />
 
   <script>
     tailwind.config = {
@@ -66,13 +66,16 @@
 
   <!-- HEADER -->
   <div class="acct-header">
-    <div class="acct-avatar-lg avatar-upload-wrap" id="avatar-display" title="Click to change avatar">
-      <div class="avatar-content" id="avatar-content"><span>?</span></div>
-      <div class="avatar-upload-overlay">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        <span>Change</span>
+    <div class="acct-avatar-stack">
+      <div class="acct-avatar-lg avatar-upload-wrap" id="avatar-display" title="Click to change avatar">
+        <div class="avatar-content" id="avatar-content"><span>?</span></div>
+        <div class="avatar-upload-overlay">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>Change</span>
+        </div>
+        <input type="file" id="avatar-file-input" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" />
       </div>
-      <input type="file" id="avatar-file-input" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" />
+      <img id="avatar-flag" class="acct-avatar-flag" alt="" style="display:none" />
     </div>
     <div class="flex-1 min-w-0">
       <h1 class="acct-name" id="display-name">—</h1>
@@ -253,6 +256,32 @@ let selectedTags = new Set();
 
 function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+/* Nationality (demonym) → ISO 3166-1 alpha-2 code, for the flag badge. */
+const NATIONALITY_ISO = {
+  Filipino:'ph', American:'us', Australian:'au', British:'gb', Canadian:'ca',
+  Chinese:'cn', French:'fr', German:'de', Indian:'in', Indonesian:'id',
+  Italian:'it', Japanese:'jp', Korean:'kr', Malaysian:'my', Dutch:'nl',
+  'New Zealander':'nz', Russian:'ru', Singaporean:'sg', Spanish:'es', Swiss:'ch',
+  Taiwanese:'tw', Thai:'th', Vietnamese:'vn', Argentine:'ar', Austrian:'at',
+  Bangladeshi:'bd', Belgian:'be', Brazilian:'br', Cambodian:'kh', Chilean:'cl',
+  Colombian:'co', Czech:'cz', Danish:'dk', Egyptian:'eg', Emirati:'ae',
+  Finnish:'fi', Greek:'gr', 'Hong Konger':'hk', Hungarian:'hu', Irish:'ie',
+  Israeli:'il', Mexican:'mx', Nepalese:'np', Norwegian:'no', Pakistani:'pk',
+  Polish:'pl', Portuguese:'pt', Saudi:'sa', 'South African':'za', Swedish:'se',
+  Turkish:'tr', Ukrainian:'ua',
+};
+
+function renderNationalityFlag(nationality) {
+  const flag = document.getElementById('avatar-flag');
+  if (!flag) return;
+  const iso = NATIONALITY_ISO[nationality];
+  if (!iso) { flag.style.display = 'none'; return; }
+  flag.src = `https://flagcdn.com/w80/${iso}.png`;
+  flag.alt = nationality;
+  flag.title = nationality;
+  flag.style.display = '';
+}
+
 function showAuthGate() {
   document.getElementById('auth-gate').style.display = '';
   document.getElementById('main').style.display     = 'none';
@@ -281,6 +310,7 @@ async function hydrate() {
   document.getElementById('username-display').textContent = p.username ? `@${p.username}` : '';
   document.getElementById('city-display').textContent     = p.city ? ` · 📍 ${p.city}` : '';
   document.getElementById('nationality-display').textContent = p.nationality ? ` · 🌐 ${p.nationality}` : '';
+  renderNationalityFlag(p.nationality);
   document.getElementById('bio-display').textContent      = p.bio || '';
 
   /* Taste tags */
