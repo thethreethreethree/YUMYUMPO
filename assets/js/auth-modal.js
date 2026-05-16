@@ -238,7 +238,7 @@
           <form id="yyp-auth-form" class="space-y-3" novalidate>
             <input id="yyp-auth-email"    class="yyp-auth-input" type="email"    placeholder="Email" autocomplete="email" required style="margin-bottom:10px" />
             <input id="yyp-auth-password" class="yyp-auth-input" type="password" placeholder="Password" autocomplete="current-password" required minlength="6" style="margin-bottom:14px" />
-            <button class="yyp-auth-btn yyp-auth-btn-primary" type="submit" id="yyp-auth-submit">
+            <button class="yyp-auth-btn yyp-auth-btn-primary" type="button" id="yyp-auth-submit">
               <span id="yyp-auth-submit-label">Sign In</span>
             </button>
           </form>
