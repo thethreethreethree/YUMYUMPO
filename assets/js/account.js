@@ -494,7 +494,17 @@
   }
 
   function injectNavUI() {
-    const navs = document.querySelectorAll('nav');
+    /* Only the page's primary top nav — never hero/breadcrumb navs
+       nested inside content (e.g. #r-hero-content > nav). Prefer a
+       nav that's a direct child of body or the documented top nav id;
+       fall back to the first nav in DOM order. */
+    const primaryNav =
+        document.querySelector('body > nav')
+     || document.getElementById('navbar')
+     || document.getElementById('r-nav')
+     || [...document.querySelectorAll('nav')].find(n => !n.closest('main, header, section, [id*="hero"]'))
+     || document.querySelector('nav');
+    const navs = primaryNav ? [primaryNav] : [];
     navs.forEach(nav => {
       /* Skip if we've already injected here */
       if (nav.querySelector('[data-yyp-nav-slot]')) {
