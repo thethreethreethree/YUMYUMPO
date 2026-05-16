@@ -99,6 +99,7 @@ function orderCardHTML(o, favSet) {
     <div class="order-card">
       <div style="display:flex;gap:12px;align-items:flex-start">
         <img src="${escapeAttr(r.cover_image_url || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=200&auto=format&fit=crop&q=70')}"
+             loading="lazy"
              style="width:64px;height:64px;border-radius:12px;object-fit:cover;flex-shrink:0" alt="" />
         <div style="flex:1;min-width:0">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">

@@ -17,7 +17,7 @@ const CACHE_ENABLED = false;   // toggle ON later for offline mode
 /* Resources that are safe to pre-cache (logo, css, fonts) when enabled. */
 const PRECACHE_URLS = [
   './',
-  './assets/images/YUMYUMPO.svg',
+  './assets/images/yumyumpo-logo.webp',
   './assets/css/styles.css',
 ];
 
