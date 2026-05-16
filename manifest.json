@@ -16,13 +16,13 @@
 
   "icons": [
     {
-      "src":     "assets/images/YUMYUMPO.svg",
-      "type":    "image/svg+xml",
-      "sizes":   "any",
+      "src":     "icons/icon-192.png",
+      "type":    "image/png",
+      "sizes":   "192x192",
       "purpose": "any"
     },
     {
-      "src":     "icons/icon-192.png",
+      "src":     "icons/icon-512.png",
       "type":    "image/png",
       "sizes":   "512x512",
       "purpose": "any"
@@ -31,7 +31,7 @@
       "src":     "icons/icon-512.png",
       "type":    "image/png",
       "sizes":   "512x512",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ],
 
@@ -41,21 +41,21 @@
       "short_name":  "Fred",
       "description": "Chat with Fred — our discovery AI",
       "url":         "./ai-search.html",
-      "icons":       [{ "src": "assets/images/YUMYUMPO.svg", "sizes": "any" }]
+      "icons":       [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name":        "Discover",
       "short_name":  "Discover",
       "description": "Browse all restaurants",
       "url":         "./discover.html",
-      "icons":       [{ "src": "assets/images/YUMYUMPO.svg", "sizes": "any" }]
+      "icons":       [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name":        "Saved",
       "short_name":  "Saved",
       "description": "Your saved places",
       "url":         "./account/saved.html",
-      "icons":       [{ "src": "assets/images/YUMYUMPO.svg", "sizes": "any" }]
+      "icons":       [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
