@@ -501,15 +501,29 @@
         renderNavSlot(nav);
         return;
       }
-      /* Find the rightmost cluster of nav buttons */
-      const ctaCluster = nav.querySelector('.flex.items-center.gap-3:last-of-type, .flex.items-center.gap-2:last-of-type');
-      if (!ctaCluster) return;
+
+      /* Preferred: an existing rightmost cluster of nav buttons. */
+      let host = nav.querySelector('.flex.items-center.gap-3:last-of-type, .flex.items-center.gap-2:last-of-type');
+
+      /* Fallback: no cluster on this page's nav — build one and pin it
+         to the top-right of the nav's main flex row so the avatar is
+         consistent on EVERY page regardless of nav markup. */
+      if (!host) {
+        const row = nav.querySelector('.flex.items-center.justify-between')
+                 || nav.querySelector('.flex.items-center')
+                 || nav.querySelector(':scope > div')
+                 || nav;
+        host = document.createElement('div');
+        host.className = 'flex items-center gap-3';
+        host.style.marginLeft = 'auto';
+        row.appendChild(host);
+      }
 
       const slot = document.createElement('span');
       slot.dataset.yypNavSlot = '';
       slot.style.display = 'inline-flex';
       slot.style.alignItems = 'center';
-      ctaCluster.insertBefore(slot, ctaCluster.firstChild);
+      host.insertBefore(slot, host.firstChild);
       renderNavSlot(nav);
     });
   }
