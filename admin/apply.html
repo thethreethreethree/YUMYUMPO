@@ -314,6 +314,14 @@
       <!-- ── FORM ── -->
       <form id="apply-form" onsubmit="handleSubmit(event)" class="space-y-6" novalidate>
 
+        <!-- Honeypot — hidden from humans, bots fill it. If non-empty
+             on submit, we silently drop the submission. -->
+        <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden">
+          <label>Company website (leave blank)
+            <input type="text" id="company_url" name="company_url" tabindex="-1" autocomplete="off" />
+          </label>
+        </div>
+
         <!-- Restaurant name -->
         <div>
           <label class="ap-label" for="restaurant_name">Restaurant name <span class="req">*</span></label>
@@ -500,6 +508,7 @@
 
 <script src="../assets/js/config.js"></script>
 <script src="../assets/js/supabase-client.js?v=v25"></script>
+<script src="../assets/js/error-logger.js?v=v25"></script>
 <script>
 'use strict';
 
@@ -554,6 +563,16 @@ async function handleSubmit(e) {
 
   const errorEl = document.getElementById('error-banner');
   errorEl.classList.add('hidden');
+
+  /* Honeypot — a real user never fills this hidden field. If it has
+     a value, it's a bot. Show the success state without inserting. */
+  if (form.company_url && form.company_url.value.trim() !== '') {
+    document.getElementById('form-header')?.classList.add('hidden');
+    form.classList.add('hidden');
+    document.getElementById('success-state')?.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
 
   /* Basic validation */
   if (!form.checkValidity()) {
