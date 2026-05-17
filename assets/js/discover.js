@@ -788,6 +788,8 @@ function rememberCity() {
       localStorage.removeItem('yyp_city');
     }
   } catch { /* localStorage unavailable — non-fatal */ }
+  /* Let the Live Promotions strip re-scope to the new city. */
+  document.dispatchEvent(new CustomEvent('yyp:city-changed'));
 }
 
 /* Vibe quick-filter (hero chips) */
