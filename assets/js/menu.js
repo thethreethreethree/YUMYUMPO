@@ -117,8 +117,11 @@
     document.getElementById('menu-body').innerHTML = CATS.map((c, i) => `
       <section class="menu-cat" id="cat-${i}" data-cat-section="${i}">
         <div class="menu-cat-head">
-          <h2 class="menu-cat-title">${esc(c.name)}</h2>
-          <span class="menu-cat-count">${c.items.length} item${c.items.length === 1 ? '' : 's'}</span>
+          <span class="menu-cat-num">${String(i + 1).padStart(2, '0')}</span>
+          <div class="menu-cat-titlewrap">
+            <h2 class="menu-cat-title">${esc(c.name)}</h2>
+            <span class="menu-cat-count">${c.items.length} item${c.items.length === 1 ? '' : 's'}</span>
+          </div>
         </div>
         ${c.items.map(itemCard).join('')}
       </section>
@@ -127,20 +130,42 @@
     wireSearch();
     wireLightbox();
     wireScrollSpy();
+    wireFadeIn();
     reveal();
   }
+
+  /* Tag → colour class. Gives the menu visual rhythm + meaning. */
+  const TAG_CLASS = {
+    'best seller': 't-gold', 'bestseller': 't-gold', 'popular': 't-gold',
+    "chef's pick": 't-black', 'chefs pick': 't-black', 'new': 't-black',
+    'spicy': 't-red', 'hot': 't-red',
+    'vegetarian': 't-green', 'vegan': 't-green', 'gluten-free': 't-green', 'healthy': 't-green',
+  };
+  const FEATURED_TAGS = ['best seller', 'bestseller', "chef's pick", 'chefs pick'];
 
   function itemCard(it) {
     const photo = it.image || it.image_url || (it.gallery && it.gallery[0]) || '';
     const available = it.is_available !== false;
-    const tags = (it.tags || []).map(t => `<span class="menu-item-tag">${esc(t)}</span>`).join('');
+    const itemTags = it.tags || [];
+    const featured = itemTags.some(t => FEATURED_TAGS.includes(String(t).toLowerCase()));
+    const mono = (it.name || '?').trim().charAt(0).toUpperCase();
+
+    const tags = itemTags.map(t => {
+      const cls = TAG_CLASS[String(t).toLowerCase()] || '';
+      return `<span class="menu-item-tag ${cls}">${esc(t)}</span>`;
+    }).join('');
+
+    const media = photo
+      ? `<img class="menu-item-photo" src="${esc(photo)}" alt="${esc(it.name)}" loading="lazy" data-zoom="${esc(photo)}" />`
+      : `<div class="menu-item-noimg">${esc(mono)}</div>`;
+
     return `
-      <article class="menu-item${available ? '' : ' unavailable'}" data-name="${esc((it.name || '').toLowerCase())}">
-        ${photo ? `<img class="menu-item-photo" src="${esc(photo)}" alt="${esc(it.name)}" loading="lazy" data-zoom="${esc(photo)}" />` : ''}
+      <article class="menu-item${available ? '' : ' unavailable'}${featured ? ' featured' : ''}" data-name="${esc((it.name || '').toLowerCase())}">
+        ${media}
         <div class="menu-item-body">
           <div class="menu-item-top">
             <div>
-              <div class="menu-item-name">${esc(it.name || 'Item')}</div>
+              <div class="menu-item-name">${featured ? '<span class="menu-item-star">★</span> ' : ''}${esc(it.name || 'Item')}</div>
               ${it.price_note ? `<div class="menu-item-pricenote">${esc(it.price_note)}</div>` : ''}
             </div>
             ${it.price ? `<div class="menu-item-price">${esc(it.price)}</div>` : ''}
@@ -148,10 +173,25 @@
           ${it.description ? `<p class="menu-item-desc">${esc(it.description)}</p>` : ''}
           <div class="menu-item-tags">
             ${tags}
-            ${available ? '' : '<span class="menu-item-tag out">Currently unavailable</span>'}
+            ${available ? '' : '<span class="menu-item-tag out">Sold out</span>'}
           </div>
         </div>
       </article>`;
+  }
+
+  /* Fade items up as they scroll into view. */
+  function wireFadeIn() {
+    const items = [...document.querySelectorAll('.menu-item')];
+    if (!('IntersectionObserver' in window)) {
+      items.forEach(el => el.classList.add('in'));
+      return;
+    }
+    const io = new IntersectionObserver((entries, obs) => {
+      entries.forEach(en => {
+        if (en.isIntersecting) { en.target.classList.add('in'); obs.unobserve(en.target); }
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    items.forEach(el => io.observe(el));
   }
 
   function wireSearch() {
