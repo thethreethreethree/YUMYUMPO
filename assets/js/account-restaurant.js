@@ -1072,12 +1072,14 @@ async function submitPromoRequest(e) {
   const startsRaw = document.getElementById('promo-starts').value;
   const endsRaw   = document.getElementById('promo-ends').value;
 
-  /* Default ends_at to +7 days from starts_at (or now) when owner leaves blank. */
+  /* Default ends_at to +3 hours from starts_at (or now) when owner
+     leaves it blank — promos are short, flash-style pushes. */
+  const THREE_HRS = 3 * 3600 * 1000;
   const starts = startsRaw ? new Date(startsRaw) : null;
   const ends   = endsRaw
     ? new Date(endsRaw)
-    : (starts ? new Date(starts.getTime() + 7 * 24 * 3600 * 1000)
-              : new Date(Date.now() + 7 * 24 * 3600 * 1000));
+    : (starts ? new Date(starts.getTime() + THREE_HRS)
+              : new Date(Date.now() + THREE_HRS));
 
   const { data: { session } } = await c.auth.getSession();
 

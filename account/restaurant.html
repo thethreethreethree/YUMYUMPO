@@ -243,13 +243,16 @@
        PROMOTIONS — owner-requested announcements (paid feature,
        admin approval gate). See migration 023.
        ═══════════════════════════════════════════════════════════ -->
-  <section id="promos-section" class="section-card mb-6 view-dash" style="display:none">
+  <section id="promos-section" class="section-card mb-6 view-dash" style="display:none;background:linear-gradient(135deg,#FFFDF0 0%,#fff 60%);border-color:#FFE9A8">
     <div class="flex items-center justify-between mb-3 gap-3 flex-wrap">
       <div>
-        <h2 class="font-display font-black text-lg">Promotions</h2>
-        <p class="text-xs text-gray-500">Push to followers · free during early access · 7-day default duration</p>
+        <h2 class="font-display font-black text-lg flex items-center gap-2"><span>📣</span> Promotions</h2>
+        <p class="text-xs text-gray-500">Got something happening? Push a flash promo, event, or new dish straight to your followers' feeds — free during early access.</p>
       </div>
-      <button type="button" id="promo-new-btn" class="apps-filter-btn" style="background:#FFD000;border-color:#FFD000;color:#111;font-weight:800">+ New announcement</button>
+      <button type="button" id="promo-new-btn"
+        style="display:inline-flex;align-items:center;gap:6px;background:#111;color:#FFD000;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:.85rem;padding:11px 18px;border:none;border-radius:12px;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.18)">
+        <span style="font-size:1.05rem;line-height:1">＋</span> New Announcement
+      </button>
     </div>
 
     <!-- Form (hidden until +New is clicked) -->
@@ -290,7 +293,7 @@
         </div>
       </div>
       <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-xs text-yellow-900">
-        <strong>How it works:</strong> Submit → we review within 24h → once approved, your announcement goes live to followers automatically. Free during early access.
+        <strong>How it works:</strong> Submit → we review within 24h → once approved, your announcement goes live to followers automatically. Promos run for <strong>3 hours</strong> by default (set your own end time above). Free during early access.
       </div>
       <div class="flex gap-2">
         <button type="submit" id="promo-submit" class="apps-filter-btn" style="background:#111;border-color:#111;color:#FFD000;font-weight:800">Submit request</button>
@@ -432,6 +435,17 @@
       <input type="file" id="gallery-file" accept="image/*" multiple class="hidden" />
     </div>
 
+    <!-- FOOD GALLERY  →  Food gallery grid -->
+    <div class="section-card space-y-3 view-dash">
+      <div class="flex items-end justify-between">
+        <h2 class="font-display font-black text-lg">Food Gallery</h2>
+        <p class="text-xs text-gray-400" id="food-gallery-count">0 / 6 photos</p>
+      </div>
+      <p class="text-xs text-gray-500 -mt-1">▸ Renders as the <strong>Food Gallery</strong> grid below the menu. Up to 6 plated-food shots.</p>
+      <div class="photo-grid" id="food-gallery-grid"></div>
+      <input type="file" id="food-gallery-file" accept="image/*" multiple class="hidden" />
+    </div>
+
     <!-- 4. VIBE TAGS  →  Hero chips + AI matching -->
     <div class="section-card space-y-3 view-profile">
       <h2 class="font-display font-black text-lg">Vibe Tags</h2>
@@ -447,17 +461,6 @@
       </div>
       <p class="text-xs text-gray-500 -mt-1">▸ Renders as the <strong>Hours</strong> table. Toggle "Closed" for any day you're shut.</p>
       <div id="hours-rows" class="space-y-2"></div>
-    </div>
-
-    <!-- 7. FOOD GALLERY  →  Food gallery grid -->
-    <div class="section-card space-y-3 view-dash">
-      <div class="flex items-end justify-between">
-        <h2 class="font-display font-black text-lg">Food Gallery</h2>
-        <p class="text-xs text-gray-400" id="food-gallery-count">0 / 6 photos</p>
-      </div>
-      <p class="text-xs text-gray-500 -mt-1">▸ Renders as the <strong>Food Gallery</strong> grid below the menu. Up to 6 plated-food shots.</p>
-      <div class="photo-grid" id="food-gallery-grid"></div>
-      <input type="file" id="food-gallery-file" accept="image/*" multiple class="hidden" />
     </div>
 
     <!-- 8. LOCATION & MAP  →  Map section -->
@@ -599,7 +602,7 @@
 <script src="../assets/js/account.js?v=profile2"></script>
 <script src="../assets/js/main.js?v=claim1"></script>
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
-<script src="../assets/js/account-restaurant.js?v=dash1"></script>
+<script src="../assets/js/account-restaurant.js?v=dash2"></script>
 <script src="../assets/js/vibe-map-fab.js?v=claim1"></script>
 <script src="../assets/js/pwa.js"></script>
 </body>
