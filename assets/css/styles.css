@@ -1194,12 +1194,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .card-share:hover { background: #FFD000; color: #111; transform: scale(1.1); }
 .card-share svg { width: 19px; height: 19px; }
 
-/* Gentle sway on the share chip to draw the eye */
+/* Lively sway on the share chip to draw the eye */
 @keyframes card-share-sway {
-  0%, 100% { transform: rotate(-7deg); }
-  50%      { transform: rotate(7deg); }
+  0%   { transform: rotate(-16deg); }
+  25%  { transform: rotate(14deg); }
+  50%  { transform: rotate(-12deg); }
+  75%  { transform: rotate(14deg); }
+  100% { transform: rotate(-16deg); }
 }
-.card-share { animation: card-share-sway 2.4s ease-in-out infinite; }
+.card-share { animation: card-share-sway 1.5s ease-in-out infinite; transform-origin: 50% 60%; }
 .card-share:hover { animation: none; transform: scale(1.1); }
 @media (prefers-reduced-motion: reduce) {
   .card-share { animation: none; }
