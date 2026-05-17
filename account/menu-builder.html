@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#FFD000" />
+  <link rel="apple-touch-icon" href="../icons/icon-180.png" />
+  <link rel="icon" href="../assets/images/favicon.png" type="image/png" />
+  <title>Menu Builder — YUMYUMPO</title>
+  <meta name="robots" content="noindex" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/menu-builder.css?v=mb1" />
+</head>
+
+<body>
+
+<!-- Top bar -->
+<nav class="mb-nav">
+  <a href="/account/restaurant.html" class="mb-nav-back">‹ Dashboard</a>
+  <img src="../assets/images/yumyumpo-logo.webp" alt="YUMYUMPO" class="mb-nav-logo" />
+  <span style="width:72px"></span>
+</nav>
+
+<!-- Loading -->
+<div id="mb-loading" class="mb-loading"><div class="mb-spinner"></div></div>
+
+<!-- Auth / no-restaurant gate -->
+<div id="mb-gate" class="mb-gate" style="display:none">
+  <div class="mb-gate-emoji">🔐</div>
+  <h1>Restaurant owners only</h1>
+  <p>Sign in with the account linked to your restaurant to build your menu.</p>
+  <a href="/account/index.html" class="mb-btn-dark">Go to my account</a>
+</div>
+
+<!-- Builder -->
+<main id="mb-app" class="mb-app" style="display:none">
+
+  <header class="mb-head">
+    <p class="mb-eyebrow">✨ Digital Menu Builder</p>
+    <h1 id="mb-restaurant">Your Menu</h1>
+    <p class="mb-sub">Build it right here on your phone. Diners see your changes the moment you hit save.</p>
+  </header>
+
+  <!-- Empty state -->
+  <div id="mb-empty" class="mb-empty" style="display:none">
+    <div class="mb-empty-emoji">🍜</div>
+    <h2>Let's build your menu!</h2>
+    <p>Start with a category — like <em>Starters</em>, <em>Mains</em>, or <em>Drinks</em> — then add your dishes.</p>
+    <button class="mb-btn-yellow" id="mb-empty-add">+ Add your first category</button>
+  </div>
+
+  <!-- Categories render here -->
+  <div id="mb-cats"></div>
+
+  <button class="mb-add-cat" id="mb-add-cat" style="display:none">
+    <span>＋</span> Add another category
+  </button>
+
+  <div class="mb-tips" id="mb-tips" style="display:none">
+    <p class="mb-tips-title">💡 Tips for a menu that sells</p>
+    <ul>
+      <li>Add a <strong>photo</strong> to your best dishes — they get ordered far more often.</li>
+      <li>Keep descriptions short and mouth-watering.</li>
+      <li>Tag your <strong>Best Sellers</strong> and <strong>Chef's Picks</strong> so they stand out.</li>
+      <li>Toggle an item <strong>off</strong> when you run out — no need to delete it.</li>
+    </ul>
+  </div>
+</main>
+
+<!-- Sticky save bar -->
+<div id="mb-savebar" class="mb-savebar" style="display:none">
+  <span class="mb-savebar-status" id="mb-savebar-status">All changes saved</span>
+  <div class="mb-savebar-actions">
+    <a id="mb-preview" href="#" target="_blank" rel="noopener" class="mb-btn-ghost">Preview</a>
+    <button id="mb-save" class="mb-btn-yellow mb-btn-sm">Save menu</button>
+  </div>
+</div>
+
+<input type="file" id="mb-file" accept="image/jpeg,image/png,image/webp" style="display:none" />
+<div id="mb-toast" class="mb-toast"></div>
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/supabase-client.js?v=v25"></script>
+<script src="../assets/js/error-logger.js?v=v25"></script>
+<script src="../assets/js/menu-builder.js?v=mb1"></script>
+</body>
+</html>
