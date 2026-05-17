@@ -25,19 +25,27 @@
     if (!c || !grid || !sec) return;
 
     const nowISO = new Date().toISOString();
-    /* Live = published, already started, not yet ended. */
+    /* Pull published announcements that have started; filter the
+       end window in JS so a null ends_at (open-ended) still shows. */
     const { data, error } = await c
       .from('venue_announcements')
-      .select('id, title, body, type, image_url, link_url, starts_at, ends_at, restaurants(name, slug, cover_image_url)')
+      .select('id, title, body, type, image_url, link_url, starts_at, ends_at, is_published, restaurants(name, slug, cover_image_url)')
       .eq('is_published', true)
-      .lte('starts_at', nowISO)
-      .or(`ends_at.is.null,ends_at.gte.${nowISO}`)
       .order('starts_at', { ascending: false })
-      .limit(9);
+      .limit(40);
 
-    if (error || !data || !data.length) return;   // nothing live → stay hidden
+    if (error) { console.warn('[home-promos]', error.message); return; }
 
-    grid.innerHTML = data.map(card).join('');
+    const now = Date.now();
+    const live = (data || []).filter(a => {
+      const started = !a.starts_at || new Date(a.starts_at).getTime() <= now;
+      const notEnded = !a.ends_at || new Date(a.ends_at).getTime() >= now;
+      return started && notEnded;
+    }).slice(0, 9);
+
+    if (!live.length) return;   // nothing live → section stays hidden
+
+    grid.innerHTML = live.map(card).join('');
     sec.style.display = '';
   }
 
