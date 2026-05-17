@@ -107,10 +107,7 @@
       `<button class="menu-cat-pill${i === 0 ? ' active' : ''}" data-cat="${i}">${esc(c.name)}</button>`
     ).join('');
     nav.querySelectorAll('[data-cat]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const sec = document.getElementById('cat-' + btn.dataset.cat);
-        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
+      btn.addEventListener('click', () => showCat(+btn.dataset.cat, true));
     });
 
     /* Body */
@@ -129,9 +126,30 @@
 
     wireSearch();
     wireLightbox();
-    wireScrollSpy();
-    wireFadeIn();
+    showCat(0, false);   // one category at a time — start on the first
     reveal();
+  }
+
+  /* Show a single category; hide the rest. The cat-nav pills act
+     as tabs. `scroll` lifts the page to the menu start on tap. */
+  let activeCat = 0;
+  function showCat(i, scroll) {
+    activeCat = i;
+    document.querySelectorAll('[data-cat-section]').forEach(sec => {
+      const on = +sec.dataset.catSection === i;
+      sec.style.display = on ? '' : 'none';
+      if (on) sec.querySelectorAll('.menu-item').forEach(el => el.classList.add('in'));
+    });
+    document.querySelectorAll('.menu-cat-pill').forEach(p => {
+      const on = +p.dataset.cat === i;
+      p.classList.toggle('active', on);
+      if (on) p.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    });
+    if (scroll) {
+      const sticky = document.getElementById('menu-sticky');
+      const y = (sticky?.offsetTop || 0);
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
   }
 
   /* Tag → colour class. Gives the menu visual rhythm + meaning. */
@@ -179,29 +197,24 @@
       </article>`;
   }
 
-  /* Fade items up as they scroll into view. */
-  function wireFadeIn() {
-    const items = [...document.querySelectorAll('.menu-item')];
-    if (!('IntersectionObserver' in window)) {
-      items.forEach(el => el.classList.add('in'));
-      return;
-    }
-    const io = new IntersectionObserver((entries, obs) => {
-      entries.forEach(en => {
-        if (en.isIntersecting) { en.target.classList.add('in'); obs.unobserve(en.target); }
-      });
-    }, { rootMargin: '0px 0px -8% 0px' });
-    items.forEach(el => io.observe(el));
-  }
-
   function wireSearch() {
     const input = document.getElementById('menu-search');
     const clear = document.getElementById('menu-search-clear');
     const apply = () => {
       const q = input.value.trim().toLowerCase();
       clear.style.display = q ? 'block' : 'none';
+
+      if (!q) {
+        /* No query — reset per-item filters, back to single-category view. */
+        document.querySelectorAll('.menu-item').forEach(el => { el.style.display = ''; });
+        showCat(activeCat, false);
+        return;
+      }
+
+      /* Searching — look across ALL categories, show only matches. */
       document.querySelectorAll('.menu-item').forEach(el => {
-        el.style.display = !q || el.dataset.name.includes(q) ? '' : 'none';
+        el.style.display = el.dataset.name.includes(q) ? '' : 'none';
+        el.classList.add('in');
       });
       document.querySelectorAll('[data-cat-section]').forEach(sec => {
         const anyVisible = [...sec.querySelectorAll('.menu-item')].some(el => el.style.display !== 'none');
@@ -224,23 +237,6 @@
     const close = () => { box.style.display = 'none'; img.src = ''; };
     box.addEventListener('click', e => { if (e.target === box || e.target.classList.contains('menu-lightbox-close')) close(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-  }
-
-  /* Highlight the category pill for the section currently in view. */
-  function wireScrollSpy() {
-    const pills = [...document.querySelectorAll('.menu-cat-pill')];
-    const sections = [...document.querySelectorAll('[data-cat-section]')];
-    if (!('IntersectionObserver' in window) || !sections.length) return;
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(en => {
-        if (!en.isIntersecting) return;
-        const i = en.target.dataset.catSection;
-        pills.forEach(p => p.classList.toggle('active', p.dataset.cat === i));
-        const active = pills.find(p => p.dataset.cat === i);
-        active?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
-      });
-    }, { rootMargin: '-130px 0px -65% 0px' });
-    sections.forEach(s => io.observe(s));
   }
 
   function reveal() {
