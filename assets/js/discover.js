@@ -534,7 +534,8 @@ function renderResults() {
     grid.className = 'results-list';
     grid.innerHTML = visible.map((r, i) => listCard(r, i)).join('');
   } else {
-    grid.className = 'results-grid';
+    /* m-rail → horizontal swipe on mobile, grid on desktop. */
+    grid.className = 'results-grid m-rail';
     grid.innerHTML = visible.map((r, i) => gridCard(r, i)).join('');
   }
 
