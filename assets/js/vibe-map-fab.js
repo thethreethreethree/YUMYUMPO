@@ -1,11 +1,11 @@
 /* ============================================================
    YUMYUMPO — Vibe Map FAB
-   A small floating Vibe Map shortcut that appears on user-facing
-   pages. Placed bottom-LEFT so it doesn't collide with:
-     • the bottom-right WhatsApp/IG/Messenger stack on /restaurant
-     • the centered bottom-nav on /, /discover, /ai-search, /account
-     • the install pill on the landing page (top-center)
-   Hidden on /vibe-map, /admin/*, /account/restaurant (editor surfaces).
+   A bold floating Vibe Map shortcut, bottom-RIGHT, raised above
+   the bottom-nav so it's immediately obvious.
+   Hidden where it'd be redundant or collide:
+     • /vibe-map, /admin/*, /account/restaurant (editor surfaces)
+     • /discover (Vibe Map is in the nav + a hero pill there)
+     • /restaurant (the WhatsApp/IG/Messenger stack owns bottom-right)
    ============================================================ */
 
 (function () {
@@ -17,9 +17,9 @@
   if (path.includes('/admin/'))                                         return;
   if (path.endsWith('/account/restaurant.html') ||
       path.endsWith('/account/restaurant'))                             return;
-  /* /discover already has a Vibe Map pill in the hero — the FAB would
-     overlap the location filter sidebar on desktop. */
   if (path.endsWith('/discover.html') || path.endsWith('/discover'))   return;
+  /* /restaurant has the contact-bubble stack pinned bottom-right. */
+  if (path.endsWith('/restaurant.html') || path.endsWith('/restaurant')) return;
 
   /* Resolve relative href so it works from any directory depth. */
   const isNested = path.includes('/admin/') || path.includes('/account/');
@@ -30,11 +30,11 @@
   css.textContent = `
     .yyp-vm-fab {
       position: fixed;
-      left: 14px;
+      right: 16px;
       bottom: calc(env(safe-area-inset-bottom, 0) + 92px);
       z-index: 60;
       display: inline-flex; align-items: center; gap: 8px;
-      padding: 11px 18px 11px 14px;
+      padding: 13px 20px 13px 16px;
       background: #FFD000; color: #111;
       border: 3px solid #111;
       border-radius: 999px;

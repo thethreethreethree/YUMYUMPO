@@ -4,7 +4,7 @@
    Injects a floating, thumb-friendly bottom nav on every page
    except admin/analytics. Hidden on desktop (md: breakpoint up).
 
-   Tabs: Home · Explore · Ask Fred · Saved · Profile
+   Tabs: Home · Explore · Ask Fred · Vibe Map · Profile
    ============================================================ */
 
 'use strict';
@@ -86,7 +86,7 @@
     if (p.endsWith('/') || p.endsWith('index.html')) return 'home';
     if (p.includes('discover'))    return 'explore';
     if (p.includes('ai-search'))   return 'ask-fred';
-    if (p.includes('saved'))       return 'saved';
+    if (p.includes('vibe-map'))    return 'vibe-map';
     if (p.includes('account/'))    return 'profile';
     return null;
   }
@@ -98,8 +98,8 @@
       icon: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>' },
     { id: 'ask-fred', label: 'Fred',     href: 'ai-search.html',
       icon: '<path d="M14 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0M10 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0M16 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0z" /><path d="M8 16s1.5 2 4 2 4-2 4-2"/>' },
-    { id: 'saved',    label: 'Saved',    href: 'account/saved.html',
-      icon: '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>' },
+    { id: 'vibe-map', label: 'Vibe Map', href: 'vibe-map.html',
+      icon: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>' },
     { id: 'profile',  label: 'Profile',  href: 'account/index.html',
       icon: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>' },
   ];
@@ -131,18 +131,13 @@
     return location.pathname.includes('/admin/') || location.pathname.includes('/account/') ? '../' : '';
   }
 
-  /* Guard saved/profile tabs: open auth modal if not signed in */
+  /* Guard the profile tab: open auth modal if not signed in */
   document.addEventListener('click', (e) => {
     const a = e.target.closest?.('.yyp-bn-tab');
     if (!a) return;
-    const tab = a.dataset.tab;
-    if ((tab === 'saved' || tab === 'profile') && !window.YYP?.account?.isSignedIn) {
+    if (a.dataset.tab === 'profile' && !window.YYP?.account?.isSignedIn) {
       e.preventDefault();
-      window.YYP.openAuthModal({
-        intent: tab === 'saved'
-          ? 'Sign in to access your saved places'
-          : 'Sign in to view your profile'
-      });
+      window.YYP.openAuthModal({ intent: 'Sign in to view your profile' });
     }
   });
 
