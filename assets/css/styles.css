@@ -1193,3 +1193,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .card-share:hover { background: #FFD000; transform: scale(1.08); }
 .card-share svg { width: 19px; height: 19px; }
+
+/* Gentle sway on the share chip to draw the eye */
+@keyframes card-share-sway {
+  0%, 100% { transform: rotate(-7deg); }
+  50%      { transform: rotate(7deg); }
+}
+.card-share { animation: card-share-sway 2.4s ease-in-out infinite; }
+.card-share:hover { animation: none; transform: scale(1.1); }
+@media (prefers-reduced-motion: reduce) {
+  .card-share { animation: none; }
+}
