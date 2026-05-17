@@ -1068,7 +1068,6 @@ function promoCardHTML(a) {
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1 flex-wrap">
             ${pill}
-            <span class="text-xs font-bold text-gray-500">${esc(PROMO_TYPE_LABEL[a.type] || a.type)}</span>
           </div>
           <h3 class="font-display font-black text-base text-brand-black">${esc(a.title)}</h3>
           ${a.body ? `<p class="text-sm text-gray-600 mt-1 line-clamp-2">${esc(a.body)}</p>` : ''}
@@ -1099,11 +1098,23 @@ async function submitPromoRequest(e) {
   const ends   = new Date(starts.getTime() + THREE_HRS);
 
   btn.disabled = true; btn.textContent = 'Submitting…';
+
+  /* Slot check — only 3 promotions may run in any overlapping
+     window. Tell the owner up front instead of failing the insert. */
+  const cap = await c.rpc('count_overlapping_promos', {
+    p_starts: starts.toISOString(), p_ends: ends.toISOString(),
+  });
+  if (!cap.error && (cap.data ?? 0) >= 3) {
+    showPromoMsg('That time slot is full — 3 promotions already run then. Please pick a different date or time.', 'error');
+    btn.disabled = false; btn.textContent = 'Submit request';
+    return;
+  }
+
   const { data: { session } } = await c.auth.getSession();
 
   const payload = {
     restaurant_id: restaurant.id,
-    type:    document.getElementById('promo-type').value,
+    type:    'promo',
     title:   document.getElementById('promo-title').value.trim(),
     body:    document.getElementById('promo-body').value.trim() || null,
     link_url: document.getElementById('promo-link').value.trim() || null,
@@ -1121,7 +1132,10 @@ async function submitPromoRequest(e) {
   btn.disabled = false; btn.textContent = 'Submit request';
 
   if (error) {
-    showPromoMsg('Error: ' + error.message, 'error');
+    const msg = /PROMO_SLOT_FULL/.test(error.message || '')
+      ? 'That time slot is full — 3 promotions already run then. Please pick a different date or time.'
+      : 'Error: ' + error.message;
+    showPromoMsg(msg, 'error');
     return;
   }
   showPromoMsg('✓ Request submitted! We\'ll review within 24h.', 'success');

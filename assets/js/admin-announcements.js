@@ -161,7 +161,6 @@
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1 flex-wrap">
                   ${pill}
-                  <span class="text-xs font-bold text-gray-500">${esc(a.type || 'announcement')}</span>
                 </div>
                 <h3 class="font-display font-black text-base text-brand-black">${esc(a.title)}</h3>
                 <p class="text-sm text-gray-500 mt-1">${esc(a.restaurants?.name || '—')}</p>

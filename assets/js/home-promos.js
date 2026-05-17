@@ -8,11 +8,6 @@
 'use strict';
 
 (function () {
-  const TYPE_LABEL = {
-    announcement: '📣 Announcement', promo: '💸 Promo', event: '📅 Event',
-    'happy-hour': '🍻 Happy Hour', 'live-music': '🎵 Live Music', menu: '🍽️ New Dish',
-  };
-
   document.addEventListener('DOMContentLoaded', () => {
     if (window.YYP?.ready) load();
     else document.addEventListener('yyp:ready', load, { once: true });
@@ -41,7 +36,7 @@
       const started = !a.starts_at || new Date(a.starts_at).getTime() <= now;
       const notEnded = !a.ends_at || new Date(a.ends_at).getTime() >= now;
       return started && notEnded;
-    }).slice(0, 9);
+    }).slice(0, 3);   // 3 promo slots on the homepage
 
     if (!live.length) return;   // nothing live → section stays hidden
 
@@ -57,8 +52,7 @@
       <a href="${esc(href)}" class="block bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-brand-yellow hover:-translate-y-1 transition-all" style="text-decoration:none">
         <div style="aspect-ratio:16/9;background:#F3F3F3 center/cover no-repeat${img ? `;background-image:url('${esc(img)}')` : ''}"></div>
         <div class="p-4">
-          <span class="text-xs font-black text-yellow-700 bg-yellow-light px-2 py-0.5 rounded-full">${esc(TYPE_LABEL[a.type] || '📣 Announcement')}</span>
-          <h3 class="font-display font-black text-base text-brand-black mt-2 leading-tight">${esc(a.title)}</h3>
+          <h3 class="font-display font-black text-base text-brand-black leading-tight">${esc(a.title)}</h3>
           ${a.body ? `<p class="text-sm text-gray-500 mt-1 line-clamp-2">${esc(a.body)}</p>` : ''}
           <p class="text-xs font-bold text-gray-400 mt-2">${esc(r.name || 'YUMYUMPO restaurant')}</p>
         </div>
