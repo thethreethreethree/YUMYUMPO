@@ -968,7 +968,19 @@ function renderMenu(r) {
   section.classList.remove('hidden');
   window.db?.trackAnalyticsEvent('menu_view', r.id, { slug: r.slug });
 
-  container.innerHTML = r.menu_categories.map(cat => `
+  /* Preview only — show at most 3 categories, 3 items each, so the
+     profile page stays clean. The full menu lives on the digital
+     menu page (/menu?slug=…). */
+  const MAX_CATS = 3, MAX_ITEMS = 3;
+  const cats = r.menu_categories.slice(0, MAX_CATS);
+  const moreCats  = r.menu_categories.length > MAX_CATS;
+  const moreItems = r.menu_categories.some(c => (c.items?.length || 0) > MAX_ITEMS);
+  const hasMore   = moreCats || moreItems;
+
+  container.innerHTML = cats.map(cat => {
+    const shown = (cat.items || []).slice(0, MAX_ITEMS);
+    const extra = (cat.items?.length || 0) - shown.length;
+    return `
     <div>
       <div class="flex items-center gap-3 mb-5">
         <h3 class="r-section-title text-lg">${cat.name}</h3>
@@ -976,10 +988,24 @@ function renderMenu(r) {
         <span class="text-xs font-bold text-gray-400">${cat.items.length} items</span>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        ${cat.items.map(item => menuCard(item)).join('')}
+        ${shown.map(item => menuCard(item)).join('')}
       </div>
-    </div>
-  `).join('');
+      ${extra > 0 ? `<p class="text-xs text-gray-400 font-semibold mt-3">+ ${extra} more in ${esc(cat.name)}</p>` : ''}
+    </div>`;
+  }).join('');
+
+  /* "View the complete restaurant menu" → digital menu page. */
+  if (hasMore) {
+    container.innerHTML += `
+      <div style="text-align:center;padding-top:8px">
+        <a href="menu.html?slug=${encodeURIComponent(r.slug)}"
+           class="r-action-btn yellow"
+           style="display:inline-flex;width:auto;padding:14px 28px"
+           onclick="window.db?.trackAnalyticsEvent('digital_menu_view','${r.id}',{slug:'${r.slug}',source:'profile'})">
+          View the complete restaurant menu →
+        </a>
+      </div>`;
+  }
 }
 
 function menuCard(item) {
