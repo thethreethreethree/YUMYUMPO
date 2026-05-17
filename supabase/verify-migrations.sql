@@ -2,7 +2,7 @@
 -- YUMYUMPO — Migration verification
 -- Run this whole script in the Supabase SQL editor. It does NOT
 -- change anything — it just reports which expected database
--- objects exist, so you can confirm migrations 001–025 are all
+-- objects exist, so you can confirm migrations 001–031 are all
 -- applied in production. Any row marked ❌ MISSING means a
 -- migration was skipped — find + run it.
 -- ============================================================
@@ -39,6 +39,8 @@ WITH checks AS (
     EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name='venue_announcements' AND column_name='payment_status')
   UNION ALL SELECT 'column · venue_announcements.price_php (m023)',
     EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name='venue_announcements' AND column_name='price_php')
+  UNION ALL SELECT 'column · venue_announcements.image_url (m003)',
+    EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name='venue_announcements' AND column_name='image_url')
 
   -- ── RPCs / functions ────────────────────────────────────
   UNION ALL SELECT 'function · is_admin',                  EXISTS(SELECT 1 FROM pg_proc WHERE proname='is_admin')
@@ -53,6 +55,9 @@ WITH checks AS (
   UNION ALL SELECT 'function · get_my_application_status (m021)', EXISTS(SELECT 1 FROM pg_proc WHERE proname='get_my_application_status')
   UNION ALL SELECT 'function · review_announcement (m023)',  EXISTS(SELECT 1 FROM pg_proc WHERE proname='review_announcement')
   UNION ALL SELECT 'function · record_announcement_payment (m023)', EXISTS(SELECT 1 FROM pg_proc WHERE proname='record_announcement_payment')
+  UNION ALL SELECT 'function · get_restaurant_analytics (m027/030)', EXISTS(SELECT 1 FROM pg_proc WHERE proname='get_restaurant_analytics')
+  UNION ALL SELECT 'function · save_restaurant_menu (m029)',  EXISTS(SELECT 1 FROM pg_proc WHERE proname='save_restaurant_menu')
+  UNION ALL SELECT 'function · count_overlapping_promos (m031)', EXISTS(SELECT 1 FROM pg_proc WHERE proname='count_overlapping_promos')
 
   -- ── Triggers (m023 publish sync, m025 audit + rate limit) ─
   UNION ALL SELECT 'trigger · sync_announcement_published (m023)',
@@ -63,6 +68,10 @@ WITH checks AS (
     EXISTS(SELECT 1 FROM pg_trigger WHERE tgname='trg_rate_limit_applications')
   UNION ALL SELECT 'trigger · rate_limit_orders (m025)',
     EXISTS(SELECT 1 FROM pg_trigger WHERE tgname='trg_rate_limit_orders')
+  UNION ALL SELECT 'trigger · audit_announcement (m025)',
+    EXISTS(SELECT 1 FROM pg_trigger WHERE tgname='trg_audit_announcement')
+  UNION ALL SELECT 'trigger · enforce_promo_cap (m031)',
+    EXISTS(SELECT 1 FROM pg_trigger WHERE tgname='trg_enforce_promo_cap')
 
   -- ── Storage bucket ──────────────────────────────────────
   UNION ALL SELECT 'bucket · avatars (m024)',
