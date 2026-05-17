@@ -218,6 +218,11 @@
     document.getElementById('mb-save').addEventListener('click', save);
     document.getElementById('mb-file').addEventListener('change', onPhotoPicked);
 
+    /* Scan a menu photo → AI extracts categories + items. */
+    document.getElementById('mb-scan-btn').addEventListener('click', () =>
+      document.getElementById('mb-scan-file').click());
+    document.getElementById('mb-scan-file').addEventListener('change', onMenuScanned);
+
     window.addEventListener('beforeunload', e => {
       if (dirty) { e.preventDefault(); e.returnValue = ''; }
     });
@@ -267,6 +272,89 @@
     markDirty();
     render();
     toast('Photo added ✓');
+  }
+
+  /* ── Scan a menu photo (AI) ─────────────────────────────────
+     Sends the image to the menu-scan edge function, which uses
+     Claude vision to extract categories + items, then merges the
+     result into the builder for the owner to review and save. */
+  async function onMenuScanned(e) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) return toast('Image must be under 8 MB', true);
+
+    const endpoint = window.YUMYUMPO_CONFIG?.MENU_SCAN_ENDPOINT;
+    if (!endpoint) return toast('Menu scanning is unavailable right now.', true);
+
+    const busy = showScanBusy();
+    try {
+      const image = await fileToDataURL(file);
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': window.YUMYUMPO_CONFIG.SUPABASE_ANON_KEY || '',
+          'Authorization': 'Bearer ' + (window.YUMYUMPO_CONFIG.SUPABASE_ANON_KEY || ''),
+        },
+        body: JSON.stringify({ image }),
+      });
+      const data = await res.json();
+      if (!res.ok || !Array.isArray(data.categories)) {
+        throw new Error(data.error || 'Could not read that menu.');
+      }
+      if (!data.categories.length) {
+        toast('No menu items found — try a clearer photo.', true);
+        return;
+      }
+      const added = mergeScannedMenu(data.categories);
+      markDirty();
+      render();
+      toast(`Added ${added} item${added === 1 ? '' : 's'} — review &amp; save ✓`);
+    } catch (err) {
+      toast(err.message || 'Menu scan failed.', true);
+    } finally {
+      busy.remove();
+    }
+  }
+
+  function fileToDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.onerror = () => reject(new Error('Could not read the image file.'));
+      r.readAsDataURL(file);
+    });
+  }
+
+  /* Merge scanned categories into MENU — append to a matching
+     category (case-insensitive) or create a new one. */
+  function mergeScannedMenu(categories) {
+    let count = 0;
+    categories.forEach(sc => {
+      const name = (sc.name || 'Menu').trim();
+      let cat = MENU.find(c => (c.name || '').trim().toLowerCase() === name.toLowerCase());
+      if (!cat) { cat = { name, items: [] }; MENU.push(cat); }
+      (sc.items || []).forEach(si => {
+        if (!si.name) return;
+        cat.items.push({
+          name: si.name, description: si.description || '', price: si.price || '',
+          price_note: '', image_url: '', tags: [], is_available: true, _expanded: false,
+        });
+        count++;
+      });
+    });
+    return count;
+  }
+
+  function showScanBusy() {
+    const el = document.createElement('div');
+    el.className = 'mb-scan-busy';
+    el.innerHTML = `<div class="mb-spinner"></div>
+      <p>Reading your menu…</p>
+      <span>Our AI is pulling out the dishes and prices. This takes a few seconds.</span>`;
+    document.body.appendChild(el);
+    return el;
   }
 
   /* ── Save ───────────────────────────────────────────────── */

@@ -26,6 +26,10 @@ window.YUMYUMPO_CONFIG = {
   ───────────────────────────────────────────────────────── */
   AI_ENDPOINT: 'https://ptpiwoyerjfgsyeyzrpl.supabase.co/functions/v1/ai-search',
 
+  /* Menu-scan edge function — reads a menu photo and returns
+     structured categories + items (Claude vision). */
+  MENU_SCAN_ENDPOINT: 'https://ptpiwoyerjfgsyeyzrpl.supabase.co/functions/v1/menu-scan',
+
   /* ── Runtime mode ────────────────────────────────────────
      'production' — strict auth, no demo bypass, no debug logs
      'development' — allows demo Supabase fallback to static data
