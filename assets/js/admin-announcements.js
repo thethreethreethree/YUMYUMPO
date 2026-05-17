@@ -119,6 +119,14 @@
     };
     data.sort((a, b) => priority(a) - priority(b) || (b.created_at || '').localeCompare(a.created_at || ''));
 
+    /* Sidebar badge: number of promo requests awaiting review. */
+    const pendingCount = data.filter(a => a.status === 'pending').length;
+    const badge = document.getElementById('promos-pending-badge');
+    if (badge) {
+      if (pendingCount > 0) { badge.textContent = pendingCount; badge.classList.remove('hidden'); }
+      else badge.classList.add('hidden');
+    }
+
     list.innerHTML = data.map(a => {
       const date = new Date(a.starts_at || a.created_at);
       const dateStr = date.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
