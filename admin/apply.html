@@ -12,7 +12,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <link rel="apple-touch-icon" href="../icons/icon-180.png" />
   <title>Apply to Join — YUMYUMPO</title>
-  <meta name="description" content="Apply to list your restaurant on YUMYUMPO. Get discovered by travelers and locals across the Philippines. Free listing or premium hosted website." />
+  <meta name="description" content="Apply to list your restaurant on YUMYUMPO. Get discovered by travelers and locals across the Philippines — free during early access." />
   <link rel="icon" href="../assets/images/favicon.png" type="image/png" />
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -218,7 +218,7 @@
             <span class="w-5 h-5 rounded-full bg-brand-yellow flex items-center justify-center flex-shrink-0 mt-0.5">
               <svg class="w-3 h-3 text-brand-black" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
             </span>
-            <span class="text-white/80"><strong class="text-white">Premium website hosting</strong> — we build one if you don't have one</span>
+            <span class="text-white/80"><strong class="text-white">Founding partner status</strong> — recognition and early access as we grow</span>
           </li>
           <li class="flex items-start gap-3">
             <span class="w-5 h-5 rounded-full bg-brand-yellow flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -300,7 +300,6 @@
             When it launches, Premium partners will get:
           </p>
           <ul class="space-y-2 text-sm text-gray-700">
-            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>A dedicated restaurant website</strong> — designed and hosted by YUMYUMPO, branded to your restaurant, with your own link to share</span></li>
             <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Order requests</strong> — let diners send order and reservation requests straight from your page</span></li>
             <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Detailed analytics</strong> — see profile views, search appearances, follower growth, and what diners are looking for</span></li>
             <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Promotions &amp; announcements</strong> — push events, promos, and new menu items straight to your followers' feeds</span></li>
@@ -466,33 +465,11 @@
 
         <!-- Divider -->
         <div class="border-t border-gray-200 pt-6">
-          <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-5">Your digital presence</p>
-          <p class="text-sm text-gray-600 mb-5">
-            Every restaurant on YUMYUMPO needs a digital destination. Pick the option that matches you.
-          </p>
-
-          <div class="space-y-3 mb-5">
-            <label class="radio-card" id="opt-existing">
-              <input type="radio" name="website_choice" value="existing" required onchange="onWebsiteChoice(this)" />
-              <div>
-                <div class="radio-card-title">🌐 I have a website</div>
-                <div class="radio-card-desc">You're all set. We'll send discovery traffic directly to your existing site.</div>
-              </div>
-            </label>
-
-            <label class="radio-card" id="opt-need">
-              <input type="radio" name="website_choice" value="need" required onchange="onWebsiteChoice(this)" />
-              <div>
-                <div class="radio-card-title">⚡ I need a website</div>
-                <div class="radio-card-desc">Premium hosted website built by YUMYUMPO — branded for your restaurant with full analytics.</div>
-              </div>
-            </label>
-          </div>
-
-          <!-- Conditional: existing website URL -->
-          <div id="existing-website-wrap" class="hidden">
-            <label class="ap-label" for="existing_website">Your current website URL <span class="req">*</span></label>
-            <input id="existing_website" name="existing_website" type="url" class="ap-input" maxlength="300" placeholder="https://yourrestaurant.com" />
+          <p class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Your online presence</p>
+          <div>
+            <label class="ap-label" for="existing_website">Website or social media link <span class="text-gray-400 font-normal">(optional)</span></label>
+            <input id="existing_website" name="existing_website" type="url" class="ap-input" maxlength="300" placeholder="https://facebook.com/yourrestaurant" />
+            <p class="text-xs text-gray-400 mt-1.5">Share your website, Facebook, or Instagram — it helps us get to know your restaurant during review.</p>
           </div>
         </div>
 
@@ -553,10 +530,6 @@
               Once your profile is live, your restaurant appears across <strong class="text-brand-black">Discover, Vibe Map, and Ask Fred AI</strong>
               — so travelers and locals exploring El Nido can find you immediately.
             </p>
-            <p>
-              If you opted in for a hosted website, we'll send you a quick brief and start building.
-              Most websites are live within <strong class="text-brand-black">2 weeks of approval</strong>.
-            </p>
           </div>
           <p class="text-xs text-gray-500 mt-4 pt-4 border-t border-gray-200">
             We'll reply to <strong id="success-email" class="text-brand-black">your email</strong>.
@@ -595,11 +568,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (restaurantParam) {
     document.getElementById('restaurant_name').value = restaurantParam;
   }
-  /* If the user came from a "get website" funnel, pre-select that radio */
-  if (refParam === 'get-website') {
-    const radio = document.querySelector('input[name="website_choice"][value="need"]');
-    if (radio) { radio.checked = true; onWebsiteChoice(radio); }
-  }
 });
 
 
@@ -609,24 +577,6 @@ const aboutCount = document.getElementById('about-count');
 aboutField.addEventListener('input', () => {
   aboutCount.textContent = 500 - aboutField.value.length;
 });
-
-
-/* ── Radio card visual state ── */
-function onWebsiteChoice(input) {
-  document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
-  input.closest('.radio-card').classList.add('selected');
-
-  const wrap     = document.getElementById('existing-website-wrap');
-  const existing = document.getElementById('existing_website');
-  if (input.value === 'existing') {
-    wrap.classList.remove('hidden');
-    existing.required = true;
-  } else {
-    wrap.classList.add('hidden');
-    existing.required = false;
-    existing.value    = '';
-  }
-}
 
 
 /* ── Submit handler ── */
@@ -663,7 +613,6 @@ async function handleSubmit(e) {
     return;
   }
 
-  const choice = form.website_choice.value;
   const data = {
     restaurant_name:  form.restaurant_name.value.trim(),
     cuisine_type:     form.cuisine_type.value || null,
@@ -672,8 +621,8 @@ async function handleSubmit(e) {
     owner_name:       form.owner_name.value.trim() || null,
     contact_email:    form.contact_email.value.trim(),
     contact_phone:    form.contact_phone.value.trim() || null,
-    existing_website: choice === 'existing' ? form.existing_website.value.trim() : null,
-    needs_website:    choice === 'need',
+    existing_website: form.existing_website.value.trim() || null,
+    needs_website:    false,
     source:           refParam || 'apply-page',
     referrer_url:     document.referrer || null,
     user_agent:       navigator.userAgent,
