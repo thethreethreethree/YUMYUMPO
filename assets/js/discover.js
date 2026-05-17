@@ -771,8 +771,24 @@ window.toggleLocation = function(checkbox) {
   if (checkbox.checked) state.locations.add(loc);
   else                  state.locations.delete(loc);
   state.page = 1;
+  rememberCity();
   renderResults();
 };
+
+/* Remember the city the visitor is exploring so the home page's
+   location-based promotions can feature it. Stores the most recent
+   selected location (city only); clears it when no filter is set. */
+function rememberCity() {
+  try {
+    if (state.locations && state.locations.size) {
+      const latest = [...state.locations].pop();
+      const city = String(latest || '').split(',')[0].trim();
+      if (city) localStorage.setItem('yyp_city', city);
+    } else {
+      localStorage.removeItem('yyp_city');
+    }
+  } catch { /* localStorage unavailable — non-fatal */ }
+}
 
 /* Vibe quick-filter (hero chips) */
 window.applyVibe = function(tag) {
@@ -797,6 +813,7 @@ function removeLocation(loc) {
   state.locations.delete(loc);
   document.querySelectorAll(`input[value="loc:${loc}"]`).forEach(cb => cb.checked = false);
   state.page = 1;
+  rememberCity();
   renderResults();
 }
 
@@ -857,6 +874,7 @@ window.resetAllFilters = function() {
   state.rating   = 0;
   state.sort     = 'rating';
   state.page     = 1;
+  rememberCity();
 
   // Reset checkboxes
   document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
