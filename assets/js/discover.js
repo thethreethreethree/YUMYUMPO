@@ -591,7 +591,6 @@ function gridCard(r, idx) {
           onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&auto=format&fit=crop&q=75'"
         />
         <span class="${badgeCls}">${r.badge}</span>
-        ${r.has_yumyumpo_site ? `<span class="card-hosted-badge" title="Powered by YUMYUMPO">⚡ On YUMYUMPO</span>` : ''}
         <button
           class="card-save-btn"
           onclick="event.stopPropagation(); toggleSave('${r.slug}', this)"

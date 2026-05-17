@@ -270,6 +270,7 @@ async function loadVibeTags(c, restaurantId) {
   pendingVibeTags = new Set((data || []).map(t => t.tag_name));
 }
 
+const MAX_VIBE_TAGS = 3;
 function renderVibeTags() {
   const wrap = document.getElementById('vibe-tag-picker');
   if (!wrap) return;
@@ -280,9 +281,17 @@ function renderVibeTags() {
   wrap.querySelectorAll('.vibe-chip').forEach(btn => {
     btn.addEventListener('click', () => {
       const t = btn.dataset.tag;
-      if (pendingVibeTags.has(t)) pendingVibeTags.delete(t);
-      else                         pendingVibeTags.add(t);
-      btn.classList.toggle('active');
+      if (pendingVibeTags.has(t)) {
+        pendingVibeTags.delete(t);
+        btn.classList.remove('active');
+      } else {
+        if (pendingVibeTags.size >= MAX_VIBE_TAGS) {
+          toast(`Pick up to ${MAX_VIBE_TAGS} tags — remove one first.`);
+          return;
+        }
+        pendingVibeTags.add(t);
+        btn.classList.add('active');
+      }
       markDirty();
     });
   });

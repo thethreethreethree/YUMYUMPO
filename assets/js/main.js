@@ -424,7 +424,7 @@ function renderTourismRestaurants(data) {
 
 /* ── CARD TEMPLATES ── */
 function featuredCard(r) {
-  const tagsHTML = (r.tags || []).map((t, i) =>
+  const tagsHTML = (r.tags || []).slice(0, 3).map((t, i) =>
     `<span class="card-tag ${i === 0 ? 'yellow' : ''}">${tagEmoji(t)}${t}</span>`
   ).join('');
 
@@ -443,7 +443,6 @@ function featuredCard(r) {
           onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=700&auto=format&fit=crop&q=75'"
         />
         <span class="card-badge white">${r.badge}</span>
-        ${r.has_yumyumpo_site ? `<span class="card-hosted-badge" title="Powered by YUMYUMPO">⚡ On YUMYUMPO</span>` : ''}
         <button
           class="card-save-btn"
           onclick="event.stopPropagation(); toggleHomeSave('${r.slug}', this)"
@@ -499,7 +498,6 @@ function trendingCard(r) {
           loading="lazy"
           onerror="this.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&auto=format&fit=crop&q=75'"
         />
-        ${r.has_yumyumpo_site ? `<span class="card-hosted-badge" title="Powered by YUMYUMPO">⚡ On YUMYUMPO</span>` : ''}
       </div>
       <div class="trending-card-body">
         <p class="trending-rank">${r.rank}</p>
