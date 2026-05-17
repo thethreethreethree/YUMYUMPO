@@ -75,6 +75,59 @@ async function init() {
   loadOrders();
   ORDERS_POLL = setInterval(loadOrders, 20_000);
   loadPromos();
+  renderMenuQR();
+}
+
+
+/* ── Digital Menu QR ─────────────────────────────────────────
+   Generates a QR pointing at the restaurant's public digital
+   menu (/menu?slug=…) plus copy / download / preview controls. */
+function renderMenuQR() {
+  if (!restaurant?.slug) return;
+  const box = document.getElementById('menu-qr');
+  if (!box) return;
+
+  const url = `${location.origin}/menu?slug=${encodeURIComponent(restaurant.slug)}`;
+  const linkInput = document.getElementById('menu-qr-link');
+  const openLink  = document.getElementById('menu-qr-open');
+  if (linkInput) linkInput.value = url;
+  if (openLink)  openLink.href = url;
+
+  /* Build the QR (qrcodejs renders a <canvas> + <img> into the box). */
+  box.innerHTML = '';
+  if (typeof QRCode === 'function') {
+    new QRCode(box, {
+      text: url,
+      width: 320, height: 320,          // render large, CSS scales down → crisp
+      colorDark: '#111111', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+    const img = box.querySelector('img, canvas');
+    if (img) { img.style.width = '100%'; img.style.height = '100%'; }
+  } else {
+    box.innerHTML = '<span style="font-size:.7rem;color:#ABABAB">QR unavailable</span>';
+  }
+
+  document.getElementById('menu-qr-copy')?.addEventListener('click', () => {
+    if (!linkInput) return;
+    linkInput.select();
+    try { navigator.clipboard.writeText(url); } catch { document.execCommand('copy'); }
+    const btn = document.getElementById('menu-qr-copy');
+    if (btn) { btn.textContent = 'Copied ✓'; setTimeout(() => { btn.textContent = 'Copy'; }, 1500); }
+  });
+
+  document.getElementById('menu-qr-download')?.addEventListener('click', () => {
+    const canvas = box.querySelector('canvas');
+    const img    = box.querySelector('img');
+    let dataUrl = null;
+    if (canvas) dataUrl = canvas.toDataURL('image/png');
+    else if (img && img.src) dataUrl = img.src;
+    if (!dataUrl) return;
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = `yumyumpo-menu-qr-${restaurant.slug}.png`;
+    document.body.appendChild(a); a.click(); a.remove();
+  });
 }
 
 

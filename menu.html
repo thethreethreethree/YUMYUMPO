@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#111111" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="icon" href="assets/images/favicon.png" type="image/png" />
+
+  <title id="page-title">Menu — YUMYUMPO</title>
+  <meta id="meta-desc" name="description" content="Digital menu" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/menu.css?v=menu1" />
+</head>
+
+<body>
+
+<!-- Loading / error shell -->
+<div id="menu-loading" class="menu-loading">
+  <div class="menu-spinner"></div>
+</div>
+
+<div id="menu-error" class="menu-error" style="display:none">
+  <div class="menu-error-emoji">🍽️</div>
+  <h1>Menu not found</h1>
+  <p>This menu link is invalid or the restaurant isn't on YUMYUMPO yet.</p>
+  <a href="discover.html" class="menu-error-btn">Browse restaurants</a>
+</div>
+
+<!-- Menu app -->
+<main id="menu-app" style="display:none">
+
+  <!-- Hero -->
+  <header class="menu-hero" id="menu-hero">
+    <div class="menu-hero-overlay"></div>
+    <div class="menu-hero-inner">
+      <div class="menu-hero-logo" id="menu-logo"></div>
+      <h1 class="menu-hero-name" id="menu-name">—</h1>
+      <p class="menu-hero-meta" id="menu-meta"></p>
+      <div class="menu-hero-status" id="menu-status"></div>
+    </div>
+  </header>
+
+  <!-- Sticky controls: search + category jump nav -->
+  <div class="menu-sticky" id="menu-sticky">
+    <div class="menu-search-wrap">
+      <svg class="menu-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="menu-search" placeholder="Search the menu…" autocomplete="off" />
+      <button id="menu-search-clear" aria-label="Clear">×</button>
+    </div>
+    <nav class="menu-catnav" id="menu-catnav"></nav>
+  </div>
+
+  <!-- Menu body -->
+  <div class="menu-body" id="menu-body"></div>
+
+  <!-- Footer -->
+  <footer class="menu-footer">
+    <a id="menu-profile-link" href="#" class="menu-footer-cta">View full profile, photos &amp; reviews →</a>
+    <p class="menu-powered">
+      Powered by <a href="index.html"><strong>YUMYUMPO</strong></a> · Digital menus for the Philippines
+    </p>
+  </footer>
+</main>
+
+<!-- Photo lightbox -->
+<div id="menu-lightbox" class="menu-lightbox" style="display:none">
+  <button class="menu-lightbox-close" aria-label="Close">×</button>
+  <img id="menu-lightbox-img" src="" alt="" />
+</div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js?v=v25"></script>
+<script src="assets/js/error-logger.js?v=v25"></script>
+<script src="assets/js/analytics.js"></script>
+<script src="assets/js/menu.js?v=menu1"></script>
+<script src="assets/js/pwa.js"></script>
+</body>
+</html>
