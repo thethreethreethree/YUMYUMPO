@@ -126,10 +126,27 @@
       transition: all 0.15s;
     }
     .preview-btn:hover { background: #E6BB00; transform: translateY(-1px); }
+
+    /* ── Dashboard / Edit-Profile view switcher ── */
+    .owner-tabs {
+      display: flex; gap: 6px; margin-bottom: 22px;
+      background: #F3F3F3; padding: 5px; border-radius: 14px;
+    }
+    .owner-tab {
+      flex: 1; border: none; cursor: pointer;
+      padding: 10px 14px; border-radius: 10px;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 800;
+      font-size: 0.88rem; color: #6B6B6B; background: transparent;
+      transition: all 0.15s;
+    }
+    .owner-tab.active { background: #fff; color: #111; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    /* The body class decides which set of sections shows. */
+    body.owner-view-dash    .view-profile { display: none !important; }
+    body.owner-view-profile .view-dash    { display: none !important; }
   </style>
 </head>
 
-<body class="acct-page">
+<body class="acct-page owner-view-dash">
 
 <!-- NAV -->
 <nav id="navbar" class="solid fixed top-0 left-0 right-0 z-50">
@@ -169,10 +186,10 @@
 <!-- MAIN -->
 <main class="acct-container" id="main" style="display:none">
 
-  <header class="mb-6 flex items-start justify-between gap-4 flex-wrap">
+  <header class="mb-4 flex items-start justify-between gap-4 flex-wrap">
     <div>
       <h1 class="font-display font-black text-3xl text-brand-black" id="rest-name">—</h1>
-      <p class="text-gray-400 text-sm mt-1">Edit your public listing. Changes go live immediately when you Save.</p>
+      <p class="text-gray-400 text-sm mt-1" id="rest-sub">Your restaurant dashboard</p>
     </div>
     <a id="public-link" href="#" target="_blank" class="preview-btn">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -180,10 +197,30 @@
     </a>
   </header>
 
+  <!-- View switcher -->
+  <div class="owner-tabs">
+    <button type="button" class="owner-tab active" data-ownerview="dash">📊 Dashboard</button>
+    <button type="button" class="owner-tab" data-ownerview="profile">✎ Edit Profile</button>
+  </div>
+
+  <!-- ANALYTICS OVERVIEW (dashboard) -->
+  <section class="section-card mb-6 view-dash" id="dash-analytics-card">
+    <div class="flex items-center justify-between mb-3 gap-3 flex-wrap">
+      <div>
+        <h2 class="font-display font-black text-lg">Performance</h2>
+        <p class="text-xs text-gray-500">How diners are finding and engaging with you · last 30 days</p>
+      </div>
+      <span class="text-xs font-bold text-gray-400" id="dash-buzz"></span>
+    </div>
+    <div id="dash-analytics" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <p class="text-sm text-gray-400 italic col-span-full">Loading analytics…</p>
+    </div>
+  </section>
+
   <!-- ═════════════════════════════════════════════════════
        ORDER REQUESTS INBOX  (Premium-only; auto-hides if none)
        ═════════════════════════════════════════════════════ -->
-  <section id="orders-section" class="section-card mb-6" style="display:none">
+  <section id="orders-section" class="section-card mb-6 view-dash" style="display:none">
     <div class="flex items-center justify-between mb-3 gap-3 flex-wrap">
       <div>
         <h2 class="font-display font-black text-lg">Order Requests</h2>
@@ -206,7 +243,7 @@
        PROMOTIONS — owner-requested announcements (paid feature,
        admin approval gate). See migration 023.
        ═══════════════════════════════════════════════════════════ -->
-  <section id="promos-section" class="section-card mb-6" style="display:none">
+  <section id="promos-section" class="section-card mb-6 view-dash" style="display:none">
     <div class="flex items-center justify-between mb-3 gap-3 flex-wrap">
       <div>
         <h2 class="font-display font-black text-lg">Promotions</h2>
@@ -269,7 +306,7 @@
   <form id="owner-form" class="space-y-6 pb-24">
 
     <!-- Digital Menu Builder — quick entry, kept near the top -->
-    <a href="/account/menu-builder.html" class="block" style="text-decoration:none">
+    <a href="/account/menu-builder.html" class="block view-dash" style="text-decoration:none">
       <div style="background:linear-gradient(135deg,#FFD000 0%,#FFB800 100%);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 8px 24px rgba(255,208,0,.3)">
         <div style="font-size:1.7rem">✨</div>
         <div style="flex:1;min-width:0">
@@ -281,7 +318,7 @@
     </a>
 
     <!-- 1. COVER + LOGO  →  Hero -->
-    <div class="section-card space-y-4">
+    <div class="section-card space-y-4 view-profile">
       <h2 class="font-display font-black text-lg">Cover & Logo</h2>
       <p class="text-xs text-gray-500 -mt-2">▸ Powers the <strong>Hero</strong> banner at the top of your page. Drag & drop or click.</p>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -299,7 +336,7 @@
     </div>
 
     <!-- 2. IDENTITY  →  Hero name + cuisine + rating -->
-    <div class="section-card space-y-4">
+    <div class="section-card space-y-4 view-profile">
       <h2 class="font-display font-black text-lg">Identity</h2>
       <p class="text-xs text-gray-500 -mt-2">▸ Drives the big <strong>name</strong>, <strong>cuisine</strong> pill, and <strong>rating</strong> shown in the Hero.</p>
       <div>
@@ -369,7 +406,7 @@
     </div>
 
     <!-- 3. ABOUT  →  Hero tagline + About section -->
-    <div class="section-card space-y-4">
+    <div class="section-card space-y-4 view-profile">
       <h2 class="font-display font-black text-lg">About</h2>
       <p class="text-xs text-gray-500 -mt-2">▸ Tagline shows under the name in the <strong>Hero</strong>. Description fills the <strong>About</strong> block.</p>
       <div>
@@ -385,7 +422,7 @@
     </div>
 
     <!-- 3. VENUE GALLERY  →  Gallery mosaic -->
-    <div class="section-card space-y-3">
+    <div class="section-card space-y-3 view-dash">
       <div class="flex items-end justify-between">
         <h2 class="font-display font-black text-lg">Venue Gallery</h2>
         <p class="text-xs text-gray-400" id="gallery-count">0 / 4 photos</p>
@@ -396,14 +433,14 @@
     </div>
 
     <!-- 4. VIBE TAGS  →  Hero chips + AI matching -->
-    <div class="section-card space-y-3">
+    <div class="section-card space-y-3 view-profile">
       <h2 class="font-display font-black text-lg">Vibe Tags</h2>
       <p class="text-xs text-gray-500 -mt-1">▸ Shown as chips in your <strong>Hero</strong>. Used by Fred and the discovery filter.</p>
       <div class="flex flex-wrap gap-2" id="vibe-tag-picker"></div>
     </div>
 
     <!-- 5. HOURS  →  Hours section -->
-    <div class="section-card space-y-3">
+    <div class="section-card space-y-3 view-dash">
       <div class="flex items-end justify-between">
         <h2 class="font-display font-black text-lg">Hours</h2>
         <button type="button" id="hours-quickfill" class="text-xs font-bold text-yellow-600 underline">Apply Mon-Fri to all weekdays</button>
@@ -412,41 +449,8 @@
       <div id="hours-rows" class="space-y-2"></div>
     </div>
 
-    <!-- 6. MENU  →  Menu section -->
-    <div class="section-card space-y-3">
-      <div class="flex items-end justify-between">
-        <h2 class="font-display font-black text-lg">Menu</h2>
-        <button type="button" id="add-category-btn" class="text-xs font-bold text-yellow-600 underline">+ Add category</button>
-      </div>
-      <p class="text-xs text-gray-500 -mt-1">▸ Powers the <strong>Menu</strong> section (Signature Dishes, Crowd Favourites, etc.). Each item: name + description + price + up to 3 photos + tags.</p>
-      <div id="menu-categories" class="space-y-4"></div>
-      <datalist id="cat-suggestions">
-        <option value="Signature Dishes"></option>
-        <option value="Crowd Favourites"></option>
-        <option value="Breakfast Favourites"></option>
-        <option value="Lunch Favourites"></option>
-        <option value="Dinner Favourites"></option>
-        <option value="All-Day Specials"></option>
-        <option value="Appetizers & Starters"></option>
-        <option value="Soups & Salads"></option>
-        <option value="Mains"></option>
-        <option value="Pasta & Noodles"></option>
-        <option value="Rice Meals"></option>
-        <option value="Sides"></option>
-        <option value="Snacks & Bites"></option>
-        <option value="Desserts"></option>
-        <option value="Drinks"></option>
-        <option value="Coffee & Tea"></option>
-        <option value="Smoothies & Juices"></option>
-        <option value="Beer & Cocktails"></option>
-        <option value="Wine"></option>
-        <option value="Vegan & Vegetarian"></option>
-        <option value="Kids Menu"></option>
-      </datalist>
-    </div>
-
     <!-- 7. FOOD GALLERY  →  Food gallery grid -->
-    <div class="section-card space-y-3">
+    <div class="section-card space-y-3 view-dash">
       <div class="flex items-end justify-between">
         <h2 class="font-display font-black text-lg">Food Gallery</h2>
         <p class="text-xs text-gray-400" id="food-gallery-count">0 / 6 photos</p>
@@ -457,7 +461,7 @@
     </div>
 
     <!-- 8. LOCATION & MAP  →  Map section -->
-    <div class="section-card space-y-3">
+    <div class="section-card space-y-3 view-profile">
       <h2 class="font-display font-black text-lg">Location & Map</h2>
       <p class="text-xs text-gray-500 -mt-1">▸ Powers the <strong>Map</strong> section + "Get directions" button. We auto-generate the embed from your address; the advanced fields override that when Google misplaces you.</p>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -514,7 +518,7 @@
     </div>
 
     <!-- 9. CONTACT & SOCIAL  →  Action card + FAB buttons -->
-    <div class="section-card space-y-4">
+    <div class="section-card space-y-4 view-profile">
       <h2 class="font-display font-black text-lg">Contact & Social</h2>
       <p class="text-xs text-gray-500 -mt-2">▸ Powers the <strong>Action Card</strong> on the right + the floating WhatsApp / Messenger / IG / Website bubbles.</p>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -547,14 +551,14 @@
     </div>
 
     <!-- 10. PUBLIC URL -->
-    <div class="section-card space-y-2">
+    <div class="section-card space-y-2 view-dash">
       <h2 class="font-display font-black text-lg">Public URL</h2>
       <p class="text-sm text-gray-400">Need to change the URL slug? <a href="mailto:hello@yumyumpo.com" class="underline">Contact YUMYUMPO</a>.</p>
       <p class="text-sm mt-2">Slug: <span class="font-mono font-semibold" id="ro-slug">—</span></p>
     </div>
 
     <!-- 11. DIGITAL MENU QR -->
-    <div class="section-card space-y-3">
+    <div class="section-card space-y-3 view-dash">
       <h2 class="font-display font-black text-lg">Digital Menu QR</h2>
       <p class="text-xs text-gray-500 -mt-1">▸ Print this QR for your tables. Diners scan it to open your live digital menu — it always reflects the menu you set above.</p>
       <div class="flex flex-col sm:flex-row gap-5 items-start pt-1">
@@ -595,7 +599,7 @@
 <script src="../assets/js/account.js?v=profile2"></script>
 <script src="../assets/js/main.js?v=claim1"></script>
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
-<script src="../assets/js/account-restaurant.js?v=menu1"></script>
+<script src="../assets/js/account-restaurant.js?v=dash1"></script>
 <script src="../assets/js/vibe-map-fab.js?v=claim1"></script>
 <script src="../assets/js/pwa.js"></script>
 </body>

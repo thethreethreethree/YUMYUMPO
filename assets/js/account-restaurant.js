@@ -65,7 +65,6 @@ async function init() {
   pendingFoodGallery = Array.isArray(row.food_gallery_urls) ? [...row.food_gallery_urls] : [];
 
   await loadHours(c, row.id);
-  await loadMenu(c, row.id);
   await loadVibeTags(c, row.id);
 
   populateForm();
@@ -76,6 +75,50 @@ async function init() {
   ORDERS_POLL = setInterval(loadOrders, 20_000);
   loadPromos();
   renderMenuQR();
+  wireOwnerTabs();
+  loadDashAnalytics();
+}
+
+
+/* ── Dashboard / Edit-Profile view switcher ───────────────── */
+function wireOwnerTabs() {
+  document.querySelectorAll('.owner-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const v = tab.dataset.ownerview;   // 'dash' | 'profile'
+      document.body.classList.toggle('owner-view-dash', v === 'dash');
+      document.body.classList.toggle('owner-view-profile', v === 'profile');
+      document.querySelectorAll('.owner-tab').forEach(t =>
+        t.classList.toggle('active', t === tab));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+}
+
+
+/* ── Dashboard analytics overview ─────────────────────────── */
+async function loadDashAnalytics() {
+  const c = window.YYP?.client;
+  const wrap = document.getElementById('dash-analytics');
+  if (!c || !restaurant?.id || !wrap) return;
+
+  const { data, error } = await c.rpc('get_restaurant_analytics', { p_restaurant_id: restaurant.id });
+  if (error || !data) { wrap.innerHTML = '<p class="text-sm text-gray-400 italic col-span-full">Analytics will appear here as diners discover you.</p>'; return; }
+
+  const t = data.traffic || {}, o = data.orders || {}, e = data.engagement || {}, b = data.buzz || {};
+  const tile = (val, label) =>
+    `<div style="background:#FAFAF7;border:1.5px solid #F3F3F3;border-radius:14px;padding:12px 14px">
+       <div class="font-display" style="font-weight:800;font-size:1.5rem;color:#111;line-height:1">${val ?? 0}</div>
+       <div style="font-size:.7rem;font-weight:700;color:#ABABAB;text-transform:uppercase;letter-spacing:.05em;margin-top:4px">${label}</div>
+     </div>`;
+
+  wrap.innerHTML =
+    tile(t.profile_views_30d, 'Profile views') +
+    tile(t.digital_menu_30d, 'Menu opens') +
+    tile(o.total, 'Order requests') +
+    tile(e.follows, 'Followers');
+
+  const buzz = document.getElementById('dash-buzz');
+  if (buzz) buzz.textContent = `Buzz score ${Math.round(b.score || 0)}${b.tier ? ' · ' + b.tier : ''}`;
 }
 
 
@@ -167,7 +210,6 @@ function populateForm() {
   renderFoodGalleryUI();
   renderVibeTags();
   renderHours();
-  renderMenu();
 }
 
 function renderCover() {
@@ -514,11 +556,8 @@ function wireEvents() {
   document.getElementById('save-btn').addEventListener('click', save);
   document.getElementById('discard-btn').addEventListener('click', discard);
 
-  document.getElementById('add-category-btn').addEventListener('click', () => {
-    categories.push({ name:'', sort_order: categories.length, items:[] });
-    renderMenu();
-    markDirty();
-  });
+  /* The inline menu editor was retired in favour of the dedicated
+     Digital Menu Builder — #add-category-btn no longer exists. */
 
   /* Google Maps link → lat/lng auto-pin. Accepts: a full Google Maps
      URL (place/@lat,lng or !3dlat!4dlng), a shortened goo.gl/maps URL
@@ -708,22 +747,10 @@ async function save() {
       close_time:  hours[d].is_closed ? '' : hours[d].close_time,
       is_closed:   !!hours[d].is_closed,
     })),
-    categories: categories.map(cat => ({
-      name: (cat.name || '').trim(),
-      items: (cat.items || []).map(it => {
-        const photos = Array.isArray(it.photos) ? it.photos.slice(0, 3) : [];
-        return {
-          name:         (it.name || '').trim(),
-          description:  it.description || null,
-          price:        it.price || null,
-          price_note:   it.price_note || null,
-          image_url:    photos[0] || null,
-          gallery_urls: photos,
-          tags:         Array.isArray(it.tags) ? it.tags : [],
-          is_available: it.is_available !== false,
-        };
-      }),
-    })),
+    /* Menu intentionally omitted — it's managed by the dedicated
+       Digital Menu Builder (save_restaurant_menu). save_owner_restaurant
+       only touches the menu when a `categories` key is present, so
+       leaving it out keeps Builder edits safe. */
     vibe_tags: [...pendingVibeTags],
   };
 
