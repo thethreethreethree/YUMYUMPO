@@ -207,16 +207,18 @@ function showSkeletons() {
 
 async function bootData() {
   /* Try Supabase first; fall back to static seed data on any failure */
-  let featured = null, trending = null;
+  let featured = null, trending = null, tourism = null;
 
   if (window.db?.getHomepagePicks) {
     try {
-      const [feat, rank] = await Promise.all([
+      const [feat, rank, tour] = await Promise.all([
         window.db.getHomepagePicks({ featured: true,  limit: 6, order: 'rating' }),
         window.db.getHomepagePicks({ ranked:   true,  limit: 4, order: 'rank' }),
+        window.db.getHomepagePicks({ limit: 3, order: 'rating' }),
       ]);
       if (feat?.length) featured = feat;
       if (rank?.length) trending = rank;
+      if (tour?.length) tourism  = tour;
     } catch (err) {
       console.warn('[YUMYUMPO] homepage load failed, using static fallback:', err);
     }
@@ -243,7 +245,7 @@ async function bootData() {
 
   renderFeaturedRestaurants(featured || FEATURED_RESTAURANTS);
   renderTrendingRestaurants(trending || TRENDING_RESTAURANTS);
-  renderTourismRestaurants(TOURISM_RESTAURANTS);
+  renderTourismRestaurants(tourism || TOURISM_RESTAURANTS);
   initStatsCounter();
   loadRealStats();
   loadActivityStrip();
@@ -521,6 +523,11 @@ function trendingCard(r) {
 }
 
 function tourismCard(r) {
+  /* Real restaurants have no single `tag` — fall back to a vibe tag,
+     the cuisine, or a generic label. */
+  const tag = r.tag || (Array.isArray(r.tags) && r.tags[0]) || r.cuisine || r.cuisine_type || '✨ Worth the trip';
+  const img = r.image || r.cover || r.cover_image_url
+    || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&auto=format&fit=crop&q=75';
   return `
     <article
       class="tourism-card"
@@ -529,14 +536,14 @@ function tourismCard(r) {
       aria-label="View ${r.name}"
     >
       <img
-        src="${r.image}"
+        src="${img}"
         alt="${r.name}"
         loading="lazy"
         onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&auto=format&fit=crop&q=75'"
       />
       <div class="tourism-card-overlay"></div>
       <div class="tourism-card-content">
-        <span class="tourism-card-tag">${r.tag}</span>
+        <span class="tourism-card-tag">${tag}</span>
         <h3 class="tourism-card-name">${r.name}</h3>
         <p class="tourism-card-location">📍 ${r.location}</p>
       </div>
