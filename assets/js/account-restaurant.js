@@ -27,6 +27,7 @@ let hours = {};          // day_of_week -> { is_closed, open_time, close_time }
 let categories = [];     // [{id?, name, sort_order, items:[{id?, name, price, description, sort_order}]}]
 let dirty = false;
 let isAdminUser = false;
+let promoImageUrl = '';   // marketing image for the in-progress promo request
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -988,13 +989,32 @@ async function loadPromos() {
   if (newBtn && newBtn.dataset.bound !== '1') {
     newBtn.dataset.bound = '1';
     newBtn.addEventListener('click', () => { form.style.display = ''; newBtn.style.display = 'none'; });
-    cancel.addEventListener('click', () => { form.reset(); form.style.display = 'none'; newBtn.style.display = ''; hidePromoMsg(); });
+    cancel.addEventListener('click', () => { resetPromoForm(); form.style.display = 'none'; newBtn.style.display = ''; hidePromoMsg(); });
     form.addEventListener('submit', submitPromoRequest);
+
+    /* Promo marketing-image upload */
+    const dz   = document.getElementById('promo-image-dz');
+    const file = document.getElementById('promo-image-file');
+    dz?.addEventListener('click', () => file.click());
+    file?.addEventListener('change', async e => {
+      const f = e.target.files?.[0];
+      e.target.value = '';
+      if (!f) return;
+      if (f.size > 5 * 1024 * 1024) return toast('Image must be under 5 MB');
+      toast('Uploading image…');
+      const url = await uploadToBucket(f);
+      if (!url) return;
+      promoImageUrl = url;
+      dz.style.backgroundImage = `url('${url}')`;
+      dz.style.backgroundSize = 'cover';
+      dz.style.backgroundPosition = 'center';
+      dz.innerHTML = '';
+    });
   }
 
   const { data, error } = await c
     .from('venue_announcements')
-    .select('id, title, body, type, status, payment_status, price_php, starts_at, ends_at, admin_notes, created_at, is_published')
+    .select('id, title, body, type, status, payment_status, price_php, starts_at, ends_at, admin_notes, created_at, is_published, image_url')
     .eq('restaurant_id', restaurant.id)
     .order('created_at', { ascending: false })
     .limit(20);
@@ -1019,8 +1039,8 @@ async function loadPromos() {
 
 function promoCardHTML(a) {
   const created = new Date(a.created_at).toLocaleDateString(undefined, { month:'short', day:'numeric' });
-  const dates = (a.starts_at || a.ends_at)
-    ? `${a.starts_at ? new Date(a.starts_at).toLocaleDateString(undefined,{month:'short',day:'numeric'}) : '—'} → ${a.ends_at ? new Date(a.ends_at).toLocaleDateString(undefined,{month:'short',day:'numeric'}) : 'open'}`
+  const runAt = a.starts_at
+    ? new Date(a.starts_at).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })
     : '';
 
   /* Status pill + helper text. */
@@ -1043,7 +1063,8 @@ function promoCardHTML(a) {
 
   return `
     <div class="app-card" style="cursor:default">
-      <div class="flex items-start justify-between gap-3 mb-2 flex-wrap">
+      <div class="flex items-start gap-3 flex-wrap">
+        ${a.image_url ? `<img src="${esc(a.image_url)}" alt="" style="width:84px;height:84px;border-radius:12px;object-fit:cover;flex-shrink:0" />` : ''}
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1 flex-wrap">
             ${pill}
@@ -1051,7 +1072,7 @@ function promoCardHTML(a) {
           </div>
           <h3 class="font-display font-black text-base text-brand-black">${esc(a.title)}</h3>
           ${a.body ? `<p class="text-sm text-gray-600 mt-1 line-clamp-2">${esc(a.body)}</p>` : ''}
-          <p class="text-xs text-gray-400 mt-2">Requested ${created}${dates ? ' · ' + esc(dates) : ''}</p>
+          <p class="text-xs text-gray-400 mt-2">Requested ${created}${runAt ? ' · runs ' + esc(runAt) : ''}</p>
           <p class="text-xs text-gray-600 mt-2" style="line-height:1.5">${helper}</p>
         </div>
         ${canWithdraw ? `<button class="apps-filter-btn" style="background:#FEE2E2;border-color:#FECACA;color:#991B1B" data-withdraw="${esc(a.id)}">Withdraw</button>` : ''}
@@ -1064,23 +1085,20 @@ async function submitPromoRequest(e) {
   const c = window.YYP?.client;
   if (!c || !restaurant?.id) return;
 
-  const msg    = document.getElementById('promo-msg');
   const btn    = document.getElementById('promo-submit');
   hidePromoMsg();
-  btn.disabled = true; btn.textContent = 'Submitting…';
 
+  /* Run date & time is required; promos run 3 hours from then. */
   const startsRaw = document.getElementById('promo-starts').value;
-  const endsRaw   = document.getElementById('promo-ends').value;
-
-  /* Default ends_at to +3 hours from starts_at (or now) when owner
-     leaves it blank — promos are short, flash-style pushes. */
+  if (!startsRaw) {
+    showPromoMsg('Pick the date & time your promo should run.', 'error');
+    return;
+  }
   const THREE_HRS = 3 * 3600 * 1000;
-  const starts = startsRaw ? new Date(startsRaw) : null;
-  const ends   = endsRaw
-    ? new Date(endsRaw)
-    : (starts ? new Date(starts.getTime() + THREE_HRS)
-              : new Date(Date.now() + THREE_HRS));
+  const starts = new Date(startsRaw);
+  const ends   = new Date(starts.getTime() + THREE_HRS);
 
+  btn.disabled = true; btn.textContent = 'Submitting…';
   const { data: { session } } = await c.auth.getSession();
 
   const payload = {
@@ -1089,7 +1107,8 @@ async function submitPromoRequest(e) {
     title:   document.getElementById('promo-title').value.trim(),
     body:    document.getElementById('promo-body').value.trim() || null,
     link_url: document.getElementById('promo-link').value.trim() || null,
-    starts_at: starts ? starts.toISOString() : new Date().toISOString(),
+    image_url: promoImageUrl || null,
+    starts_at: starts.toISOString(),
     ends_at:   ends.toISOString(),
     /* RLS forbids overriding these — but include them so the row is correct. */
     status: 'pending',
@@ -1106,13 +1125,27 @@ async function submitPromoRequest(e) {
     return;
   }
   showPromoMsg('✓ Request submitted! We\'ll review within 24h.', 'success');
-  document.getElementById('promo-form').reset();
+  resetPromoForm();
   setTimeout(() => {
     document.getElementById('promo-form').style.display = 'none';
     document.getElementById('promo-new-btn').style.display = '';
     hidePromoMsg();
   }, 2200);
   loadPromos();
+}
+
+/* Reset the promo form + clear the uploaded image preview. */
+function resetPromoForm() {
+  document.getElementById('promo-form')?.reset();
+  promoImageUrl = '';
+  const dz = document.getElementById('promo-image-dz');
+  if (dz) {
+    dz.style.backgroundImage = '';
+    dz.innerHTML = `<div style="color:#ABABAB;font-size:.8rem;font-weight:600;padding:16px">
+        <div style="font-size:1.6rem;margin-bottom:4px">🖼️</div>
+        Tap to add a marketing image<br/><span style="font-size:.7rem">Shown on your promo card · 16:9 looks best</span>
+      </div>`;
+  }
 }
 
 function showPromoMsg(text, kind) {
