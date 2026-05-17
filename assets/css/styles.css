@@ -1148,3 +1148,28 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .line-clamp-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+
+/* ── Promotion rail — swipeable on mobile, 3-col grid on desktop ── */
+.promo-rail {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.promo-rail::-webkit-scrollbar { display: none; }
+.promo-rail > * {
+  scroll-snap-align: start;
+  flex: 0 0 82%;          /* card peeks the next one — signals "swipe" */
+  max-width: 340px;
+}
+@media (min-width: 640px) {
+  .promo-rail {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    overflow: visible;
+  }
+  .promo-rail > * { flex: none; max-width: none; }
+}
