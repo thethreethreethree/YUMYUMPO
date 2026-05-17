@@ -9,6 +9,8 @@
 
 (function () {
 
+  let LAST = null;   // { data, name } of the last-loaded restaurant
+
   function init() {
     if (window.YYP?.ready) bootstrap();
     else document.addEventListener('yyp:ready', bootstrap, { once: true });
@@ -55,6 +57,9 @@
       return;
     }
 
+    /* Stash for the Excel export. */
+    LAST = { data, name };
+
     const o = data.orders || {};
     const e = data.engagement || {};
     const t = data.traffic || {};
@@ -63,12 +68,15 @@
     const recent = data.recent_orders || [];
 
     body.innerHTML = `
-      <div>
-        <h2 class="font-display font-black text-xl text-brand-black mb-1">${esc(name)}</h2>
-        <p class="text-sm text-gray-400">
-          Buzz score <strong class="text-brand-black">${n(Math.round(b.score || 0))}</strong>
-          ${b.tier ? `<span class="perf-badge ${b.tier === 'hot' ? 'perf-hot' : 'perf-stable'} ml-1">${esc(b.tier)}</span>` : ''}
-        </p>
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h2 class="font-display font-black text-xl text-brand-black mb-1">${esc(name)}</h2>
+          <p class="text-sm text-gray-400">
+            Buzz score <strong class="text-brand-black">${n(Math.round(b.score || 0))}</strong>
+            ${b.tier ? `<span class="perf-badge ${b.tier === 'hot' ? 'perf-hot' : 'perf-stable'} ml-1">${esc(b.tier)}</span>` : ''}
+          </p>
+        </div>
+        <button id="rstats-export" class="btn-yellow btn-sm">⬇ Export to Excel</button>
       </div>
 
       <!-- Order requests -->
@@ -145,6 +153,104 @@
           : '<p class="text-sm text-gray-400 italic">No order requests yet.</p>'}
       </section>
     `;
+
+    document.getElementById('rstats-export')?.addEventListener('click', exportCSV);
+  }
+
+
+  /* ── Excel export ────────────────────────────────────────────
+     Builds a CSV (Excel opens it natively) organized into labelled
+     sections so a restaurant can read the real business impact of
+     their YUMYUMPO listing: how many diners found them, engaged,
+     and sent order requests. */
+  function csvCell(v) {
+    const s = String(v ?? '');
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  function csvRow(cells) { return cells.map(csvCell).join(','); }
+
+  function exportCSV() {
+    if (!LAST) return;
+    const { data, name } = LAST;
+    const o = data.orders || {}, e = data.engagement || {},
+          t = data.traffic || {}, b = data.buzz || {}, ct = data.content || {};
+    const recent = data.recent_orders || [];
+    const L = [];
+
+    L.push(csvRow(['YUMYUMPO — Restaurant Analytics']));
+    L.push(csvRow(['Restaurant', name]));
+    L.push(csvRow(['Generated', new Date().toLocaleString()]));
+    L.push('');
+
+    L.push(csvRow(['DISCOVERY & TRAFFIC', 'Last 30 days']));
+    L.push(csvRow(['Metric', 'Value']));
+    L.push(csvRow(['Profile views (30 days)',   t.profile_views_30d ?? 0]));
+    L.push(csvRow(['Profile views (7 days)',    t.profile_views_7d ?? 0]));
+    L.push(csvRow(['Discover card clicks',      t.card_clicks_30d ?? 0]));
+    L.push(csvRow(['Menu views',                t.menu_views_30d ?? 0]));
+    L.push(csvRow(['WhatsApp clicks',           t.whatsapp_30d ?? 0]));
+    L.push(csvRow(['Instagram clicks',          t.instagram_30d ?? 0]));
+    L.push(csvRow(['Messenger clicks',          t.messenger_30d ?? 0]));
+    L.push(csvRow(['Website clicks',            t.website_30d ?? 0]));
+    L.push(csvRow(['Total tracked events',      t.total_events_30d ?? 0]));
+    L.push('');
+
+    L.push(csvRow(['ORDER REQUESTS', 'All time']));
+    L.push(csvRow(['Metric', 'Value']));
+    L.push(csvRow(['Total order requests',      o.total ?? 0]));
+    L.push(csvRow(['Open / awaiting response',  o.open ?? 0]));
+    L.push(csvRow(['Accepted',                  o.accepted ?? 0]));
+    L.push(csvRow(['Completed',                 o.completed ?? 0]));
+    L.push(csvRow(['Paid',                      o.paid ?? 0]));
+    L.push(csvRow(['Denied',                    o.denied ?? 0]));
+    L.push(csvRow(['Accept rate (%)',           o.accept_pct ?? 0]));
+    L.push(csvRow(['Avg response time (min)',   o.avg_response_min ?? 0]));
+    L.push(csvRow(['Avg order value (PHP)',     o.avg_order_value ?? 0]));
+    L.push(csvRow(['Revenue from paid (PHP)',   o.total_revenue ?? 0]));
+    L.push(csvRow(['Order requests (last 7 days)',  o.orders_7d ?? 0]));
+    L.push(csvRow(['Order requests (last 30 days)', o.orders_30d ?? 0]));
+    L.push(csvRow(['Last request',              o.last_request_at ? new Date(o.last_request_at).toLocaleString() : 'never']));
+    L.push('');
+
+    L.push(csvRow(['DINER ENGAGEMENT', 'All time']));
+    L.push(csvRow(['Metric', 'Value']));
+    L.push(csvRow(['Followers',                 e.follows ?? 0]));
+    L.push(csvRow(['Saved to a list',           e.saves ?? 0]));
+    L.push(csvRow(['Logged-in profile visits',  e.history_views ?? 0]));
+    L.push(csvRow(['Reaction: Love',            e.reactions_love ?? 0]));
+    L.push(csvRow(['Reaction: Want to go',      e.reactions_want ?? 0]));
+    L.push(csvRow(['Reaction: Been there',      e.reactions_been ?? 0]));
+    L.push(csvRow(['Buzz score',                Math.round(b.score || 0)]));
+    L.push(csvRow(['Buzz tier',                 b.tier || 'none']));
+    L.push('');
+
+    L.push(csvRow(['CONTENT']));
+    L.push(csvRow(['Metric', 'Value']));
+    L.push(csvRow(['Live announcements',        ct.announcements_published ?? 0]));
+    L.push(csvRow(['Pending announcements',     ct.announcements_pending ?? 0]));
+    L.push(csvRow(['Total announcements',       ct.announcements_total ?? 0]));
+    L.push('');
+
+    L.push(csvRow(['RECENT ORDER REQUESTS']));
+    L.push(csvRow(['Date', 'Customer', 'Status', 'Quoted total (PHP)']));
+    recent.forEach(r => L.push(csvRow([
+      new Date(r.created_at).toLocaleString(),
+      r.customer_name || 'Customer',
+      r.status,
+      r.quoted_total ?? '',
+    ])));
+
+    /* BOM so Excel reads UTF-8 (₱, accents) correctly. */
+    const blob = new Blob(['﻿' + L.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const safe = String(name).replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    a.href = url;
+    a.download = `yumyumpo-analytics-${safe}-${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 
   function statCard(value, label) {
