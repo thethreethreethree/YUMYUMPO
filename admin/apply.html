@@ -171,6 +171,17 @@
       40%,80%  { transform: translateX(8px); }
     }
     .shake { animation: shake 0.4s ease; }
+
+    /* Collapsible "what joining means" panel */
+    .welcome-details > summary {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; cursor: pointer; list-style: none;
+      padding: 12px 16px; border: 1.5px solid #E8E8E8; border-radius: 14px;
+      background: #fff; transition: border-color .15s, background .15s;
+    }
+    .welcome-details > summary::-webkit-details-marker { display: none; }
+    .welcome-details > summary:hover { border-color: #FFD000; background: #FFFDF2; }
+    .welcome-details[open] > summary { border-color: #FFD000; background: #FFFDF2; }
   </style>
 </head>
 
@@ -276,50 +287,61 @@
       </div>
 
       <!-- Founding-partner welcome -->
-      <div class="mb-8 space-y-5" id="welcome-block">
+      <div class="mb-8 space-y-4" id="welcome-block">
         <p class="text-gray-700 text-sm leading-relaxed">
           <strong class="text-brand-black">Listing your restaurant is completely free.</strong> We're in early access —
-          focused on building the best restaurant discovery experience in the Philippines, starting in El Nido.
-          Every restaurant joining us during this phase becomes a <strong class="text-brand-black">founding partner</strong>.
+          every restaurant joining us during this phase becomes a <strong class="text-brand-black">founding partner</strong>.
         </p>
 
-        <div class="bg-yellow-light border border-yellow-200 rounded-2xl p-5">
-          <p class="text-xs font-black uppercase tracking-widest text-brand-black mb-3">As a founding partner, you get</p>
-          <ul class="space-y-2 text-sm text-gray-700">
-            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span>Your restaurant listed across <strong>Discover, Vibe Map, and Ask Fred AI search</strong> — free, with no commission and no transaction fees</span></li>
-            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Founding partner recognition</strong> that carries forward when our Premium Membership launches</span></li>
-            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span>Exclusive <strong>early-partner pricing</strong> on Premium features when they become available</span></li>
-            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span>Your basic listing <strong>stays free for founding partners</strong>, even after Premium launches</span></li>
-          </ul>
-        </div>
+        <details class="welcome-details group">
+          <summary>
+            <span class="flex items-center gap-2">
+              <span>✨</span>
+              <span class="font-bold text-brand-black text-sm">What joining YUMYUMPO means</span>
+            </span>
+            <svg class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
 
-        <div>
-          <p class="text-sm font-black text-brand-black mb-2">What we're building toward</p>
-          <p class="text-gray-600 text-sm leading-relaxed mb-3">
-            Premium Membership is coming — for restaurants that want to turn discovery into a full digital presence.
-            When it launches, Premium partners will get:
-          </p>
-          <ul class="space-y-2 text-sm text-gray-700">
-            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Order requests</strong> — let diners send order and reservation requests straight from your page</span></li>
-            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Detailed analytics</strong> — see profile views, search appearances, follower growth, and what diners are looking for</span></li>
-            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Promotions &amp; announcements</strong> — push events, promos, and new menu items straight to your followers' feeds</span></li>
-            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Priority placement</strong> — stronger visibility across Discover, the Vibe Map, and Ask Fred AI search</span></li>
-            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>A richer profile</strong> — full photo galleries, menu with photos, story, hours, and direct booking tools</span></li>
-            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Priority support</strong> — direct help from the YUMYUMPO team</span></li>
-          </ul>
-          <p class="text-gray-600 text-sm leading-relaxed mt-3">
-            We'll announce pricing and timing well in advance — and founding partners always get first access and
-            exclusive early-partner pricing.
-          </p>
-        </div>
+          <div class="space-y-5 pt-4">
+            <div class="bg-yellow-light border border-yellow-200 rounded-2xl p-5">
+              <p class="text-xs font-black uppercase tracking-widest text-brand-black mb-3">As a founding partner, you get</p>
+              <ul class="space-y-2 text-sm text-gray-700">
+                <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span>Your restaurant listed across <strong>Discover, Vibe Map, and Ask Fred AI search</strong> — free, with no commission and no transaction fees</span></li>
+                <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Founding partner recognition</strong> that carries forward when our Premium Membership launches</span></li>
+                <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span>Exclusive <strong>early-partner pricing</strong> on Premium features when they become available</span></li>
+                <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span>Your basic listing <strong>stays free for founding partners</strong>, even after Premium launches</span></li>
+              </ul>
+            </div>
 
-        <div>
-          <p class="text-sm font-black text-brand-black mb-1">What stays the same</p>
-          <p class="text-gray-600 text-sm leading-relaxed">
-            We'll never charge you, enroll you in anything, or change your free listing without your explicit consent.
-            That's a promise.
-          </p>
-        </div>
+            <div>
+              <p class="text-sm font-black text-brand-black mb-2">What we're building toward</p>
+              <p class="text-gray-600 text-sm leading-relaxed mb-3">
+                Premium Membership is coming — for restaurants that want to turn discovery into a full digital presence.
+                When it launches, Premium partners will get:
+              </p>
+              <ul class="space-y-2 text-sm text-gray-700">
+                <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Order requests</strong> — let diners send order and reservation requests straight from your page</span></li>
+                <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Detailed analytics</strong> — see profile views, search appearances, follower growth, and what diners are looking for</span></li>
+                <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Promotions &amp; announcements</strong> — push events, promos, and new menu items straight to your followers' feeds</span></li>
+                <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Priority placement</strong> — stronger visibility across Discover, the Vibe Map, and Ask Fred AI search</span></li>
+                <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>A richer profile</strong> — full photo galleries, menu with photos, story, hours, and direct booking tools</span></li>
+                <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Priority support</strong> — direct help from the YUMYUMPO team</span></li>
+              </ul>
+              <p class="text-gray-600 text-sm leading-relaxed mt-3">
+                We'll announce pricing and timing well in advance — and founding partners always get first access and
+                exclusive early-partner pricing.
+              </p>
+            </div>
+
+            <div>
+              <p class="text-sm font-black text-brand-black mb-1">What stays the same</p>
+              <p class="text-gray-600 text-sm leading-relaxed">
+                We'll never charge you, enroll you in anything, or change your free listing without your explicit consent.
+                That's a promise.
+              </p>
+            </div>
+          </div>
+        </details>
 
         <p class="text-gray-700 text-sm font-semibold">Ready? Tell us about your restaurant below.</p>
       </div>
