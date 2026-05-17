@@ -951,15 +951,12 @@ function promoCardHTML(a) {
   } else if (a.status === 'rejected') {
     pill = '<span class="app-status rejected">REJECTED</span>';
     helper = a.admin_notes ? `<strong>Admin note:</strong> ${esc(a.admin_notes)}` : 'Reach out if you have questions.';
-  } else if (a.status === 'approved' && a.payment_status === 'unpaid') {
-    pill = '<span class="app-status reviewing">AWAITING PAYMENT</span>';
-    helper = `Approved! Pay ₱${a.price_php} via GCash/bank to publish. We'll send instructions by email.`;
   } else if (a.is_published) {
     pill = '<span class="app-status approved">LIVE</span>';
     helper = 'Now showing in followers\' feed.';
   } else {
     pill = '<span class="app-status approved">APPROVED</span>';
-    helper = 'Approved (no payment required).';
+    helper = 'Approved — going live shortly.';
   }
 
   const canWithdraw = a.status === 'pending';

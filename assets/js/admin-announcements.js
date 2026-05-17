@@ -127,14 +127,8 @@
       if (a.status === 'pending') {
         pill = '<span class="app-status pending">PENDING REVIEW</span>';
         actions = `
-          <button class="apps-filter-btn" style="background:#FFD000;border-color:#FFD000;color:#111;font-weight:800" data-review-approve="${esc(a.id)}">✓ Approve · ₱${a.price_php || 200}</button>
+          <button class="apps-filter-btn" style="background:#FFD000;border-color:#FFD000;color:#111;font-weight:800" data-review-approve="${esc(a.id)}">✓ Approve</button>
           <button class="apps-filter-btn" style="background:#FEE2E2;border-color:#FECACA;color:#991B1B" data-review-reject="${esc(a.id)}">✕ Reject</button>`;
-      } else if (a.status === 'approved' && a.payment_status === 'unpaid') {
-        pill = `<span class="app-status reviewing">AWAITING PAYMENT · ₱${a.price_php}</span>`;
-        actions = `
-          <button class="apps-filter-btn" style="background:#FFD000;border-color:#FFD000;color:#111;font-weight:800" data-mark-paid="${esc(a.id)}">💰 Mark paid</button>
-          <button class="apps-filter-btn" data-waive="${esc(a.id)}">Waive fee</button>
-          <button class="apps-filter-btn" style="background:#FEE2E2;border-color:#FECACA;color:#991B1B" data-delete="${esc(a.id)}">Delete</button>`;
       } else if (a.status === 'rejected') {
         pill = '<span class="app-status rejected">REJECTED</span>';
         actions = `<button class="apps-filter-btn" style="background:#FEE2E2;border-color:#FECACA;color:#991B1B" data-delete="${esc(a.id)}">Delete</button>`;
@@ -174,16 +168,14 @@
       });
     });
 
-    /* Approve pending owner request. Prompts for price + optional note. */
+    /* Approve pending owner request — free during early access,
+       publishes immediately on approval. */
     list.querySelectorAll('[data-review-approve]').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.dataset.reviewApprove;
-        const priceStr = prompt('Price in PHP (blank = ₱200):', '200');
-        if (priceStr === null) return;
-        const price = parseInt(priceStr, 10) || 200;
-        const note  = prompt('Optional note for the owner (blank = none):') || null;
+        if (!confirm('Approve this announcement? It goes live to followers immediately.')) return;
         const { error } = await client.rpc('review_announcement', {
-          p_id: id, p_decision: 'approved', p_notes: note, p_price_php: price,
+          p_id: id, p_decision: 'approved', p_notes: null, p_price_php: null,
         });
         if (error) return alert('Failed: ' + error.message);
         loadAnnouncements();
@@ -204,31 +196,6 @@
       });
     });
 
-    /* Mark payment received (offline GCash/bank/manual). */
-    list.querySelectorAll('[data-mark-paid]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.dataset.markPaid;
-        const method = prompt('Payment method (gcash/bank/manual):', 'gcash') || 'manual';
-        const { error } = await client.rpc('record_announcement_payment', {
-          p_id: id, p_status: 'paid', p_method: method,
-        });
-        if (error) return alert('Failed: ' + error.message);
-        loadAnnouncements();
-      });
-    });
-
-    /* Waive fee (free announcement — e.g. partnership, comp). */
-    list.querySelectorAll('[data-waive]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.dataset.waive;
-        if (!confirm('Waive the fee for this announcement?')) return;
-        const { error } = await client.rpc('record_announcement_payment', {
-          p_id: id, p_status: 'waived', p_method: 'waived',
-        });
-        if (error) return alert('Failed: ' + error.message);
-        loadAnnouncements();
-      });
-    });
   };
 
 })();
