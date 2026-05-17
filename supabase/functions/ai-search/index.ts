@@ -10,7 +10,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-3-5-haiku-20241022'; // fast + cost-efficient for search
+const MODEL = 'claude-haiku-4-5'; // fast + cost-efficient for search
 
 /* Origin allowlist — set ALLOWED_ORIGIN to your production domain
  * (e.g. "https://yumyumpo.com") to restrict CORS. Defaults to "*".
