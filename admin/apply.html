@@ -268,11 +268,49 @@
       <div class="mb-8" id="form-header">
         <p class="text-xs font-black text-brand-yellow uppercase tracking-widest mb-2">Restaurant Application</p>
         <h2 class="font-display font-black text-3xl lg:text-4xl text-brand-black leading-tight tracking-tight mb-3">
-          Tell us about your restaurant.
+          Welcome to YUMYUMPO
         </h2>
         <p class="text-gray-600 text-base leading-relaxed">
-          Takes about 3 minutes. Our team reviews every application and replies within 48 hours.
+          We're glad you're here. Before you fill out the application, here's what joining YUMYUMPO means right now.
         </p>
+      </div>
+
+      <!-- Founding-partner welcome -->
+      <div class="mb-8 space-y-5" id="welcome-block">
+        <p class="text-gray-700 text-sm leading-relaxed">
+          <strong class="text-brand-black">Listing your restaurant is completely free.</strong> We're in early access —
+          focused on building the best restaurant discovery experience in the Philippines, starting in El Nido.
+          Every restaurant joining us during this phase becomes a <strong class="text-brand-black">founding partner</strong>.
+        </p>
+
+        <div class="bg-yellow-light border border-yellow-200 rounded-2xl p-5">
+          <p class="text-xs font-black uppercase tracking-widest text-brand-black mb-3">As a founding partner, you get</p>
+          <ul class="space-y-2 text-sm text-gray-700">
+            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span>Your restaurant listed across <strong>Discover, Vibe Map, and Ask Fred AI search</strong> — free, with no commission and no transaction fees</span></li>
+            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span><strong>Founding partner recognition</strong> that carries forward when our Premium Membership launches</span></li>
+            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span>Exclusive <strong>early-partner pricing</strong> on Premium features when they become available</span></li>
+            <li class="flex gap-2"><span class="text-brand-black font-black shrink-0">•</span><span>Your basic listing <strong>stays free for founding partners</strong>, even after Premium launches</span></li>
+          </ul>
+        </div>
+
+        <div>
+          <p class="text-sm font-black text-brand-black mb-1">What we're building toward</p>
+          <p class="text-gray-600 text-sm leading-relaxed">
+            Premium Membership is coming. When it launches, restaurants who want more from YUMYUMPO will get advanced
+            features like dedicated websites, detailed analytics, direct booking tools, and priority placement.
+            We'll announce pricing and timing in advance — and founding partners always get first access.
+          </p>
+        </div>
+
+        <div>
+          <p class="text-sm font-black text-brand-black mb-1">What stays the same</p>
+          <p class="text-gray-600 text-sm leading-relaxed">
+            We'll never charge you, enroll you in anything, or change your free listing without your explicit consent.
+            That's a promise.
+          </p>
+        </div>
+
+        <p class="text-gray-700 text-sm font-semibold">Ready? Tell us about your restaurant below.</p>
       </div>
 
       <!-- Banners -->
@@ -447,13 +485,30 @@
         </div>
 
 
+        <!-- Terms acknowledgment -->
+        <div class="bg-gray-50 border border-gray-200 rounded-2xl p-5">
+          <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Terms Acknowledgment</p>
+          <p class="text-sm text-gray-700 mb-2">By submitting this application, I understand:</p>
+          <ul class="space-y-1.5 text-sm text-gray-600 mb-4">
+            <li class="flex gap-2"><span class="shrink-0">•</span><span>Listing my restaurant on YUMYUMPO is completely free during early access</span></li>
+            <li class="flex gap-2"><span class="shrink-0">•</span><span>My contact information and restaurant details will only be used to operate YUMYUMPO and contact me about my application</span></li>
+            <li class="flex gap-2"><span class="shrink-0">•</span><span>YUMYUMPO will not share my information with third parties</span></li>
+            <li class="flex gap-2"><span class="shrink-0">•</span><span>I will not be enrolled in Premium Membership or any paid services without my explicit consent</span></li>
+            <li class="flex gap-2"><span class="shrink-0">•</span><span>I can update or remove my listing at any time by emailing the YUMYUMPO team</span></li>
+            <li class="flex gap-2"><span class="shrink-0">•</span><span>YUMYUMPO will notify me in advance of any future paid features, with clear pricing and an option to opt out</span></li>
+          </ul>
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" id="terms_ack" name="terms_ack" class="mt-0.5 w-5 h-5 accent-brand-yellow shrink-0" />
+            <span class="text-sm font-semibold text-brand-black">I have read and agree to the terms above.</span>
+          </label>
+        </div>
+
         <!-- Submit -->
         <button type="submit" id="submit-btn" class="btn-submit">
           Submit Application
         </button>
 
         <p class="text-center text-xs text-gray-400">
-          By submitting you agree we may contact you about your application.
           We never share your info with third parties.
         </p>
       </form>
@@ -464,29 +519,35 @@
         <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-brand-yellow mb-6 text-4xl shadow-lg shadow-yellow-400/30">
           🎉
         </div>
-        <h2 class="font-display font-black text-3xl text-brand-black mb-3 tracking-tight">Application received!</h2>
-        <p class="text-gray-600 text-base leading-relaxed max-w-md mx-auto mb-3">
-          Thanks for applying to YUMYUMPO. Our team will review your application within <strong class="text-brand-black">48 hours</strong> and reply to <strong id="success-email" class="text-brand-black">your email</strong>.
+        <h2 class="font-display font-black text-3xl text-brand-black mb-3 tracking-tight">Your application is in!</h2>
+        <p class="text-gray-600 text-base leading-relaxed max-w-md mx-auto mb-8">
+          Thanks for applying to YUMYUMPO. We're excited to learn more about your restaurant.
         </p>
 
         <!-- What happens next -->
         <div class="text-left bg-gray-50 border border-gray-200 rounded-2xl p-5 max-w-md mx-auto mb-8">
           <p class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">What happens next</p>
-          <ol class="space-y-2.5 text-sm text-gray-700">
-            <li class="flex items-start gap-3">
-              <span class="font-black text-brand-yellow shrink-0 w-5">1.</span>
-              <span>We review your application and visit your restaurant (digitally — Google Reviews, social, your existing site).</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="font-black text-brand-yellow shrink-0 w-5">2.</span>
-              <span>If approved, we email you a sign-in link so you can manage your listing.</span>
-            </li>
-            <li class="flex items-start gap-3">
-              <span class="font-black text-brand-yellow shrink-0 w-5">3.</span>
-              <span>If you opted in for a hosted website, we send you a quick brief to fill out so we can start building.</span>
-            </li>
-          </ol>
+          <div class="space-y-3 text-sm text-gray-700 leading-relaxed">
+            <p>
+              <strong class="text-brand-black">Within 48 hours</strong>, our team will review your application.
+              We'll look at your existing online presence — Google reviews, social media, any website you have —
+              to get a feel for what makes your place special. If we have questions, we'll reach out directly.
+            </p>
+            <p>
+              If approved, you'll get an email with a <strong class="text-brand-black">sign-in link to your YUMYUMPO dashboard</strong>.
+              From there, you can complete your profile, upload photos and menu, and customize how travelers see you.
+            </p>
+            <p>
+              Once your profile is live, your restaurant appears across <strong class="text-brand-black">Discover, Vibe Map, and Ask Fred AI</strong>
+              — so travelers and locals exploring El Nido can find you immediately.
+            </p>
+            <p>
+              If you opted in for a hosted website, we'll send you a quick brief and start building.
+              Most websites are live within <strong class="text-brand-black">2 weeks of approval</strong>.
+            </p>
+          </div>
           <p class="text-xs text-gray-500 mt-4 pt-4 border-t border-gray-200">
+            We'll reply to <strong id="success-email" class="text-brand-black">your email</strong>.
             Questions? Reach us anytime via the <a href="../contact.html" class="font-bold text-brand-black hover:underline">contact page</a>.
           </p>
         </div>
@@ -577,6 +638,14 @@ async function handleSubmit(e) {
   /* Basic validation */
   if (!form.checkValidity()) {
     showError('Please fill in all required fields.');
+    form.classList.add('shake');
+    setTimeout(() => form.classList.remove('shake'), 400);
+    return;
+  }
+
+  /* Terms acknowledgment must be checked. */
+  if (!form.terms_ack || !form.terms_ack.checked) {
+    showError('Please read and agree to the terms before submitting.');
     form.classList.add('shake');
     setTimeout(() => form.classList.remove('shake'), 400);
     return;
