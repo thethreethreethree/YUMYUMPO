@@ -1179,3 +1179,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   border: 2px solid #FFD000;
   box-shadow: 0 6px 20px -8px rgba(255,208,0,0.55);
 }
+
+/* Quick-share chip on restaurant cards (replaces the old logo chip) */
+.card-share {
+  position: absolute; bottom: -16px; right: 16px;
+  width: 48px; height: 48px; border-radius: 14px;
+  background: #fff; border: 2.5px solid #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.16);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #111;
+  transition: background .2s ease, transform .25s ease;
+  z-index: 3;
+}
+.card-share:hover { background: #FFD000; transform: scale(1.08); }
+.card-share svg { width: 19px; height: 19px; }

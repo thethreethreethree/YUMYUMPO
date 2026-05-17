@@ -453,7 +453,10 @@ function featuredCard(r) {
             <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
           </svg>
         </button>
-        <div class="card-logo" aria-hidden="true">${r.logo_emoji}</div>
+        <button class="card-share" type="button" aria-label="Share this restaurant" title="Share"
+          onclick="event.stopPropagation();event.preventDefault();shareVenue('${r.slug}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
       </div>
       <div class="card-body">
         <div class="card-rating">
@@ -817,3 +820,26 @@ function trackEvent(eventType, metadata = {}) {
     window.db.trackAnalyticsEvent(eventType, metadata.restaurant_id || null, metadata);
   }
 }
+
+/* ── Quick share (restaurant cards) ──────────────────────────
+   Native share sheet on mobile; clipboard copy + toast elsewhere. */
+window.shareVenue = function (slug) {
+  if (!slug) return;
+  const url = location.origin + '/restaurant.html?slug=' + encodeURIComponent(slug);
+  if (navigator.share) {
+    navigator.share({ title: 'YUMYUMPO', text: 'Check out this restaurant on YUMYUMPO', url }).catch(() => {});
+    return;
+  }
+  try { navigator.clipboard.writeText(url); } catch (_) {}
+  let t = document.getElementById('yyp-share-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'yyp-share-toast';
+    t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111;color:#fff;font-weight:600;font-size:.85rem;padding:11px 20px;border-radius:12px;z-index:9999;opacity:0;transition:opacity .2s;box-shadow:0 8px 24px rgba(0,0,0,.25)';
+    document.body.appendChild(t);
+  }
+  t.textContent = 'Link copied — share it anywhere ✓';
+  requestAnimationFrame(() => { t.style.opacity = '1'; });
+  clearTimeout(window.__yypShareTimer);
+  window.__yypShareTimer = setTimeout(() => { t.style.opacity = '0'; }, 2200);
+};
