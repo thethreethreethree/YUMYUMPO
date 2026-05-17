@@ -179,8 +179,29 @@
       padding: 14px 18px; border-radius: 16px; border: 1.5px solid;
     }
 
-    /* ── Mobile ── */
-    @media (max-width:768px) { .sidebar { display:none; } }
+    /* ── Mobile: sidebar becomes a slide-in drawer ── */
+    .admin-topbar { display: none; }
+    .sidebar-backdrop { display: none; }
+    @media (max-width: 767px) {
+      .admin-topbar {
+        display: flex; align-items: center; gap: 12px;
+        position: fixed; top: 0; left: 0; right: 0; z-index: 45;
+        background: #111; height: 56px; padding: 0 14px;
+      }
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.26s ease;
+        width: 268px;
+      }
+      .sidebar.open { transform: translateX(0); box-shadow: 0 0 50px rgba(0,0,0,0.55); }
+      .sidebar-backdrop.show {
+        display: block; position: fixed; inset: 0; z-index: 39;
+        background: rgba(0,0,0,0.55);
+      }
+      main { padding-top: 56px; }
+      /* per-tab headers + content breathe better on small screens */
+      #admin-root header { padding-left: 16px; padding-right: 16px; }
+    }
   </style>
 </head>
 
@@ -316,7 +337,17 @@
 <!-- ══════════════════════════════════════════════════════════
      MAIN LAYOUT
 ══════════════════════════════════════════════════════════ -->
-<div class="flex min-h-screen">
+<!-- ── MOBILE TOP BAR (drawer toggle) ── -->
+<div class="admin-topbar">
+  <button id="admin-menu-btn" aria-label="Open menu"
+    style="background:none;border:none;color:#FFD000;cursor:pointer;padding:6px;display:flex">
+    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <img src="../assets/images/yumyumpo-logo.webp" alt="YUMYUMPO" style="height:22px;filter:brightness(0) invert(1)" />
+</div>
+<div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+<div class="flex min-h-screen" id="admin-root">
 
   <!-- ── SIDEBAR ── -->
   <aside class="sidebar fixed top-0 left-0 bottom-0 flex flex-col py-6 px-3 z-40">
@@ -1055,6 +1086,21 @@
 </style>
 
 
+<script>
+  /* Mobile sidebar drawer toggle */
+  (function () {
+    const sb = document.querySelector('.sidebar');
+    const bd = document.getElementById('sidebar-backdrop');
+    const btn = document.getElementById('admin-menu-btn');
+    if (!sb || !bd || !btn) return;
+    const set = open => { sb.classList.toggle('open', open); bd.classList.toggle('show', open); };
+    btn.addEventListener('click', () => set(!sb.classList.contains('open')));
+    bd.addEventListener('click', () => set(false));
+    /* Tapping any nav item closes the drawer. */
+    document.querySelectorAll('.sidebar-link').forEach(l =>
+      l.addEventListener('click', () => set(false)));
+  })();
+</script>
 <script src="../assets/js/config.js"></script>
 <script src="../assets/js/supabase-client.js?v=v25"></script>
 <script src="../assets/js/error-logger.js?v=v25"></script>
