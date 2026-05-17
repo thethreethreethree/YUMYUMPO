@@ -1184,14 +1184,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .card-share {
   position: absolute; bottom: -16px; right: 16px;
   width: 48px; height: 48px; border-radius: 14px;
-  background: #fff; border: 2.5px solid #fff;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.16);
+  background: #111; border: 2.5px solid #FFD000;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.22);
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: #111;
+  cursor: pointer; color: #FFD000;
   transition: background .2s ease, transform .25s ease;
   z-index: 3;
 }
-.card-share:hover { background: #FFD000; transform: scale(1.08); }
+.card-share:hover { background: #FFD000; color: #111; transform: scale(1.1); }
 .card-share svg { width: 19px; height: 19px; }
 
 /* Gentle sway on the share chip to draw the eye */
