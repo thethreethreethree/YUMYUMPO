@@ -966,6 +966,7 @@ function renderMenu(r) {
   const container = document.getElementById('menu-container');
   if (!section || !container) return;
   section.classList.remove('hidden');
+  window.db?.trackAnalyticsEvent('menu_view', r.id, { slug: r.slug });
 
   container.innerHTML = r.menu_categories.map(cat => `
     <div>

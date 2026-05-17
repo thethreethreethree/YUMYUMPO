@@ -930,8 +930,8 @@ window.closeFilterDrawer = function() {
    NAVIGATION
 ══════════════════════════════════════════════════════════ */
 window.openRestaurant = function(slug) {
-  trackDiscoveryEvent('card_click', slug);
   const r = DATASET.find(x => x.slug === slug);
+  trackDiscoveryEvent('card_click', slug, r?.id || null);
   /* Premium / YUMYUMPO-hosted → internal profile page (which itself surfaces
      the external website CTA + WhatsApp/IG floaters). Pure external listings
      (no profile worth showing) → straight to their site. */
@@ -1026,8 +1026,8 @@ function dCardCTA(r) {
 /* ══════════════════════════════════════════════════════════
    ANALYTICS
 ══════════════════════════════════════════════════════════ */
-function trackDiscoveryEvent(type, slug) {
-  window.db?.trackAnalyticsEvent(type, null, { slug, source: 'discover' });
+function trackDiscoveryEvent(type, slug, restaurantId = null) {
+  window.db?.trackAnalyticsEvent(type, restaurantId, { slug, source: 'discover' });
 }
 
 /* trackWebsiteClick is defined globally in main.js — available on all pages */
