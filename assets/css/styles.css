@@ -1173,3 +1173,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   }
   .promo-rail > * { flex: none; max-width: none; }
 }
+
+/* Promotion card — yellow outline sets it apart from restaurant cards */
+.promo-card {
+  border: 2px solid #FFD000;
+  box-shadow: 0 6px 20px -8px rgba(255,208,0,0.55);
+}

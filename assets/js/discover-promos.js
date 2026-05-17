@@ -82,7 +82,7 @@
     const img = a.image_url || r.cover_image_url || '';
     const href = r.slug ? `restaurant.html?slug=${encodeURIComponent(r.slug)}` : (a.link_url || '#');
     return `
-      <a href="${esc(href)}" class="block bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-brand-yellow hover:-translate-y-1 transition-all" style="text-decoration:none">
+      <a href="${esc(href)}" class="block bg-white rounded-2xl promo-card overflow-hidden hover:-translate-y-1 transition-all" style="text-decoration:none">
         <div style="aspect-ratio:16/9;background:#F3F3F3 center/cover no-repeat${img ? `;background-image:url('${esc(img)}')` : ''}"></div>
         <div class="p-4">
           <h3 class="font-display font-black text-base text-brand-black leading-tight">${esc(a.title)}</h3>
