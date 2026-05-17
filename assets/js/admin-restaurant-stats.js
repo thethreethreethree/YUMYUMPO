@@ -108,6 +108,8 @@
           ${statCard(n(t.card_clicks_30d), 'Card clicks')}
           ${statCard(n(t.menu_views_30d), 'Menu views')}
           ${statCard(n(t.whatsapp_30d), 'WhatsApp clicks')}
+          ${statCard(n(t.instagram_30d), 'Instagram clicks')}
+          ${statCard(n(t.messenger_30d), 'Messenger clicks')}
           ${statCard(n(t.website_30d), 'Website clicks')}
           ${statCard(n(t.total_events_30d), 'Total events (30d)')}
         </div>
