@@ -1207,3 +1207,24 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media (prefers-reduced-motion: reduce) {
   .card-share { animation: none; }
 }
+
+/* ── Mobile card rail — horizontal swipe on phones, grid on desktop.
+   Add `m-rail` alongside the existing grid classes; the flex rule
+   only applies at mobile, so sm:/lg: grid columns still win above. */
+@media (max-width: 639px) {
+  .m-rail {
+    display: flex !important;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .m-rail::-webkit-scrollbar { display: none; }
+  .m-rail > * {
+    flex: 0 0 82%;
+    max-width: 320px;
+    scroll-snap-align: start;
+  }
+}
