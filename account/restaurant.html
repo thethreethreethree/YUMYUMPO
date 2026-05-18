@@ -271,11 +271,11 @@
       </div>
       <div>
         <label class="text-xs font-black text-gray-500 uppercase tracking-wider mb-1 block">Promo image <span class="text-gray-400">(recommended)</span></label>
-        <div id="promo-image-dz"
-          style="border:2px dashed #E8E8E8;border-radius:14px;background:#FAFAF7;cursor:pointer;overflow:hidden;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;text-align:center">
-          <div style="color:#ABABAB;font-size:.8rem;font-weight:600;padding:16px">
-            <div style="font-size:1.6rem;margin-bottom:4px">🖼️</div>
-            Tap to add a marketing image<br/><span style="font-size:.7rem">Shown on your promo card · 16:9 looks best</span>
+        <div id="promo-image-dz" class="dz" style="aspect-ratio:16/9">
+          <div class="dz-empty">
+            <div class="dz-icon">🖼️</div>
+            <div class="dz-title">Click or drop a marketing image</div>
+            <div class="dz-hint">Shown on your promo card · 16:9 looks best</div>
           </div>
         </div>
         <input type="file" id="promo-image-file" accept="image/jpeg,image/png,image/webp" class="hidden" />
@@ -595,7 +595,7 @@
 <script src="../assets/js/account.js?v=profile2"></script>
 <script src="../assets/js/main.js?v=claim1"></script>
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
-<script src="../assets/js/account-restaurant.js?v=dash5"></script>
+<script src="../assets/js/account-restaurant.js?v=dash6"></script>
 <script src="../assets/js/vibe-map-fab.js?v=vm1"></script>
 <script src="../assets/js/pwa.js"></script>
 </body>

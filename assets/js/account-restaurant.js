@@ -1001,24 +1001,35 @@ async function loadPromos() {
     cancel.addEventListener('click', () => { resetPromoForm(); form.style.display = 'none'; newBtn.style.display = ''; hidePromoMsg(); });
     form.addEventListener('submit', submitPromoRequest);
 
-    /* Promo marketing-image upload */
+    /* Promo marketing-image upload — click OR drag & drop. */
     const dz   = document.getElementById('promo-image-dz');
     const file = document.getElementById('promo-image-file');
-    dz?.addEventListener('click', () => file.click());
-    file?.addEventListener('change', async e => {
-      const f = e.target.files?.[0];
-      e.target.value = '';
+
+    async function handlePromoImage(f) {
       if (!f) return;
+      if (!/^image\//.test(f.type)) return toast('That file isn\'t an image.');
       if (f.size > 5 * 1024 * 1024) return toast('Image must be under 5 MB');
       toast('Uploading image…');
       const url = await uploadToBucket(f);
       if (!url) return;
       promoImageUrl = url;
-      dz.style.backgroundImage = `url('${url}')`;
-      dz.style.backgroundSize = 'cover';
-      dz.style.backgroundPosition = 'center';
-      dz.innerHTML = '';
+      dz.classList.add('has-img');
+      dz.innerHTML = `<img class="dz-img" src="${url}" alt="Promo image" />
+        <div class="dz-replace">Click or drop a new image to replace</div>`;
+    }
+
+    dz?.addEventListener('click', () => file.click());
+    file?.addEventListener('change', e => {
+      const f = e.target.files?.[0];
+      e.target.value = '';
+      handlePromoImage(f);
     });
+    /* Drag & drop */
+    ['dragenter', 'dragover'].forEach(ev =>
+      dz?.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('is-dragover'); }));
+    ['dragleave', 'drop'].forEach(ev =>
+      dz?.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('is-dragover'); }));
+    dz?.addEventListener('drop', e => handlePromoImage(e.dataTransfer?.files?.[0]));
   }
 
   const { data, error } = await c
@@ -1163,10 +1174,11 @@ function resetPromoForm() {
   promoImageUrl = '';
   const dz = document.getElementById('promo-image-dz');
   if (dz) {
-    dz.style.backgroundImage = '';
-    dz.innerHTML = `<div style="color:#ABABAB;font-size:.8rem;font-weight:600;padding:16px">
-        <div style="font-size:1.6rem;margin-bottom:4px">🖼️</div>
-        Tap to add a marketing image<br/><span style="font-size:.7rem">Shown on your promo card · 16:9 looks best</span>
+    dz.classList.remove('has-img', 'is-dragover');
+    dz.innerHTML = `<div class="dz-empty">
+        <div class="dz-icon">🖼️</div>
+        <div class="dz-title">Click or drop a marketing image</div>
+        <div class="dz-hint">Shown on your promo card · 16:9 looks best</div>
       </div>`;
   }
 }
