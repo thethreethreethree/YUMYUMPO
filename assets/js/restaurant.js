@@ -550,11 +550,14 @@ async function boot(slug) {
     return;
   }
 
-  renderPage(r);
-  initNavScroll();
-  initReveal();
-  initParallax();
-  trackPageView(r);
+  try { renderPage(r); }
+  catch (e) { console.error('[restaurant] renderPage failed:', e); }
+  /* These must always run — initReveal is what makes the content
+     sections visible (they start at opacity:0). */
+  try { initNavScroll(); } catch (e) { console.error(e); }
+  try { initReveal();    } catch (e) { console.error(e); }
+  try { initParallax();  } catch (e) { console.error(e); }
+  try { trackPageView(r); } catch (e) { console.error(e); }
 
   /* Record into user's discovery history (no-op if signed out) */
   if (window.YYP?.account?.isSignedIn) {
@@ -705,19 +708,29 @@ function showNotFound(slug) {
 ══════════════════════════════════════════════════════════ */
 function renderPage(r) {
   window.__yypRestaurant = r;
-  updateSEO(r);
-  renderHero(r);
-  renderGalleryMosaic(r);
-  renderAbout(r);
-  renderHours(r);
-  renderMenu(r);
-  renderFoodGallery(r);
-  renderMap(r);
-  renderSimilar(r);
-  renderActionCard(r);
-  renderInfoCard(r);
-  renderSocialCard(r);
-  renderMobileBar(r);
+  /* Each section renders in isolation — if one throws, the rest of
+     the page (and the scroll-reveal that makes content visible) must
+     still run, so a single bad section can never blank the page. */
+  const safe = (label, fn) => {
+    try { fn(); }
+    catch (e) {
+      console.error('[restaurant] ' + label + ' failed:', e);
+      try { window.YYP?.logError?.(e, 'render:' + label); } catch (_) {}
+    }
+  };
+  safe('seo',         () => updateSEO(r));
+  safe('hero',        () => renderHero(r));
+  safe('gallery',     () => renderGalleryMosaic(r));
+  safe('about',       () => renderAbout(r));
+  safe('hours',       () => renderHours(r));
+  safe('menu',        () => renderMenu(r));
+  safe('foodGallery', () => renderFoodGallery(r));
+  safe('map',         () => renderMap(r));
+  safe('similar',     () => renderSimilar(r));
+  safe('actionCard',  () => renderActionCard(r));
+  safe('infoCard',    () => renderInfoCard(r));
+  safe('socialCard',  () => renderSocialCard(r));
+  safe('mobileBar',   () => renderMobileBar(r));
   /* Fire after the DOM exists so listeners (e.g. order-request.js)
      can find #action-buttons / #r-hero-content. */
   document.dispatchEvent(new CustomEvent('yyp:restaurant-loaded', { detail: r }));
