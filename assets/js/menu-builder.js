@@ -42,6 +42,8 @@
     document.getElementById('mb-savebar').style.display = 'flex';
     document.getElementById('mb-restaurant').textContent = restaurant.name || 'Your Menu';
     document.getElementById('mb-preview').href = `/menu?slug=${encodeURIComponent(restaurant.slug)}`;
+    const qrLink = document.getElementById('mb-qr');
+    if (qrLink) qrLink.href = `/account/qr-poster.html?slug=${encodeURIComponent(restaurant.slug)}`;
 
     wire();
     render();

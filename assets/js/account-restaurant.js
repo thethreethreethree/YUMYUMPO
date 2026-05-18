@@ -137,6 +137,9 @@ function renderMenuQR() {
   if (linkInput) linkInput.value = url;
   if (openLink)  openLink.href = url;
 
+  const posterLink = document.getElementById('menu-qr-poster');
+  if (posterLink) posterLink.href = `/account/qr-poster.html?slug=${encodeURIComponent(restaurant.slug)}`;
+
   /* Build the QR (qrcodejs renders a <canvas> + <img> into the box). */
   box.innerHTML = '';
   if (typeof QRCode === 'function') {
