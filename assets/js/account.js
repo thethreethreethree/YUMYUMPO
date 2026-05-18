@@ -579,14 +579,14 @@
     }
     if (!state.ownsRestaurant) return;
 
-    const head = menu.querySelector('.yyp-avatar-menu-head');
-    if (!head) return;
+    const profileLink = menu.querySelector('.yyp-avatar-menu-item');
+    if (!profileLink) return;
     const link = document.createElement('a');
     link.href = rootHref() + 'account/restaurant.html';
     link.className = 'yyp-avatar-menu-item';
     link.setAttribute('data-owner-link', '');
     link.textContent = '🍴 My Restaurant';
-    head.insertAdjacentElement('afterend', link);
+    profileLink.insertAdjacentElement('afterend', link);
   }
 
 
