@@ -1176,7 +1176,7 @@ function resetPromoForm() {
   if (dz) {
     dz.classList.remove('has-img', 'is-dragover');
     dz.innerHTML = `<div class="dz-empty">
-        <div class="dz-icon">🖼️</div>
+        <svg class="dz-icon" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.7"/><path d="M21 15.5l-4.5-4.5L5 21.5"/></svg>
         <div class="dz-title">Click or drop a marketing image</div>
         <div class="dz-hint">Shown on your promo card · 16:9 looks best</div>
       </div>`;
