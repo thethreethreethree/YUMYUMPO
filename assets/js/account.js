@@ -577,6 +577,7 @@
         state.ownsRestaurant = !!row;
       } catch { state.ownsRestaurant = false; }
     }
+    applyOwnerCtas();
     if (!state.ownsRestaurant) return;
 
     const profileLink = menu.querySelector('.yyp-avatar-menu-item');
@@ -587,6 +588,16 @@
     link.setAttribute('data-owner-link', '');
     link.textContent = '🍴 My Restaurant';
     profileLink.insertAdjacentElement('afterend', link);
+  }
+
+  /* Owners see "Manage My Restaurant" instead of the "List My
+     Restaurant" CTAs. Each marked element carries its owner label. */
+  function applyOwnerCtas() {
+    if (!state.ownsRestaurant) return;
+    document.querySelectorAll('[data-owner-cta]').forEach(el => {
+      el.textContent = el.getAttribute('data-owner-cta');
+      el.setAttribute('href', rootHref() + 'account/restaurant.html');
+    });
   }
 
 
