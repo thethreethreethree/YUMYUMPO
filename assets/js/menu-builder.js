@@ -30,9 +30,23 @@
     const { data: { user } } = await c.auth.getUser();
     if (!user) return gate();
 
-    const { data, error } = await c.rpc('get_my_restaurant');
-    const row = Array.isArray(data) ? data[0] : data;
-    if (error || !row) return gate();
+    /* Admin override: if ?slug= present AND user is admin, edit that restaurant. */
+    const overrideSlug = new URLSearchParams(location.search).get('slug');
+    let row = null, adminEdit = false;
+
+    if (overrideSlug) {
+      let isAdmin = false;
+      try { const { data: a } = await c.rpc('is_admin'); isAdmin = !!a; } catch { /* not admin */ }
+      if (isAdmin) {
+        const { data } = await c.from('restaurants').select('*').ilike('slug', overrideSlug).maybeSingle();
+        if (data) { row = data; adminEdit = true; }
+      }
+    }
+    if (!row) {
+      const { data, error } = await c.rpc('get_my_restaurant');
+      row = Array.isArray(data) ? data[0] : data;
+      if (error || !row) return gate();
+    }
     restaurant = row;
 
     await loadMenu(c);
@@ -40,10 +54,16 @@
     document.getElementById('mb-loading').style.display = 'none';
     document.getElementById('mb-app').style.display = '';
     document.getElementById('mb-savebar').style.display = 'flex';
-    document.getElementById('mb-restaurant').textContent = restaurant.name || 'Your Menu';
+    document.getElementById('mb-restaurant').textContent =
+      (restaurant.name || 'Your Menu') + (adminEdit ? ' — admin edit' : '');
     document.getElementById('mb-preview').href = `/menu?slug=${encodeURIComponent(restaurant.slug)}`;
     const qrLink = document.getElementById('mb-qr');
     if (qrLink) qrLink.href = `/account/qr-poster.html?slug=${encodeURIComponent(restaurant.slug)}`;
+    /* keep the slug context on the back-to-dashboard link */
+    if (adminEdit) {
+      const back = document.querySelector('.mb-nav-back');
+      if (back) back.href = `/account/restaurant.html?slug=${encodeURIComponent(restaurant.slug)}`;
+    }
 
     wire();
     render();

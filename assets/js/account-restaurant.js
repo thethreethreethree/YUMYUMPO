@@ -68,6 +68,13 @@ async function init() {
   await loadHours(c, row.id);
   await loadVibeTags(c, row.id);
 
+  /* When an admin is editing via ?slug=, keep that context on the
+     Menu Builder link so they edit the same restaurant's menu. */
+  if (overrideSlug && isAdminUser) {
+    const mbLink = document.getElementById('dash-menu-builder-link');
+    if (mbLink) mbLink.href = `/account/menu-builder.html?slug=${encodeURIComponent(restaurant.slug)}`;
+  }
+
   populateForm();
   wireEvents();
   showMain();
