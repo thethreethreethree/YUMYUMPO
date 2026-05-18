@@ -201,8 +201,7 @@
             <button class="apps-filter-btn" onclick="copyWelcomeLink('${a.id}')">Copy</button>
           </div>
           <div class="flex flex-wrap gap-2 mt-2">
-            <a href="${esc(location.origin)}/welcome?token=${esc(a.onboard_token)}" target="_blank" rel="noopener" class="apps-filter-btn" style="text-decoration:none">Preview →</a>
-            <button class="apps-filter-btn" onclick="sendWelcomePage('${a.id}')" style="background:#FFD000;border-color:#FFD000;color:#111;font-weight:800">✉ Send Welcome Page</button>
+            <button class="apps-filter-btn" onclick="sendWelcomePage('${a.id}')" style="background:#FFD000;border-color:#FFD000;color:#111;font-weight:800">🎉 Open Welcome Page</button>
           </div>
         </div>` : ''}
       </div>
@@ -298,27 +297,13 @@
     setTimeout(() => { if (el.nextElementSibling) el.nextElementSibling.textContent = 'Copy'; }, 1500);
   };
 
-  /* Release the welcome page: copy the link + open a pre-filled
-     email to the new partner so the admin can send it in one tap. */
+  /* Release the welcome page — open the partner's welcome page
+     in a new tab so the admin can view and share it. */
   window.sendWelcomePage = function (id) {
     const a = allApplications.find(x => x.id === id);
     if (!a || !a.onboard_token) { alert('Approve this application first.'); return; }
-
     const url = location.origin + '/welcome?token=' + encodeURIComponent(a.onboard_token);
-    try { navigator.clipboard.writeText(url); } catch { /* clipboard blocked */ }
-
-    const name = (a.owner_name || '').trim();
-    const subject = encodeURIComponent('🎉 Welcome to YUMYUMPO!');
-    const body = encodeURIComponent(
-      'Hi' + (name ? ' ' + name : ' there') + ',\n\n' +
-      'Wonderful news — your YUMYUMPO application has been approved! 🎉\n\n' +
-      'We made you a little welcome page. Open it here:\n' + url + '\n\n' +
-      'It walks you through claiming your restaurant and getting set up.\n' +
-      'We can\'t wait to have you on board.\n\n' +
-      '— The YUMYUMPO team'
-    );
-    window.location.href = 'mailto:' + encodeURIComponent(a.contact_email) +
-      '?subject=' + subject + '&body=' + body;
+    window.open(url, '_blank', 'noopener');
   };
 
   function esc(s) {
