@@ -443,6 +443,7 @@
     state.session = null;
     state.profile = null;
     state.savedSlugs.clear();
+    state.ownsRestaurant = undefined;
     emit('yyp:account-signed-out');
     /* Redirect home if currently on a protected page */
     if (location.pathname.includes('/account/')) {
@@ -558,7 +559,34 @@
       });
       avatarWrap.querySelector('[data-signout]')?.addEventListener('click', signOut);
       document.addEventListener('click', () => avatarWrap.classList.remove('is-open'));
+      injectOwnerLink(avatarWrap);
     }
+  }
+
+  /* Restaurant owners get a "My Restaurant" shortcut at the top of
+     the avatar menu. The ownership check is cached on state. */
+  async function injectOwnerLink(avatarWrap) {
+    const menu = avatarWrap.querySelector('.yyp-avatar-menu');
+    if (!menu || menu.querySelector('[data-owner-link]')) return;
+
+    if (state.ownsRestaurant === undefined) {
+      try {
+        const c = client();
+        const { data } = await c.rpc('get_my_restaurant');
+        const row = Array.isArray(data) ? data[0] : data;
+        state.ownsRestaurant = !!row;
+      } catch { state.ownsRestaurant = false; }
+    }
+    if (!state.ownsRestaurant) return;
+
+    const head = menu.querySelector('.yyp-avatar-menu-head');
+    if (!head) return;
+    const link = document.createElement('a');
+    link.href = rootHref() + 'account/restaurant.html';
+    link.className = 'yyp-avatar-menu-item';
+    link.setAttribute('data-owner-link', '');
+    link.textContent = '🍴 My Restaurant';
+    head.insertAdjacentElement('afterend', link);
   }
 
 
