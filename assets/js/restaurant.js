@@ -706,6 +706,15 @@ function showNotFound(slug) {
 /* ══════════════════════════════════════════════════════════
    RENDER ORCHESTRATOR
 ══════════════════════════════════════════════════════════ */
+/* Module-level HTML escaper. Some render functions (e.g. renderMenu)
+   call esc() at top level — a couple of older functions also declare
+   their own local esc, which simply shadows this one. */
+function esc(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function renderPage(r) {
   window.__yypRestaurant = r;
   /* Each section renders in isolation — if one throws, the rest of
