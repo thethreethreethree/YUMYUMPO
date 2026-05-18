@@ -106,6 +106,13 @@
             </div>
             <span class="app-status ${a.status} shrink-0">${a.status}</span>
           </div>
+          ${(a.status === 'approved' || a.status === 'onboarded') && a.onboard_token ? `
+          <div class="pt-2 mt-1 border-t border-gray-100">
+            <button onclick="event.stopPropagation();sendWelcomePage('${a.id}')"
+              class="apps-filter-btn" style="background:#FFD000;border-color:#FFD000;color:#111;font-weight:800">
+              🎉 Send Welcome Page
+            </button>
+          </div>` : ''}
         </div>
       `;
     }).join('');
@@ -184,6 +191,18 @@
           <div class="flex gap-2 items-center">
             <input type="text" readonly value="${esc(location.origin)}/claim?token=${esc(a.onboard_token)}" class="form-input text-xs" style="flex:1" id="claim-link-${a.id}" />
             <button class="apps-filter-btn" onclick="copyClaimLink('${a.id}')">Copy</button>
+          </div>
+        </div>
+        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mt-3">
+          <p class="text-xs font-black text-yellow-800 uppercase tracking-wider mb-1">🎉 Partner welcome page</p>
+          <p class="text-xs text-gray-500 mb-2">A fun, celebratory page that greets your new partner by name. Release it once they're approved.</p>
+          <div class="flex gap-2 items-center">
+            <input type="text" readonly value="${esc(location.origin)}/welcome?token=${esc(a.onboard_token)}" class="form-input text-xs" style="flex:1" id="welcome-link-${a.id}" />
+            <button class="apps-filter-btn" onclick="copyWelcomeLink('${a.id}')">Copy</button>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <a href="${esc(location.origin)}/welcome?token=${esc(a.onboard_token)}" target="_blank" rel="noopener" class="apps-filter-btn" style="text-decoration:none">Preview →</a>
+            <button class="apps-filter-btn" onclick="sendWelcomePage('${a.id}')" style="background:#FFD000;border-color:#FFD000;color:#111;font-weight:800">✉ Send Welcome Page</button>
           </div>
         </div>` : ''}
       </div>
@@ -268,6 +287,38 @@
     try { navigator.clipboard.writeText(el.value); } catch { document.execCommand('copy'); }
     el.nextElementSibling && (el.nextElementSibling.textContent = 'Copied ✓');
     setTimeout(() => { if (el.nextElementSibling) el.nextElementSibling.textContent = 'Copy'; }, 1500);
+  };
+
+  window.copyWelcomeLink = function (id) {
+    const el = document.getElementById('welcome-link-' + id);
+    if (!el) return;
+    el.select();
+    try { navigator.clipboard.writeText(el.value); } catch { document.execCommand('copy'); }
+    el.nextElementSibling && (el.nextElementSibling.textContent = 'Copied ✓');
+    setTimeout(() => { if (el.nextElementSibling) el.nextElementSibling.textContent = 'Copy'; }, 1500);
+  };
+
+  /* Release the welcome page: copy the link + open a pre-filled
+     email to the new partner so the admin can send it in one tap. */
+  window.sendWelcomePage = function (id) {
+    const a = allApplications.find(x => x.id === id);
+    if (!a || !a.onboard_token) { alert('Approve this application first.'); return; }
+
+    const url = location.origin + '/welcome?token=' + encodeURIComponent(a.onboard_token);
+    try { navigator.clipboard.writeText(url); } catch { /* clipboard blocked */ }
+
+    const name = (a.owner_name || '').trim();
+    const subject = encodeURIComponent('🎉 Welcome to YUMYUMPO!');
+    const body = encodeURIComponent(
+      'Hi' + (name ? ' ' + name : ' there') + ',\n\n' +
+      'Wonderful news — your YUMYUMPO application has been approved! 🎉\n\n' +
+      'We made you a little welcome page. Open it here:\n' + url + '\n\n' +
+      'It walks you through claiming your restaurant and getting set up.\n' +
+      'We can\'t wait to have you on board.\n\n' +
+      '— The YUMYUMPO team'
+    );
+    window.location.href = 'mailto:' + encodeURIComponent(a.contact_email) +
+      '?subject=' + subject + '&body=' + body;
   };
 
   function esc(s) {

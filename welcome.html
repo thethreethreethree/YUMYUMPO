@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<link rel="icon" href="assets/images/favicon.png" type="image/png" />
+<meta name="theme-color" content="#FFD000" />
+<title>Welcome to YUMYUMPO! 🎉</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --yellow: #FFD000; --ink: #111111; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', sans-serif; color: var(--ink);
+    background: linear-gradient(160deg, #FFE680 0%, #FFD000 45%, #FFB800 100%);
+    min-height: 100%; overflow-x: hidden;
+    display: flex; align-items: center; justify-content: center;
+    padding: 32px 18px;
+  }
+  .font-d { font-family: 'Space Grotesk', sans-serif; }
+
+  /* ── confetti ── */
+  #confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+  .cf {
+    position: absolute; top: -24px; width: 10px; height: 14px; border-radius: 2px;
+    opacity: .9; animation: fall linear infinite;
+  }
+  @keyframes fall {
+    0%   { transform: translateY(-10vh) rotate(0deg); }
+    100% { transform: translateY(110vh) rotate(720deg); }
+  }
+
+  /* ── card ── */
+  .card {
+    position: relative; z-index: 2; width: 100%; max-width: 540px;
+    background: #fff; border-radius: 30px; padding: 44px 34px 38px;
+    box-shadow: 0 30px 70px rgba(0,0,0,.28);
+    text-align: center;
+    animation: pop .6s cubic-bezier(.16,1,.3,1) both;
+  }
+  @keyframes pop { 0% { opacity: 0; transform: scale(.86) translateY(24px); } 100% { opacity: 1; transform: none; } }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--ink); color: var(--yellow); font-weight: 800;
+    font-size: .72rem; letter-spacing: 1.4px; text-transform: uppercase;
+    padding: 7px 15px; border-radius: 999px; margin-bottom: 22px;
+  }
+  .party {
+    font-size: 4.6rem; line-height: 1; display: inline-block;
+    animation: bounce 1.6s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0) rotate(-6deg); }
+    50%     { transform: translateY(-14px) rotate(6deg); }
+  }
+  .headline {
+    font-weight: 800; font-size: 2.05rem; line-height: 1.08;
+    letter-spacing: -.5px; margin: 14px 0 6px;
+  }
+  .headline .hl { color: #C9A100; }
+  .hero-name {
+    font-weight: 800; font-size: 1.65rem; line-height: 1.15;
+    letter-spacing: -.4px; margin: 18px 0 4px;
+    background: linear-gradient(100deg, #111, #333); -webkit-background-clip: text;
+  }
+  .hero-rule { width: 54px; height: 5px; background: var(--yellow); border-radius: 4px; margin: 12px auto 0; }
+  .blurb {
+    font-size: 1rem; color: #555; line-height: 1.6; margin: 20px auto 0; max-width: 420px;
+  }
+  .blurb b { color: #111; font-weight: 700; }
+
+  /* ── what's next ── */
+  .next {
+    margin-top: 28px; text-align: left;
+    background: #FFFBE6; border: 1.5px solid #FFE680; border-radius: 18px;
+    padding: 18px 18px 6px;
+  }
+  .next-title {
+    font-weight: 800; font-size: .76rem; letter-spacing: 1.2px;
+    text-transform: uppercase; color: #B8870B; margin-bottom: 12px;
+  }
+  .step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+  .step .n {
+    flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--ink); color: var(--yellow); font-weight: 800; font-size: .95rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step .t { font-size: .9rem; color: #444; line-height: 1.45; padding-top: 3px; }
+  .step .t b { color: #111; font-weight: 700; }
+
+  .cta {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    margin-top: 26px; width: 100%;
+    background: var(--ink); color: #fff; font-weight: 800; font-size: 1.02rem;
+    padding: 16px 26px; border-radius: 16px; text-decoration: none;
+    transition: transform .12s ease, box-shadow .12s ease;
+    box-shadow: 0 10px 26px rgba(0,0,0,.22);
+  }
+  .cta:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(0,0,0,.28); }
+  .cta .arrow { font-size: 1.1rem; }
+
+  .foot {
+    margin-top: 22px; font-size: .76rem; color: #999; font-weight: 600;
+  }
+  .foot .brand { color: #111; font-weight: 800; letter-spacing: .5px; }
+  .foot .brand .dot { color: #C9A100; }
+
+  /* ── states ── */
+  .msg {
+    position: relative; z-index: 2; background: #fff; border-radius: 24px;
+    padding: 40px 30px; text-align: center; max-width: 420px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.22);
+  }
+  .msg .e { font-size: 2.6rem; }
+  .msg h2 { font-weight: 800; font-size: 1.25rem; margin: 12px 0 6px; }
+  .msg p { color: #666; font-size: .92rem; line-height: 1.55; }
+  .hidden { display: none !important; }
+
+  @media (max-width: 420px) {
+    .card { padding: 36px 22px 30px; }
+    .headline { font-size: 1.7rem; }
+    .hero-name { font-size: 1.4rem; }
+    .party { font-size: 3.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="confetti"></div>
+
+<!-- loading -->
+<div id="state-loading" class="msg">
+  <div class="e">🎉</div>
+  <h2>Getting things ready…</h2>
+  <p>One moment while we roll out the welcome mat.</p>
+</div>
+
+<!-- error -->
+<div id="state-error" class="msg hidden">
+  <div class="e">🤔</div>
+  <h2>This welcome link isn't valid</h2>
+  <p>Double-check the link from your YUMYUMPO contact, or reach out to us and we'll sort it right away.</p>
+</div>
+
+<!-- welcome -->
+<div id="state-welcome" class="card hidden">
+  <span class="badge">🌟 You're officially in</span>
+  <div><span class="party">🎉</span></div>
+  <h1 class="headline font-d">Welcome to the <span class="hl">YUMYUMPO</span> family!</h1>
+
+  <div class="hero-name font-d" id="w-name">Partner</div>
+  <div class="hero-rule"></div>
+
+  <p class="blurb" id="w-blurb"></p>
+
+  <div class="next">
+    <div class="next-title">🚀 What happens next</div>
+    <div class="step">
+      <div class="n">1</div>
+      <div class="t"><b>Claim your restaurant.</b> Tap the button below to set your password and unlock your owner dashboard.</div>
+    </div>
+    <div class="step">
+      <div class="n">2</div>
+      <div class="t"><b>Build your digital menu.</b> Add dishes, photos &amp; prices — or snap a photo of your printed menu and let our AI do it.</div>
+    </div>
+    <div class="step">
+      <div class="n">3</div>
+      <div class="t"><b>Get discovered.</b> You'll show up across Discover, the Vibe Map, and Ask Fred — completely free during early access.</div>
+    </div>
+  </div>
+
+  <a class="cta" id="w-cta" href="#">
+    <span>Let's get started</span><span class="arrow">→</span>
+  </a>
+
+  <p class="foot">With excitement,<br/>the <span class="brand font-d">YUM<span class="dot">YUM</span>PO</span> team 💛</p>
+</div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/supabase-client.js?v=v25"></script>
+<script>
+(function () {
+  /* confetti */
+  var cc = document.getElementById('confetti');
+  var colors = ['#FFD000', '#111111', '#ffffff', '#FF9E2C', '#C9A100'];
+  for (var i = 0; i < 46; i++) {
+    var p = document.createElement('div');
+    p.className = 'cf';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.background = colors[i % colors.length];
+    p.style.animationDuration = (4.5 + Math.random() * 5) + 's';
+    p.style.animationDelay = (-Math.random() * 8) + 's';
+    p.style.width = (6 + Math.random() * 8) + 'px';
+    p.style.height = (8 + Math.random() * 10) + 'px';
+    if (i % 3 === 0) p.style.borderRadius = '50%';
+    cc.appendChild(p);
+  }
+
+  var token = new URLSearchParams(location.search).get('token');
+  var elLoad = document.getElementById('state-loading');
+  var elErr  = document.getElementById('state-error');
+  var elWin  = document.getElementById('state-welcome');
+
+  function showError() {
+    elLoad.classList.add('hidden');
+    elWin.classList.add('hidden');
+    elErr.classList.remove('hidden');
+  }
+
+  function esc(s) {
+    return String(s || '').replace(/[&<>"]/g, function (c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c];
+    });
+  }
+
+  function render(info) {
+    var restaurant = (info.restaurant_name || '').replace(/^\[Contact\]\s*/i, '').trim();
+    var owner = (info.owner_name || '').trim();
+
+    /* hero line — restaurant if we have it, else the owner */
+    document.getElementById('w-name').textContent = restaurant || owner || 'Partner';
+
+    /* personalised blurb — use both names when available */
+    var who;
+    if (owner && restaurant)      who = '<b>' + esc(owner) + '</b> and <b>' + esc(restaurant) + '</b>';
+    else if (restaurant)          who = '<b>' + esc(restaurant) + '</b>';
+    else if (owner)               who = '<b>' + esc(owner) + '</b>';
+    else                          who = 'you';
+    document.getElementById('w-blurb').innerHTML =
+      'We are absolutely thrilled to have ' + who + ' on board. Your application has been ' +
+      '<b>approved</b> — and the whole team can\'t wait to help diners and travellers fall in love ' +
+      'with your food. Let\'s make something delicious happen! 🍽️';
+
+    var cta = document.getElementById('w-cta');
+    cta.href = '/claim?token=' + encodeURIComponent(token);
+
+    elLoad.classList.add('hidden');
+    elWin.classList.remove('hidden');
+  }
+
+  function start() {
+    if (!token) return showError();
+    var c = window.YYP && window.YYP.client;
+    if (!c) return showError();
+    c.rpc('get_welcome_info', { p_token: token }).then(function (res) {
+      var row = Array.isArray(res.data) ? res.data[0] : res.data;
+      if (res.error || !row) return showError();
+      render(row);
+    }).catch(showError);
+  }
+
+  if (window.YYP && window.YYP.ready) start();
+  else document.addEventListener('yyp:ready', start, { once: true });
+  setTimeout(function () { if (!elLoad.classList.contains('hidden')) start(); }, 1500);
+})();
+</script>
+</body>
+</html>
