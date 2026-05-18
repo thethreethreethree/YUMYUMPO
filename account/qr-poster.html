@@ -51,97 +51,151 @@
     box-shadow: 0 20px 60px rgba(0,0,0,.5); overflow: hidden; position: relative;
   }
 
+  /* QR corner brackets — shared */
+  .qbr { position: absolute; border: solid #FFD000; }
+  .qbr.tl { border-width: 3px 0 0 3px; }
+  .qbr.tr { border-width: 3px 3px 0 0; }
+  .qbr.bl { border-width: 0 0 3px 3px; }
+  .qbr.br { border-width: 0 3px 3px 0; }
+
   /* ===== Layout A — 4 quarter posters ===== */
   .quad { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
           height: 100%; }
   .quad .cut { outline: 1px dashed #c9c9c9; outline-offset: -.5px; }
   .qp {
-    position: relative; padding: 9mm 8mm; display: flex; flex-direction: column;
-    align-items: center; text-align: center; height: 100%; overflow: hidden;
+    position: relative; height: 100%; overflow: hidden; background: #fff;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; padding: 0 7mm 6mm;
   }
-  .qp-brand { font-weight: 800; font-size: 13pt; letter-spacing: .5px; color: #111; }
-  .qp-brand b { color: #111; }
-  .qp-brand .dot { color: #FFD000; }
-  .qp-rule { width: 34px; height: 4px; background: #FFD000; border-radius: 3px; margin: 5px 0 0; }
+  /* decorative soft blob bottom-right */
+  .qp::before {
+    content: ''; position: absolute; width: 50mm; height: 50mm; border-radius: 50%;
+    background: rgba(255,208,0,.14); bottom: -22mm; left: -20mm;
+  }
+  /* yellow angled header band */
+  .qp-band {
+    width: 100%; background: #FFD000; color: #111; padding: 6mm 4mm 9mm;
+    clip-path: polygon(0 0, 100% 0, 100% 72%, 50% 100%, 0 72%);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .qp-band .bw { font-weight: 800; font-size: 15pt; letter-spacing: .5px; }
+  .qp-band .bw .dot { color: #fff; }
+  .qp-band .bs {
+    font-size: 6.4pt; font-weight: 800; letter-spacing: 1.6px;
+    text-transform: uppercase; margin-top: 1mm; opacity: .62;
+  }
   .qp-head {
-    font-weight: 800; font-size: 19pt; line-height: 1.05; color: #111;
-    margin-top: 9mm; letter-spacing: -.5px;
+    position: relative; z-index: 2; font-weight: 800; font-size: 17pt;
+    line-height: 1.08; color: #111; margin-top: 6mm; letter-spacing: -.4px;
   }
-  .qp-sub { font-size: 8.5pt; color: #6b6b6b; margin-top: 3mm; font-weight: 500; }
-  .qp-qr {
-    margin-top: auto; margin-bottom: auto;
-    background: #fff; border: 3px solid #111; border-radius: 14px;
-    padding: 4mm; box-shadow: 6px 6px 0 #FFD000;
+  .qp-head .hl { color: #C9A100; }
+  .qp-qr-wrap { position: relative; z-index: 2; margin: 6mm 0 0; }
+  .qp-qr { background: #fff; border: 3px solid #111; border-radius: 12px; padding: 3.5mm; }
+  .qp-qr img { display: block; width: 35mm; height: 35mm; }
+  .qp-qr-wrap .qbr { width: 6mm; height: 6mm; }
+  .qp-qr-wrap .qbr.tl { top: -2.5mm; left: -2.5mm; }
+  .qp-qr-wrap .qbr.tr { top: -2.5mm; right: -2.5mm; }
+  .qp-qr-wrap .qbr.bl { bottom: -2.5mm; left: -2.5mm; }
+  .qp-qr-wrap .qbr.br { bottom: -2.5mm; right: -2.5mm; }
+  .qp-scan {
+    position: relative; z-index: 2; font-size: 7.4pt; font-weight: 700;
+    color: #8a8a8a; margin-top: 3.5mm; letter-spacing: .2px;
   }
-  .qp-qr img { display: block; width: 38mm; height: 38mm; }
   .qp-name {
-    font-weight: 800; font-size: 13pt; color: #111; margin-top: 6mm;
+    position: relative; z-index: 2; margin-top: auto; background: #111; color: #fff;
+    font-weight: 800; font-size: 11pt; padding: 2.6mm 6mm; border-radius: 999px;
     max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .qp-foot { font-size: 7.5pt; color: #9a9a9a; margin-top: 2mm; font-weight: 600; }
-  .qp-tag {
-    margin-top: 4mm; background: #FFD000; color: #111; font-weight: 800;
-    font-size: 8pt; padding: 2mm 4mm; border-radius: 999px; letter-spacing: .3px;
+  .qp-foot {
+    position: relative; z-index: 2; font-size: 6.8pt; font-weight: 800;
+    color: #aaa; margin-top: 2.6mm; letter-spacing: .4px; text-transform: uppercase;
   }
+  .qp-foot b { color: #C9A100; }
 
   /* ===== Layout B — single showcase poster ===== */
-  .solo { height: 100%; display: flex; flex-direction: column; }
+  .solo { height: 100%; display: flex; flex-direction: column; background: #fff; }
   .solo-hero {
-    position: relative; height: 118mm; background: #111 center/cover no-repeat;
+    position: relative; height: 95mm; background: #111 center/cover no-repeat;
     display: flex; flex-direction: column; align-items: center;
-    justify-content: flex-end; padding: 0 16mm 14mm; text-align: center;
+    justify-content: flex-end; padding: 0 16mm 12mm; text-align: center;
   }
   .solo-hero::after {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.4) 45%, rgba(0,0,0,.82) 100%);
+    background: linear-gradient(180deg, rgba(0,0,0,.2) 0%, rgba(0,0,0,.38) 45%, rgba(0,0,0,.85) 100%);
   }
   .solo-hero > * { position: relative; z-index: 2; }
   .solo-topbrand {
-    position: absolute; top: 9mm; left: 0; right: 0; z-index: 3;
-    color: #fff; font-weight: 800; font-size: 13pt; letter-spacing: 1px;
+    position: absolute; top: 8mm; left: 0; right: 0; z-index: 3;
+    color: #fff; font-weight: 800; font-size: 13pt; letter-spacing: 1.5px;
   }
   .solo-topbrand .dot { color: #FFD000; }
   .solo-logo {
-    width: 26mm; height: 26mm; border-radius: 50%; background: #fff center/cover no-repeat;
-    border: 4px solid #FFD000; box-shadow: 0 8px 24px rgba(0,0,0,.5);
-    display: flex; align-items: center; justify-content: center; font-size: 30pt;
-    margin-bottom: 6mm;
+    width: 24mm; height: 24mm; border-radius: 50%; background: #fff center/cover no-repeat;
+    border: 4px solid #FFD000; box-shadow: 0 8px 24px rgba(0,0,0,.55);
+    display: flex; align-items: center; justify-content: center; font-size: 26pt;
+    margin-bottom: 5mm;
   }
   .solo-name {
-    font-weight: 800; font-size: 30pt; color: #fff; line-height: 1.05;
-    letter-spacing: -.5px; text-shadow: 0 2px 14px rgba(0,0,0,.5);
+    font-weight: 800; font-size: 28pt; color: #fff; line-height: 1.04;
+    letter-spacing: -.5px; text-shadow: 0 2px 14px rgba(0,0,0,.55);
   }
   .solo-cuisine {
     margin-top: 4mm; color: #111; background: #FFD000; font-weight: 800;
-    font-size: 10pt; padding: 2mm 6mm; border-radius: 999px; display: inline-block;
-    letter-spacing: .4px;
+    font-size: 9.5pt; padding: 2mm 6mm; border-radius: 999px; display: inline-block;
+    letter-spacing: .5px; text-transform: uppercase;
+  }
+  /* yellow angled CTA strip */
+  .solo-strip {
+    background: #FFD000; color: #111; text-align: center; padding: 5mm 12mm 8mm;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%); margin-top: -1mm;
+  }
+  .solo-strip .st { font-weight: 800; font-size: 16pt; letter-spacing: -.3px; }
+  .solo-strip .ss {
+    font-size: 8pt; font-weight: 800; letter-spacing: 1.8px;
+    text-transform: uppercase; opacity: .6; margin-top: 1.5mm;
   }
   .solo-body {
     flex: 1; position: relative; background: #fff;
     display: flex; flex-direction: column; align-items: center;
-    justify-content: center; padding: 12mm 16mm; overflow: hidden;
+    justify-content: center; padding: 4mm 14mm 8mm; overflow: hidden;
   }
   .solo-body::before, .solo-body::after {
     content: ''; position: absolute; border-radius: 50%;
-    background: radial-gradient(circle, rgba(255,208,0,.32), rgba(255,208,0,0) 70%);
+    background: radial-gradient(circle, rgba(255,208,0,.34), rgba(255,208,0,0) 70%);
   }
-  .solo-body::before { width: 80mm; height: 80mm; top: -26mm; left: -28mm; }
-  .solo-body::after  { width: 70mm; height: 70mm; bottom: -24mm; right: -24mm; }
-  .solo-cta {
-    position: relative; z-index: 2; font-weight: 800; font-size: 17pt;
-    color: #111; letter-spacing: -.3px; text-align: center;
-  }
-  .solo-cta .em { color: #C9A100; }
-  .solo-cta-sub { font-size: 9.5pt; color: #6b6b6b; font-weight: 500; margin-top: 2mm;
-    position: relative; z-index: 2; }
+  .solo-body::before { width: 82mm; height: 82mm; top: -28mm; left: -30mm; }
+  .solo-body::after  { width: 72mm; height: 72mm; bottom: -26mm; right: -26mm; }
+  .solo-qr-wrap { position: relative; z-index: 2; }
   .solo-qr {
-    position: relative; z-index: 2; margin: 8mm 0;
-    background: #fff; border: 5px solid #111; border-radius: 22px;
-    padding: 6mm; box-shadow: 10px 10px 0 #FFD000;
+    background: #fff; border: 5px solid #111; border-radius: 20px; padding: 5mm;
+    box-shadow: 10px 10px 0 #FFD000;
   }
-  .solo-qr img { display: block; width: 62mm; height: 62mm; }
+  .solo-qr img { display: block; width: 54mm; height: 54mm; }
+  .solo-qr-wrap .qbr { width: 11mm; height: 11mm; }
+  .solo-qr-wrap .qbr.tl { top: -5mm; left: -5mm; }
+  .solo-qr-wrap .qbr.tr { top: -5mm; right: -5mm; }
+  .solo-qr-wrap .qbr.bl { bottom: -5mm; left: -5mm; }
+  .solo-qr-wrap .qbr.br { bottom: -5mm; right: -5mm; }
+  .solo-scan {
+    position: relative; z-index: 2; font-weight: 800; font-size: 11pt;
+    color: #111; margin-top: 6mm; letter-spacing: .2px;
+  }
+  /* feature chips */
+  .solo-feats {
+    position: relative; z-index: 2; display: flex; gap: 3mm; margin-top: 7mm;
+  }
+  .solo-feat {
+    background: #FFFBE6; border: 1.6px solid #FFD000; border-radius: 11px;
+    padding: 3.2mm 1mm; width: 37mm; text-align: center;
+  }
+  .solo-feat .fi { font-size: 15pt; line-height: 1; }
+  .solo-feat .fl {
+    font-size: 7.4pt; font-weight: 800; color: #111; margin-top: 1.6mm;
+    letter-spacing: .2px;
+  }
+  /* steps */
   .solo-steps {
-    position: relative; z-index: 2; display: flex; gap: 8mm; margin-top: 2mm;
+    position: relative; z-index: 2; display: flex; gap: 7mm; margin-top: 8mm;
   }
   .solo-step { display: flex; flex-direction: column; align-items: center; max-width: 38mm; }
   .solo-step .n {
@@ -149,15 +203,15 @@
     font-weight: 800; font-size: 11pt; display: flex; align-items: center;
     justify-content: center; margin-bottom: 2mm;
   }
-  .solo-step .t { font-size: 8pt; color: #444; font-weight: 600; text-align: center; }
+  .solo-step .t { font-size: 8pt; color: #555; font-weight: 700; text-align: center; }
   .solo-foot {
     background: #111; color: #fff; padding: 7mm 16mm;
     display: flex; align-items: center; justify-content: space-between;
   }
-  .solo-foot .fb { font-weight: 800; font-size: 13pt; letter-spacing: 1px; }
+  .solo-foot .fb { font-weight: 800; font-size: 14pt; letter-spacing: 1.5px; }
   .solo-foot .fb .dot { color: #FFD000; }
   .solo-foot .ft { font-size: 8.5pt; color: #bdbdbd; font-weight: 500; text-align: right; }
-  .solo-foot .ft b { color: #FFD000; font-weight: 700; }
+  .solo-foot .ft b { color: #FFD000; font-weight: 800; }
 
   /* ── loading / error ── */
   .msg { color: #ddd; text-align: center; padding: 80px 20px; font-size: .95rem; }
@@ -233,17 +287,24 @@
     return img ? img.src : '';
   }
 
+  var BRACKETS = '<span class="qbr tl"></span><span class="qbr tr"></span>' +
+                 '<span class="qbr bl"></span><span class="qbr br"></span>';
+
   function quarterHTML() {
     return '' +
       '<div class="qp">' +
-        '<div class="qp-brand">YUM<span class="dot">YUM</span>PO</div>' +
-        '<div class="qp-rule"></div>' +
-        '<div class="qp-head">Scan for<br>our menu</div>' +
-        '<div class="qp-sub">Photos · prices · best sellers — all on your phone</div>' +
-        '<div class="qp-qr"><img src="' + qrDataUrl + '" alt="Menu QR"></div>' +
+        '<div class="qp-band">' +
+          '<div class="bw font-d">YUMYUM<span class="dot">PO</span></div>' +
+          '<div class="bs">Discover · Scan · Savor</div>' +
+        '</div>' +
+        '<div class="qp-head font-d">Our menu is<br><span class="hl">on your phone</span></div>' +
+        '<div class="qp-qr-wrap">' +
+          '<div class="qp-qr"><img src="' + qrDataUrl + '" alt="Menu QR"></div>' +
+          BRACKETS +
+        '</div>' +
+        '<div class="qp-scan">📷 Point your camera to scan</div>' +
         '<div class="qp-name">' + esc(rest.name) + '</div>' +
-        '<div class="qp-tag">📲 No app needed</div>' +
-        '<div class="qp-foot">Powered by YUMYUMPO</div>' +
+        '<div class="qp-foot">Free · No app needed · <b>Powered by YUMYUMPO</b></div>' +
       '</div>';
   }
 
@@ -273,15 +334,27 @@
     root.innerHTML =
       '<div class="sheet"><div class="solo">' +
         '<div class="solo-hero" style="' + heroStyle + '">' +
-          '<div class="solo-topbrand">YUM<span class="dot">YUM</span>PO</div>' +
+          '<div class="solo-topbrand font-d">YUMYUM<span class="dot">PO</span></div>' +
           '<div class="solo-logo" ' + logoInner + '>' + logoEmoji + '</div>' +
           '<div class="solo-name font-d">' + esc(rest.name) + '</div>' +
           (cuisine ? '<div><span class="solo-cuisine">' + esc(cuisine) + '</span></div>' : '') +
         '</div>' +
+        '<div class="solo-strip">' +
+          '<div class="st font-d">Scan for our digital menu ↓</div>' +
+          '<div class="ss">Point your phone camera at the code</div>' +
+        '</div>' +
         '<div class="solo-body">' +
-          '<div class="solo-cta font-d">Hungry? <span class="em">Scan our digital menu</span></div>' +
-          '<div class="solo-cta-sub">See every dish with photos, prices &amp; what people love</div>' +
-          '<div class="solo-qr"><img src="' + qrDataUrl + '" alt="Menu QR"></div>' +
+          '<div class="solo-qr-wrap">' +
+            '<div class="solo-qr"><img src="' + qrDataUrl + '" alt="Menu QR"></div>' +
+            BRACKETS +
+          '</div>' +
+          '<div class="solo-scan">📷 No app needed — just your camera</div>' +
+          '<div class="solo-feats">' +
+            '<div class="solo-feat"><div class="fi">📸</div><div class="fl">Real food photos</div></div>' +
+            '<div class="solo-feat"><div class="fi">💸</div><div class="fl">Live prices</div></div>' +
+            '<div class="solo-feat"><div class="fi">⭐</div><div class="fl">Best sellers</div></div>' +
+            '<div class="solo-feat"><div class="fi">🔄</div><div class="fl">Always updated</div></div>' +
+          '</div>' +
           '<div class="solo-steps">' +
             '<div class="solo-step"><div class="n">1</div><div class="t">Open your camera</div></div>' +
             '<div class="solo-step"><div class="n">2</div><div class="t">Point at the code</div></div>' +
@@ -289,7 +362,7 @@
           '</div>' +
         '</div>' +
         '<div class="solo-foot">' +
-          '<div class="fb font-d">YUM<span class="dot">YUM</span>PO</div>' +
+          '<div class="fb font-d">YUMYUM<span class="dot">PO</span></div>' +
           '<div class="ft">The Philippines’ restaurant discovery app<br><b>Discover · Scan · Savor</b></div>' +
         '</div>' +
       '</div></div>';
