@@ -909,7 +909,26 @@ function renderOrders() {
 function orderRowHTML(o) {
   const ageMin = Math.max(1, Math.round((Date.now() - new Date(o.created_at).getTime()) / 60000));
   const items  = Array.isArray(o.items) ? o.items : [];
-  const itemsLine = items.map(it => `${it.qty || 1}× ${escapeHtml(it.name)}`).join(', ');
+  const anyItemDetails = items.some(it => it.assign_to || it.notes || it.allergies);
+  /* Compact line by default; expand to a per-item list when at least
+     one item carries assign_to / notes / allergies so the kitchen
+     can actually act on them. */
+  const itemsLine = anyItemDetails
+    ? '<ul style="margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px">'
+      + items.map(it => {
+          const head = `<strong>${it.qty || 1}×</strong> ${escapeHtml(it.name)}`;
+          const tags = [];
+          if (it.assign_to) tags.push(`<span style="font-size:0.7rem;background:#FFFBE6;border:1px solid #FFD000;color:#111;padding:1px 7px;border-radius:999px">for ${escapeHtml(it.assign_to)}</span>`);
+          if (it.allergies) tags.push(`<span style="font-size:0.7rem;background:#FEE2E2;color:#B91C1C;padding:1px 7px;border-radius:999px">⚠️ ${escapeHtml(it.allergies)}</span>`);
+          const note = it.notes ? `<div style="font-size:0.74rem;color:#555;font-style:italic;margin-top:2px">"${escapeHtml(it.notes)}"</div>` : '';
+          return `<li style="font-size:0.82rem;color:#111;line-height:1.35">
+            ${head}
+            ${tags.length ? `<span style="display:inline-flex;gap:4px;margin-left:6px;flex-wrap:wrap">${tags.join(' ')}</span>` : ''}
+            ${note}
+          </li>`;
+        }).join('')
+      + '</ul>'
+    : items.map(it => `${it.qty || 1}× ${escapeHtml(it.name)}`).join(', ');
   const allergyChips = (o.allergens || []).map(a => `<span style="background:#FEE2E2;color:#B91C1C;font-size:0.62rem;font-weight:800;padding:2px 7px;border-radius:999px">${escapeHtml(a)}</span>`).join(' ');
   const methodIcon = o.delivery_method === 'delivery' ? '🛵' : o.delivery_method === 'dinein' ? '🍽' : '🥡';
   const statusBg = { pending:'#FEF3C7', acknowledged:'#DBEAFE', quoted:'#FFD000', accepted:'#DCFCE7' }[o.status] || '#F3F3F3';
@@ -923,7 +942,7 @@ function orderRowHTML(o) {
         </div>
         <span style="background:${statusBg};color:#111;font-size:0.62rem;font-weight:800;padding:3px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap">${o.status}</span>
       </div>
-      <p style="font-size:0.82rem;color:#111;margin:6px 0">${escapeHtml(itemsLine) || '<em>No items</em>'}</p>
+      <div style="font-size:0.82rem;color:#111;margin:6px 0">${itemsLine || '<em>No items</em>'}</div>
       ${o.delivery_address ? `<p style="font-size:0.74rem;color:#6B6B6B">📍 ${escapeHtml(o.delivery_address)}</p>` : ''}
       ${allergyChips ? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">⚠️ ${allergyChips}</div>` : ''}
       ${o.notes ? `<p style="font-size:0.78rem;color:#555;font-style:italic;margin-top:6px">"${escapeHtml(o.notes)}"</p>` : ''}

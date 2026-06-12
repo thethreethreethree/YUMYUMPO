@@ -173,24 +173,56 @@ function renderModal(r, user) {
   } else {
     itemsWrap.innerHTML = menuItems.map((it, i) => `
       <div class="yyp-order-item" data-i="${i}">
-        <div class="yyp-order-item-info">
-          <div class="yyp-order-item-name">${escapeHtml(it.name)}</div>
-          <div class="yyp-order-item-meta">${it.category ? escapeHtml(it.category) + ' · ' : ''}${escapeHtml(it.price || '')}</div>
+        <div class="yyp-order-item-row">
+          <div class="yyp-order-item-info">
+            <div class="yyp-order-item-name">${escapeHtml(it.name)}</div>
+            <div class="yyp-order-item-meta">${it.category ? escapeHtml(it.category) + ' · ' : ''}${escapeHtml(it.price || '')}</div>
+          </div>
+          <button type="button" class="yyp-order-details-toggle" aria-expanded="false">+ Details</button>
+          <div class="yyp-order-qty">
+            <button type="button" class="yyp-order-qty-btn" data-delta="-1">−</button>
+            <input type="number" class="yyp-order-qty-input" value="0" min="0" max="20" />
+            <button type="button" class="yyp-order-qty-btn" data-delta="1">+</button>
+          </div>
         </div>
-        <div class="yyp-order-qty">
-          <button type="button" class="yyp-order-qty-btn" data-delta="-1">−</button>
-          <input type="number" class="yyp-order-qty-input" value="0" min="0" max="20" />
-          <button type="button" class="yyp-order-qty-btn" data-delta="1">+</button>
-        </div>
+        ${itemDetailsHTML()}
       </div>`).join('');
 
     itemsWrap.addEventListener('click', e => {
+      const toggle = e.target.closest('.yyp-order-details-toggle');
+      if (toggle) {
+        const row = toggle.closest('.yyp-order-item');
+        const panel = row?.querySelector('.yyp-order-item-details');
+        if (!panel) return;
+        const opening = panel.hasAttribute('hidden');
+        if (opening) {
+          panel.removeAttribute('hidden');
+          toggle.setAttribute('aria-expanded', 'true');
+          toggle.textContent = '− Hide details';
+        } else {
+          panel.setAttribute('hidden', '');
+          toggle.setAttribute('aria-expanded', 'false');
+          toggle.textContent = filledCount(row) > 0 ? '✎ Edit details' : '+ Details';
+        }
+        return;
+      }
       const btn = e.target.closest('.yyp-order-qty-btn');
       if (!btn) return;
       const row = btn.closest('.yyp-order-item');
       const input = row.querySelector('.yyp-order-qty-input');
       const delta = parseInt(btn.dataset.delta, 10);
       input.value = Math.max(0, Math.min(20, (parseInt(input.value, 10) || 0) + delta));
+    });
+
+    /* Reflect "filled" state on the toggle so the customer sees which
+       items already carry per-item details after they collapse it. */
+    itemsWrap.addEventListener('input', e => {
+      const detail = e.target.closest('.yyp-order-detail');
+      if (!detail) return;
+      const row = detail.closest('.yyp-order-item');
+      const toggle = row.querySelector('.yyp-order-details-toggle');
+      if (!toggle) return;
+      toggle.classList.toggle('is-filled', filledCount(row) > 0);
     });
   }
 
@@ -199,11 +231,13 @@ function renderModal(r, user) {
     const wrap = document.createElement('div');
     wrap.className = 'yyp-order-item yyp-order-item-custom';
     wrap.innerHTML = `
-      <input type="text" class="yyp-order-custom-name" placeholder="Item name (e.g. 'Whatever you recommend')" />
-      <div class="yyp-order-qty">
-        <button type="button" class="yyp-order-qty-btn" data-delta="-1">−</button>
-        <input type="number" class="yyp-order-qty-input" value="1" min="0" max="20" />
-        <button type="button" class="yyp-order-qty-btn" data-delta="1">+</button>
+      <div class="yyp-order-item-row">
+        <input type="text" class="yyp-order-custom-name" placeholder="Item name (e.g. 'Whatever you recommend')" />
+        <div class="yyp-order-qty">
+          <button type="button" class="yyp-order-qty-btn" data-delta="-1">−</button>
+          <input type="number" class="yyp-order-qty-input" value="1" min="0" max="20" />
+          <button type="button" class="yyp-order-qty-btn" data-delta="1">+</button>
+        </div>
       </div>`;
     itemsWrap.appendChild(wrap);
     wrap.querySelectorAll('.yyp-order-qty-btn').forEach(b => b.addEventListener('click', () => {
@@ -260,15 +294,44 @@ function collectItems(wrap, menuItems) {
     const qty = parseInt(row.querySelector('.yyp-order-qty-input').value, 10) || 0;
     if (qty <= 0) return;
     const idx = row.dataset.i;
+    const extras = collectItemDetails(row);
     if (idx != null) {
       const it = menuItems[+idx];
-      out.push({ name: it.name, price: it.price || null, qty });
+      out.push({ name: it.name, price: it.price || null, qty, ...extras });
     } else {
       const name = row.querySelector('.yyp-order-custom-name')?.value?.trim();
-      if (name) out.push({ name, price: null, qty });
+      if (name) out.push({ name, price: null, qty, ...extras });
     }
   });
   return out;
+}
+
+/* Per-item details (assign-to / notes / allergies) — same input
+   styling as the order-wide fields for visual consistency. */
+function itemDetailsHTML() {
+  return `
+    <div class="yyp-order-item-details" hidden>
+      <label class="yyp-order-label">Assign this item to <span class="yyp-order-hint">(optional)</span></label>
+      <input type="text" class="yyp-order-input yyp-order-detail" data-detail="assign_to" placeholder="e.g. Sarah" maxlength="60" />
+      <label class="yyp-order-label" style="margin-top:10px">Special notes <span class="yyp-order-hint">(extra spicy, no onions…)</span></label>
+      <textarea class="yyp-order-input yyp-order-detail" data-detail="notes" rows="2" maxlength="300" placeholder="Anything the kitchen should know?"></textarea>
+      <label class="yyp-order-label" style="margin-top:10px">Allergies for this item</label>
+      <input type="text" class="yyp-order-input yyp-order-detail" data-detail="allergies" placeholder="e.g. peanuts, shellfish" maxlength="200" />
+    </div>`;
+}
+
+function collectItemDetails(row) {
+  const extras = {};
+  row.querySelectorAll('.yyp-order-detail').forEach(el => {
+    const v = (el.value || '').trim();
+    if (v) extras[el.dataset.detail] = v;
+  });
+  return extras;
+}
+
+function filledCount(row) {
+  return [...row.querySelectorAll('.yyp-order-detail')]
+    .filter(el => (el.value || '').trim()).length;
 }
 
 
@@ -373,9 +436,26 @@ function injectStyles() {
 
     .yyp-order-items { display: flex; flex-direction: column; gap: 6px; }
     .yyp-order-item {
-      display: flex; align-items: center; gap: 10px;
+      display: flex; flex-direction: column; gap: 0;
       padding: 8px 10px; border: 1px solid #F3F3F3; border-radius: 10px;
     }
+    .yyp-order-item-row { display: flex; align-items: center; gap: 10px; }
+    .yyp-order-details-toggle {
+      background: #fff; color: #B58900;
+      border: 1.5px solid #FFD000; border-radius: 999px;
+      font-weight: 800; font-size: 0.7rem; letter-spacing: 0.02em;
+      padding: 4px 10px; cursor: pointer; white-space: nowrap;
+      transition: background 0.12s, color 0.12s;
+    }
+    .yyp-order-details-toggle:hover { background: #FFFDF2; }
+    .yyp-order-details-toggle.is-filled {
+      background: #FFD000; color: #111; border-color: #FFD000;
+    }
+    .yyp-order-item-details {
+      margin-top: 10px; padding-top: 10px;
+      border-top: 1px dashed #F3F3F3;
+    }
+    .yyp-order-item-details[hidden] { display: none; }
     .yyp-order-item-info { flex: 1; min-width: 0; }
     .yyp-order-item-name { font-weight: 700; font-size: 0.88rem; color: #111; }
     .yyp-order-item-meta { font-size: 0.72rem; color: #6B6B6B; }
