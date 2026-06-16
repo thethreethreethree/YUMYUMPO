@@ -30,16 +30,22 @@
     const { data: { user } } = await c.auth.getUser();
     if (!user) return gate();
 
-    /* Admin override: if ?slug= present AND user is admin, edit that restaurant. */
+    /* If ?slug= is present, load that restaurant — allowed for admins
+       AND for co-owners. Falls back to the user's first owned
+       restaurant otherwise. */
     const overrideSlug = new URLSearchParams(location.search).get('slug');
     let row = null, adminEdit = false;
 
     if (overrideSlug) {
-      let isAdmin = false;
-      try { const { data: a } = await c.rpc('is_admin'); isAdmin = !!a; } catch { /* not admin */ }
-      if (isAdmin) {
-        const { data } = await c.from('restaurants').select('*').ilike('slug', overrideSlug).maybeSingle();
-        if (data) { row = data; adminEdit = true; }
+      const { data } = await c.from('restaurants').select('*').ilike('slug', overrideSlug).maybeSingle();
+      if (data) {
+        let isAdmin = false;
+        try { const { data: a } = await c.rpc('is_admin'); isAdmin = !!a; } catch {}
+        let isOwner = false;
+        if (!isAdmin) {
+          try { const { data: o } = await c.rpc('is_restaurant_owner', { p_restaurant_id: data.id }); isOwner = !!o; } catch {}
+        }
+        if (isAdmin || isOwner) { row = data; adminEdit = isAdmin && !isOwner; }
       }
     }
     if (!row) {

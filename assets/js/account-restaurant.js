@@ -42,18 +42,28 @@ async function init() {
   const { data: { user } } = await c.auth.getUser();
   if (!user) return showGate();
 
-  /* Admin override: if ?slug= present AND user is admin, edit that restaurant. */
+  /* If ?slug= is present, load that restaurant — allowed for admins
+     AND for co-owners (anyone listed in restaurant_owners or the
+     primary owner_user_id). Falls back to the user's first owned
+     restaurant when there's no slug in the URL. */
   const params = new URLSearchParams(location.search);
   const overrideSlug = params.get('slug');
 
   isAdminUser = await checkIsAdmin(c);
 
   let row = null;
-  if (overrideSlug && isAdminUser) {
-    const { data, error } = await c.from('restaurants').select('*').eq('slug', overrideSlug).maybeSingle();
-    if (error) { console.error('[Owner] override fetch:', error); }
-    row = data;
-  } else {
+  if (overrideSlug) {
+    const { data } = await c.from('restaurants').select('*').eq('slug', overrideSlug).maybeSingle();
+    if (data) {
+      let allowed = isAdminUser;
+      if (!allowed) {
+        const { data: ok } = await c.rpc('is_restaurant_owner', { p_restaurant_id: data.id });
+        allowed = !!ok;
+      }
+      if (allowed) row = data;
+    }
+  }
+  if (!row) {
     const { data, error } = await c.rpc('get_my_restaurant');
     if (error) { console.error('[Owner] get_my_restaurant:', error); }
     row = Array.isArray(data) ? data[0] : data;
