@@ -849,6 +849,13 @@ async function loadOrders() {
     });
   }
 
+  /* Export-orders button — one row per item, special note column. */
+  const exportBtn = document.getElementById('orders-export-btn');
+  if (exportBtn && exportBtn.dataset.bound !== '1') {
+    exportBtn.dataset.bound = '1';
+    exportBtn.addEventListener('click', exportOrdersCSV);
+  }
+
   /* Inbox: only fetch open orders (status not in done/denied/paid) and
      cap at 30. The Analytics view is heavier — refresh every 5th tick
      (≈100s) instead of every poll. */
@@ -973,6 +980,99 @@ function orderRowHTML(o) {
       </div>
     </div>`;
 }
+
+
+/* ── Export orders to CSV ─────────────────────────────────────
+   One row per ORDER ITEM so the per-item special note (and
+   assign-to + item allergies) each get their own column. The
+   order-level fields (customer, status, dates, totals) are
+   repeated on each item row — flat enough for Excel pivots. */
+async function exportOrdersCSV() {
+  const c = window.YYP?.client;
+  if (!c || !restaurant?.id) return;
+  const btn = document.getElementById('orders-export-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Preparing…'; }
+
+  const { data, error } = await c
+    .from('order_requests')
+    .select('id, status, customer_name, customer_phone, customer_email, ' +
+            'delivery_method, delivery_address, preferred_time, ' +
+            'items, allergens, notes, quoted_total, owner_message, ' +
+            'created_at, acknowledged_at, accepted_at, completed_at, paid_at, denied_at')
+    .eq('restaurant_id', restaurant.id)
+    .order('created_at', { ascending: false });
+
+  if (btn) { btn.disabled = false; btn.textContent = '⬇ Export orders'; }
+  if (error) { toast('Could not load orders: ' + error.message); return; }
+  if (!data?.length) { toast('No orders yet — nothing to export.'); return; }
+
+  const csvCell = v => {
+    const s = String(v ?? '');
+    return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const csvRow = cells => cells.map(csvCell).join(',');
+
+  const L = [];
+  L.push(csvRow([
+    'Order date', 'Status', 'Customer name', 'Phone', 'Email',
+    'Delivery method', 'Address', 'Preferred time',
+    'Item', 'Qty', 'Item price',
+    'Assigned to', 'Special note', 'Item allergies',
+    'Order allergies', 'Order notes',
+    'Quoted total (PHP)', 'Owner message',
+    'Acknowledged at', 'Accepted at', 'Completed at', 'Paid at', 'Denied at',
+    'Order ID',
+  ]));
+
+  data.forEach(o => {
+    const items = Array.isArray(o.items) ? o.items : [];
+    const orderAllergens = Array.isArray(o.allergens) ? o.allergens.join('; ') : '';
+    const orderDate = o.created_at ? new Date(o.created_at).toLocaleString() : '';
+    const ts = v => v ? new Date(v).toLocaleString() : '';
+
+    const baseRow = [
+      orderDate, o.status || '', o.customer_name || '',
+      o.customer_phone || '', o.customer_email || '',
+      o.delivery_method || '', o.delivery_address || '', o.preferred_time || '',
+    ];
+    const tailRow = [
+      orderAllergens, o.notes || '',
+      o.quoted_total ?? '', o.owner_message || '',
+      ts(o.acknowledged_at), ts(o.accepted_at), ts(o.completed_at), ts(o.paid_at), ts(o.denied_at),
+      o.id,
+    ];
+
+    if (!items.length) {
+      L.push(csvRow([...baseRow, '(no items)', '', '', '', '', '', ...tailRow]));
+      return;
+    }
+    items.forEach(it => {
+      L.push(csvRow([
+        ...baseRow,
+        it.name || '',
+        it.qty || 1,
+        it.price || '',
+        it.assign_to || '',
+        it.notes || '',
+        it.allergies || '',
+        ...tailRow,
+      ]));
+    });
+  });
+
+  /* UTF-8 BOM so Excel reads ₱ and accents correctly. */
+  const blob = new Blob(['﻿' + L.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const safe = String(restaurant.slug || 'restaurant').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+  a.href = url;
+  a.download = `yumyumpo-orders-${safe}-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 
 async function handleOrderAction(id, act) {
   const c = window.YYP?.client;

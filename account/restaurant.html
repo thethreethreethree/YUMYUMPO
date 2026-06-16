@@ -226,10 +226,17 @@
         <h2 class="font-display font-black text-lg">Order Requests</h2>
         <p class="text-xs text-gray-500">Live inbox · refreshes every 20s</p>
       </div>
-      <label class="flex items-center gap-2 cursor-pointer text-xs font-bold">
-        <input type="checkbox" id="accepting-orders-toggle" class="accent-brand-yellow w-4 h-4" />
-        <span id="accepting-orders-label">Accepting orders</span>
-      </label>
+      <div class="flex items-center gap-3 flex-wrap">
+        <label class="flex items-center gap-2 cursor-pointer text-xs font-bold">
+          <input type="checkbox" id="accepting-orders-toggle" class="accent-brand-yellow w-4 h-4" />
+          <span id="accepting-orders-label">Accepting orders</span>
+        </label>
+        <button type="button" id="orders-export-btn"
+          style="background:#FFD000;border:1.5px solid #FFD000;color:#111;font-weight:800;font-size:0.78rem;padding:7px 14px;border-radius:10px;cursor:pointer;white-space:nowrap"
+          title="Download every order request as a CSV file (opens in Excel). One row per item, with the special note in its own column.">
+          ⬇ Export orders
+        </button>
+      </div>
     </div>
 
     <!-- Mini analytics row -->
@@ -596,7 +603,7 @@
 <script src="../assets/js/account.js?v=profile5"></script>
 <script src="../assets/js/main.js?v=claim1"></script>
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@gh-pages/qrcode.min.js"></script>
-<script src="../assets/js/account-restaurant.js?v=dash11"></script>
+<script src="../assets/js/account-restaurant.js?v=dash12"></script>
 <script src="../assets/js/vibe-map-fab.js?v=vm1"></script>
 <script src="../assets/js/pwa.js"></script>
 </body>
